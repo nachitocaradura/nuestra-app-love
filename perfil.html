@@ -2,53 +2,127 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Perfil - Nuestra App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>👤 Mi Perfil - Nuestra App</title>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
   <style>
-    :root { --bg: #ffd6e0; --mid: #ffb3c6; --dark: #ff85a1; --accent: #ff4d79; --shadow: rgba(255, 77, 121, 0.25); }
-    [data-theme="blue"] { --bg: #d6eaff; --mid: #b3d9ff; --dark: #85bfff; --accent: #4d94ff; --shadow: rgba(77, 148, 255, 0.25); }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --pink-bg: #ffd6e0; --pink-mid: #ffb3c6; --pink-dark: #ff85a1; --pink-accent: #ff4d79; --white: #fff; --shadow: rgba(255, 77, 121, 0.25);
+    }
+    [data-theme="blue"] {
+      --pink-bg: #d6eaff; --pink-mid: #b3d9ff; --pink-dark: #85bfff; --pink-accent: #4d94ff; --shadow: rgba(77, 148, 255, 0.25);
+    }
 
-    body { font-family: 'Nunito', sans-serif; background: var(--bg); display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
-    .card { background: white; width: 100%; max-width: 400px; border-radius: 30px; padding: 30px; box-shadow: 0 10px 25px var(--shadow); text-align: center; margin-top: 40px; }
-    .avatar { width: 100px; height: 100px; border-radius: 50%; border: 4px solid var(--mid); margin-bottom: 15px; }
-    h2 { color: var(--accent); margin: 10px 0; }
-    p { color: var(--dark); font-size: 14px; }
-    .btn-back { margin-top: 30px; display: inline-block; text-decoration: none; background: var(--accent); color: white; padding: 12px 25px; border-radius: 20px; font-weight: bold; }
-    .logout-btn { margin-top: 15px; background: none; border: 2px solid var(--dark); color: var(--dark); padding: 8px 20px; border-radius: 20px; cursor: pointer; font-family: inherit; }
+    body { font-family: 'Nunito', sans-serif; background: var(--pink-bg); min-height: 100dvh; display: flex; flex-direction: column; align-items: center; padding: 20px; transition: background 0.3s; }
+    
+    .profile-card {
+      background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); width: 100%; max-width: 400px;
+      border-radius: 35px; padding: 30px; box-shadow: 0 15px 35px var(--shadow); text-align: center; margin-top: 20px;
+    }
+    .avatar-container { position: relative; width: 110px; height: 110px; margin: 0 auto 15px; }
+    .avatar { width: 100%; height: 100%; border-radius: 50%; border: 4px solid white; box-shadow: 0 5px 15px var(--shadow); object-fit: cover; }
+    
+    h2 { color: var(--pink-accent); font-size: 24px; font-weight: 900; }
+    .email { color: var(--pink-dark); font-size: 14px; margin-bottom: 20px; }
+
+    .id-section { background: white; padding: 15px; border-radius: 20px; margin-bottom: 20px; border: 2px dashed var(--pink-mid); }
+    .id-label { font-size: 11px; font-weight: 800; color: var(--pink-dark); text-transform: uppercase; margin-bottom: 5px; }
+    .id-value { font-family: monospace; font-size: 14px; color: #555; word-break: break-all; }
+
+    .btn {
+      width: 100%; padding: 14px; border-radius: 18px; border: none; font-family: 'Nunito'; font-weight: 800; font-size: 15px;
+      cursor: pointer; transition: 0.2s; margin-top: 10px;
+    }
+    .btn-copy { background: var(--pink-mid); color: white; }
+    .btn-link { background: var(--pink-accent); color: white; box-shadow: 0 5px 15px var(--shadow); }
+    .btn-back { background: white; color: var(--pink-accent); text-decoration: none; display: block; margin-top: 20px; }
+    
+    input { width: 100%; padding: 12px; border-radius: 15px; border: 2px solid var(--pink-bg); margin-top: 10px; text-align: center; font-family: inherit; }
+    .status-msg { margin-top: 15px; font-size: 13px; font-weight: 700; padding: 10px; border-radius: 12px; display: none; }
+    .status-msg.success { display: block; background: #e6fffa; color: #2d6a4f; border: 1px solid #b7e4c7; }
+
+    .logout-btn { margin-top: 25px; background: none; border: none; color: var(--pink-dark); font-size: 13px; font-weight: 700; cursor: pointer; text-decoration: underline; }
   </style>
 </head>
 <body>
-  <div class="card">
-    <img id="userPhoto" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="avatar">
+
+  <div class="profile-card">
+    <div class="avatar-container">
+      <img id="userPhoto" src="" class="avatar" alt="Foto">
+    </div>
     <h2 id="userName">Cargando...</h2>
-    <p id="userEmail">---</p>
-    <button class="logout-btn" id="btnLogOut">Cerrar Sesión</button>
-    <br>
-    <a href="index.html" class="btn-back">Volver al Inicio</a>
+    <p class="email" id="userEmail">...</p>
+
+    <div class="id-section">
+      <div class="id-label">Tu ID de vinculación</div>
+      <div class="id-value" id="myId">Cargando ID...</div>
+      <button class="btn btn-copy" onclick="copyId()">Copiar ID 📋</button>
+    </div>
+
+    <div id="linkControls">
+      <p style="font-size: 12px; color: #888; margin-bottom: 5px;">Vincula a tu pareja:</p>
+      <input type="text" id="partnerInput" placeholder="Pega el ID de tu pareja aquí">
+      <button class="btn btn-link" onclick="linkPartner()">Vincular Cuentas 💕</button>
+    </div>
+
+    <div id="partnerStatus" class="status-msg"></div>
+
+    <a href="index.html" class="btn btn-back">Volver al Inicio</a>
+    <button class="logout-btn" id="btnLogOut">Cerrar sesión</button>
   </div>
 
   <script>
-    // Aplicar tema guardado
     if(localStorage.getItem('theme') === 'blue') document.documentElement.setAttribute('data-theme', 'blue');
   </script>
 
   <script type="module">
-    import { auth } from './firebase.js';
-    import { signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
+    import { db, auth } from './firebase.js';
+    import { onAuthStateChanged, signOut } from \"https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js\";
+    import { doc, getDoc, updateDoc } from \"https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js\";
 
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        document.getElementById('userName').textContent = user.displayName;
-        document.getElementById('userEmail').textContent = user.email;
-        if(user.photoURL) document.getElementById('userPhoto').src = user.photoURL;
-      } else {
-        window.location.href = "auth.html";
+    let currentUser = null;
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { window.location.href = \"auth.html\"; return; }
+      currentUser = user;
+      document.getElementById('userName').textContent = user.displayName;
+      document.getElementById('userEmail').textContent = user.email;
+      document.getElementById('userPhoto').src = user.photoURL;
+      document.getElementById('myId').textContent = user.uid;
+
+      const userDoc = await getDoc(doc(db, \"usuarios\", user.uid));
+      if (userDoc.exists() && userDoc.data().parejaId) {
+        checkPartner(userDoc.data().parejaId);
       }
     });
 
+    async function checkPartner(partnerId) {
+      const partnerDoc = await getDoc(doc(db, \"usuarios\", partnerId));
+      if (partnerDoc.exists()) {
+        document.getElementById('partnerStatus').className = \"status-msg success\";
+        document.getElementById('partnerStatus').textContent = `✨ Vinculado con ${partnerDoc.data().nombre}`;
+        document.getElementById('linkControls').style.display = 'none';
+      }
+    }
+
+    window.linkPartner = async () => {
+      const pId = document.getElementById('partnerInput').value.trim();
+      if (!pId || pId === currentUser.uid) { alert(\"ID no válido\"); return; }
+      try {
+        await updateDoc(doc(db, \"usuarios\", currentUser.uid), { parejaId: pId });
+        await updateDoc(doc(db, \"usuarios\", pId), { parejaId: currentUser.uid });
+        alert(\"¡Vinculados! 💕\"); location.reload();
+      } catch (e) { alert(\"Error: \" + e.message); }
+    };
+
+    window.copyId = () => {
+      navigator.clipboard.writeText(document.getElementById('myId').textContent);
+      alert(\"¡Copiado! 📋\");
+    };
+
     document.getElementById('btnLogOut').addEventListener('click', () => {
-      signOut(auth).then(() => window.location.href = "auth.html");
+      signOut(auth).then(() => window.location.href = \"auth.html\");
     });
   </script>
 </body>

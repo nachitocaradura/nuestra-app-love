@@ -2,41 +2,346 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Ruleta - Nuestra App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>🎡 Ruleta - Nuestra App</title>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
   <style>
-    :root { --bg: #ffd6e0; --accent: #ff4d79; --shadow: rgba(255, 77, 121, 0.25); }
-    [data-theme="blue"] { --bg: #d6eaff; --accent: #4d94ff; --shadow: rgba(77, 148, 255, 0.25); }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
-    body { font-family: 'Nunito', sans-serif; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
-    h1 { color: var(--accent); margin-bottom: 30px; }
-    .wheel-container { position: relative; width: 300px; height: 300px; border: 8px solid white; border-radius: 50%; box-shadow: 0 10px 25px var(--shadow); background: white; display: flex; align-items: center; justify-content: center; font-size: 50px; }
-    .btn-spin { margin-top: 40px; background: var(--accent); color: white; border: none; padding: 15px 40px; border-radius: 30px; font-size: 18px; font-weight: 900; cursor: pointer; box-shadow: 0 5px 15px var(--shadow); }
-    .btn-back { margin-top: 20px; color: var(--accent); text-decoration: none; font-weight: bold; }
+    :root {
+      --pink-bg: #ffd6e0;
+      --pink-mid: #ffb3c6;
+      --pink-dark: #ff85a1;
+      --pink-accent: #ff4d79;
+      --white: #fff;
+      --shadow: rgba(255, 77, 121, 0.25);
+    }
+
+    /* TEMA AZUL */
+    [data-theme="blue"] {
+      --pink-bg: #d6eaff;
+      --pink-mid: #b3d9ff;
+      --pink-dark: #85bfff;
+      --pink-accent: #4d94ff;
+      --shadow: rgba(77, 148, 255, 0.25);
+    }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--pink-bg);
+      min-height: 100dvh;
+      display: flex; flex-direction: column; align-items: center;
+      transition: background 0.3s;
+    }
+
+    /* Header */
+    header {
+      width: 100%; padding: 20px;
+      display: flex; justify-content: space-between; align-items: center;
+      position: relative; z-index: 10;
+    }
+    .btn-icon {
+      width: 45px; height: 45px; background: white; border-radius: 15px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; box-shadow: 0 4px 10px var(--shadow);
+      text-decoration: none; border: none; cursor: pointer;
+    }
+    h1 { color: var(--pink-accent); font-size: 22px; font-weight: 900; }
+
+    /* Lista de Ruletas */
+    #listaRuletas {
+      width: 100%; padding: 0 20px;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 15px;
+      margin-top: 10px;
+    }
+    .card-ruleta {
+      background: white; padding: 15px; border-radius: 20px;
+      display: flex; flex-direction: column; align-items: center;
+      box-shadow: 0 6px 15px var(--shadow); position: relative;
+    }
+    .card-ruleta .emoji { font-size: 30px; margin-bottom: 5px; }
+    .card-ruleta .nombre { font-size: 14px; font-weight: 800; color: #555; text-align: center; }
+    .btn-del {
+      position: absolute; top: -5px; right: -5px;
+      background: #ff4d4d; color: white; border: none;
+      width: 22px; height: 22px; border-radius: 50%; font-size: 12px;
+    }
+
+    /* Sección Ruleta Activa */
+    #seccionJuego {
+      display: none; width: 100%; flex-direction: column; align-items: center;
+      padding: 20px; margin-top: 10px;
+    }
+    .wheel-main {
+      width: 280px; height: 280px; border-radius: 50%;
+      border: 8px solid white; position: relative;
+      box-shadow: 0 10px 30px var(--shadow);
+      overflow: hidden; background: white;
+      transition: transform 4s cubic-bezier(0.15, 0, 0.15, 1);
+    }
+    .pointer {
+      width: 40px; height: 40px; background: var(--pink-accent);
+      clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+      position: absolute; top: -15px; z-index: 20; transform: rotate(180deg);
+    }
+    .btn-spin {
+      margin-top: 30px; background: var(--pink-accent); color: white;
+      border: none; padding: 15px 50px; border-radius: 30px;
+      font-size: 18px; font-weight: 900; box-shadow: 0 6px 20px var(--shadow);
+    }
+
+    /* Modales */
+    .modal {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+      display: none; align-items: center; justify-content: center; z-index: 100;
+      padding: 20px;
+    }
+    .modal.show { display: flex; }
+    .modal-content {
+      background: white; width: 100%; max-width: 350px;
+      border-radius: 30px; padding: 25px; text-align: center;
+    }
+    input {
+      width: 100%; padding: 12px; border-radius: 15px; border: 2px solid var(--pink-bg);
+      margin: 15px 0; font-family: inherit; font-weight: 700; text-align: center;
+    }
+    .btn-primary {
+      background: var(--pink-accent); color: white; border: none;
+      padding: 12px 25px; border-radius: 20px; font-weight: 800; width: 100%;
+    }
+    
+    /* Indicador de carga/sync */
+    .sync-dot {
+      width: 10px; height: 10px; border-radius: 50%; background: #ccc; margin-right: 10px;
+    }
+    .sync-dot.active { background: #4caf50; box-shadow: 0 0 5px #4caf50; }
   </style>
 </head>
 <body>
-  <h1>🎡 Ruleta Mágica</h1>
-  <div class="wheel-container" id="wheel">❓</div>
-  <button class="btn-spin" onclick="spin()">¡GIRAR!</button>
-  <a href="index.html" class="btn-back">Volver</a>
+
+  <header>
+    <a href="index.html" class="btn-icon">🏠</a>
+    <h1>🎡 Nuestras Ruletas</h1>
+    <div class="sync-dot" id="syncDot"></div>
+  </header>
+
+  <div id="seccionLista" style="width: 100%;">
+    <div id="listaRuletas">
+      </div>
+    <div style="padding: 30px; text-align: center;">
+      <button class="btn-icon" style="width: 60px; height: 60px; margin: 0 auto;" onclick="abrirModalCrear()">➕</button>
+      <p style="margin-top: 10px; color: var(--pink-dark); font-weight: 800; font-size: 14px;">Crear Ruleta</p>
+    </div>
+  </div>
+
+  <div id="seccionJuego">
+    <div style="display: flex; width: 100%; justify-content: space-between; margin-bottom: 20px;">
+      <button class="btn-icon" onclick="volverALista()">⬅️</button>
+      <h2 id="tituloRuleta" style="color: var(--pink-accent);">---</h2>
+      <button class="btn-icon" onclick="abrirModalOpciones()">⚙️</button>
+    </div>
+
+    <div class="pointer"></div>
+    <div class="wheel-main" id="wheelCanvas"></div>
+
+    <button class="btn-spin" id="btnSpin">¡GIRAR!</button>
+    <p id="resultadoTexto" style="margin-top: 20px; font-weight: 900; color: var(--pink-accent); font-size: 20px;"></p>
+  </div>
+
+  <div class="modal" id="modalCrear">
+    <div class="modal-content">
+      <h2>Nueva Ruleta</h2>
+      <input type="text" id="nombreRuleta" placeholder="Nombre (ej: ¿Qué cenamos?)">
+      <button class="btn-primary" onclick="crearNuevaRuleta()">Crear Ruleta</button>
+      <p onclick="cerrarModal('modalCrear')" style="margin-top: 15px; color: #888; font-size: 13px;">Cancelar</p>
+    </div>
+  </div>
+
+  <div class="modal" id="modalOpciones">
+    <div class="modal-content">
+      <h3>Opciones</h3>
+      <div id="listaOpciones" style="max-height: 200px; overflow-y: auto; margin: 15px 0; text-align: left;"></div>
+      <input type="text" id="nuevaOpcionInput" placeholder="Nueva opción...">
+      <button class="btn-primary" onclick="añadirOpcion()">Añadir</button>
+      <button class="btn-primary" style="background: #ccc; margin-top: 10px;" onclick="cerrarModal('modalOpciones')">Cerrar</button>
+    </div>
+  </div>
 
   <script>
+    // Aplicar Tema
     if(localStorage.getItem('theme') === 'blue') document.documentElement.setAttribute('data-theme', 'blue');
+  </script>
 
-    const opciones = ["Cena fuera 🍕", "Masaje 💆‍♂️", "Cine 🍿", "Vales por un beso 💋", "Elegir peli 🎬"];
-    function spin() {
-      const wheel = document.getElementById('wheel');
-      wheel.style.transform = "rotate(720deg)";
-      wheel.style.transition = "2s ease-out";
-      setTimeout(() => {
-        const res = opciones[Math.floor(Math.random() * opciones.length)];
-        wheel.textContent = res;
-        wheel.style.transform = "rotate(0deg)";
-        wheel.style.transition = "none";
-      }, 2000);
+  <script type="module">
+    import { db, auth } from './firebase.js';
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
+    import { collection, doc, onSnapshot, addDoc, updateDoc, deleteDoc, getDoc, query, where } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+
+    let usuarioActual = null;
+    let parejaId = null;
+    let ruletas = [];
+    let ruletaActivaId = null;
+    const syncDot = document.getElementById('syncDot');
+
+    // 1. Verificar Usuario y Pareja
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) { window.location.href = "auth.html"; return; }
+      usuarioActual = user;
+      
+      const userDoc = await getDoc(doc(db, "usuarios", user.uid));
+      if (userDoc.exists()) {
+        parejaId = userDoc.data().parejaId;
+        escucharRuletas();
+      }
+    });
+
+    // 2. Escuchar Ruletas de la Pareja (Sincronización Real)
+    function escucharRuletas() {
+      const ids = [usuarioActual.uid];
+      if (parejaId) ids.push(parejaId);
+
+      const q = query(collection(db, "ruletas"), where("creador", "in", ids));
+      onSnapshot(q, (snapshot) => {
+        syncDot.classList.add('active');
+        ruletas = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderLista();
+        if (ruletaActivaId) actualizarRuletaVisual();
+        setTimeout(() => syncDot.classList.remove('active'), 1000);
+      });
     }
+
+    // 3. Renderizar Lista
+    function renderLista() {
+      const lista = document.getElementById('listaRuletas');
+      lista.innerHTML = '';
+      ruletas.forEach(r => {
+        const card = document.createElement('div');
+        card.className = 'card-ruleta';
+        card.innerHTML = `
+          <button class="btn-del" onclick="event.stopPropagation(); borrarRuleta('${r.id}')">✕</button>
+          <div class="emoji">🎡</div>
+          <div class="nombre">${r.nombre}</div>
+        `;
+        card.onclick = () => abrirRuleta(r.id);
+        lista.appendChild(card);
+      });
+    }
+
+    // 4. Lógica de Juego
+    window.abrirRuleta = (id) => {
+      ruletaActivaId = id;
+      document.getElementById('seccionLista').style.display = 'none';
+      document.getElementById('seccionJuego').style.display = 'flex';
+      actualizarRuletaVisual();
+    };
+
+    window.volverALista = () => {
+      ruletaActivaId = null;
+      document.getElementById('seccionLista').style.display = 'block';
+      document.getElementById('seccionJuego').style.display = 'none';
+    };
+
+    function actualizarRuletaVisual() {
+      const r = ruletas.find(x => x.id === ruletaActivaId);
+      if (!r) return;
+      document.getElementById('tituloRuleta').textContent = r.nombre;
+      const canvas = document.getElementById('wheelCanvas');
+      canvas.innerHTML = '';
+      
+      const ops = r.opciones || [];
+      if (ops.length === 0) {
+        canvas.innerHTML = '<div style="padding: 100px; font-size: 12px; color: #ccc;">Añade opciones en ajustes</div>';
+        return;
+      }
+
+      const angleStep = 360 / ops.length;
+      ops.forEach((op, i) => {
+        const slice = document.createElement('div');
+        slice.style.position = 'absolute';
+        slice.style.width = '100%'; slice.style.height = '100%';
+        slice.style.clipPath = ops.length === 1 ? 'none' : `polygon(50% 50%, 50% 0%, ${50 + 50 * Math.tan(angleStep/2 * Math.PI/180)}% 0%)`;
+        slice.style.background = i % 2 === 0 ? 'var(--pink-mid)' : 'var(--pink-bg)';
+        slice.style.transformOrigin = '50% 50%';
+        slice.style.transform = `rotate(${i * angleStep}deg)`;
+        
+        const txt = document.createElement('span');
+        txt.textContent = op;
+        txt.style.position = 'absolute';
+        txt.style.top = '20px'; txt.style.left = '50%';
+        txt.style.transform = 'translateX(-50%)';
+        txt.style.fontSize = '12px'; txt.style.fontWeight = '800';
+        txt.style.color = 'var(--pink-accent)';
+        
+        slice.appendChild(txt);
+        canvas.appendChild(slice);
+      });
+    }
+
+    // 5. Girar
+    document.getElementById('btnSpin').onclick = () => {
+      const r = ruletas.find(x => x.id === ruletaActivaId);
+      if (!r || !r.opciones.length) return;
+      
+      const randomDeg = 1800 + Math.random() * 360;
+      const wheel = document.getElementById('wheelCanvas');
+      wheel.style.transform = `rotate(${randomDeg}deg)`;
+      
+      document.getElementById('resultadoTexto').textContent = "Girando...";
+      
+      setTimeout(() => {
+        const actualDeg = randomDeg % 360;
+        const index = Math.floor(((360 - actualDeg) % 360) / (360 / r.opciones.length));
+        document.getElementById('resultadoTexto').textContent = "¡" + r.opciones[index] + "!";
+      }, 4000);
+    };
+
+    // 6. Operaciones Firebase
+    window.crearNuevaRuleta = async () => {
+      const nombre = document.getElementById('nombreRuleta').value;
+      if (!nombre) return;
+      await addDoc(collection(db, "ruletas"), {
+        nombre, creador: usuarioActual.uid, opciones: ["Opción A", "Opción B"], fecha: Date.now()
+      });
+      cerrarModal('modalCrear');
+    };
+
+    window.borrarRuleta = async (id) => {
+      if (confirm("¿Borrar esta ruleta?")) await deleteDoc(doc(db, "ruletas", id));
+    };
+
+    window.añadirOpcion = async () => {
+      const r = ruletas.find(x => x.id === ruletaActivaId);
+      const nueva = document.getElementById('nuevaOpcionInput').value;
+      if (!nueva) return;
+      const nuevasOpciones = [...(r.opciones || []), nueva];
+      await updateDoc(doc(db, "ruletas", ruletaActivaId), { opciones: nuevasOpciones });
+      document.getElementById('nuevaOpcionInput').value = '';
+      abrirModalOpciones(); // Refresca lista modal
+    };
+
+    window.abrirModalOpciones = () => {
+      const r = ruletas.find(x => x.id === ruletaActivaId);
+      const lista = document.getElementById('listaOpciones');
+      lista.innerHTML = '';
+      r.opciones.forEach((op, i) => {
+        lista.innerHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+          <span>${op}</span>
+          <button onclick="borrarOpcion(${i})" style="color:red; border:none; background:none;">✕</button>
+        </div>`;
+      });
+      document.getElementById('modalOpciones').classList.add('show');
+    };
+
+    window.borrarOpcion = async (index) => {
+      const r = ruletas.find(x => x.id === ruletaActivaId);
+      const nuevasOpciones = r.opciones.filter((_, i) => i !== index);
+      await updateDoc(doc(db, "ruletas", ruletaActivaId), { opciones: nuevasOpciones });
+      abrirModalOpciones();
+    };
+
+    // Auxiliares modales
+    window.abrirModalCrear = () => document.getElementById('modalCrear').classList.add('show');
+    window.cerrarModal = (id) => document.getElementById(id).classList.remove('show');
   </script>
 </body>
 </html>

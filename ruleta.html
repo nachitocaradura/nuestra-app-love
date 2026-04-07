@@ -3,12 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>🎡 Ruleta - Nuestra App</title>
+  <title>🎡 Ruleta</title>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     :root {
+      
       --pink-bg: #ffd6e0;
       --pink-mid: #ffb3c6;
       --pink-dark: #ff85a1;
@@ -17,331 +18,837 @@
       --shadow: rgba(255, 77, 121, 0.25);
     }
 
-    /* TEMA AZUL */
-    [data-theme="blue"] {
-      --pink-bg: #d6eaff;
-      --pink-mid: #b3d9ff;
-      --pink-dark: #85bfff;
-      --pink-accent: #4d94ff;
-      --shadow: rgba(77, 148, 255, 0.25);
-    }
-
     body {
       font-family: 'Nunito', sans-serif;
       background: var(--pink-bg);
       min-height: 100dvh;
-      display: flex; flex-direction: column; align-items: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow-x: hidden;
+      position: relative;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      width: 300px; height: 300px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #ffb3c6aa, transparent);
+      top: -80px; right: -80px;
+      filter: blur(60px);
+      pointer-events: none; z-index: 0;
+    }
+    body::after {
+      content: '';
+      position: fixed;
+      width: 250px; height: 250px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #ffc2d4aa, transparent);
+      bottom: -60px; left: -60px;
+      filter: blur(60px);
+      pointer-events: none; z-index: 0;
+    }
+
+    /* ── TOP BAR ── */
+    .top-bar {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      padding: 14px 18px 6px;
+      position: relative; z-index: 2;
+    }
+    .back-btn {
+      text-decoration: none;
+      font-size: 20px;
+      background: rgba(255,255,255,0.6);
+      border-radius: 12px;
+      padding: 6px 10px;
+      color: var(--pink-accent);
+      font-weight: 900;
+      box-shadow: 0 2px 8px var(--shadow);
+      -webkit-tap-highlight-color: transparent;
+      transition: transform 0.1s;
+      cursor: pointer;
+      border: none;
+      font-family: 'Nunito', sans-serif;
+    }
+    .back-btn:active { transform: scale(0.92); }
+    .top-title {
+      flex: 1;
+      text-align: center;
+      font-size: 20px;
+      font-weight: 900;
+      color: var(--pink-accent);
+    }
+    .top-title-offset { margin-right: 40px; }
+
+    .sync-dot {
+      position: absolute;
+      right: 18px; top: 18px;
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: #ccc;
       transition: background 0.3s;
     }
+    .sync-dot.connected { background: #4caf50; }
+    .sync-dot.syncing   { background: #ff9800; animation: pulse 0.8s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-    /* Header */
-    header {
-      width: 100%; padding: 20px;
-      display: flex; justify-content: space-between; align-items: center;
-      position: relative; z-index: 10;
+    /* ══ SCREEN LISTA ══ */
+    #screenLista {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1;
     }
-    .btn-icon {
-      width: 45px; height: 45px; background: white; border-radius: 15px;
+    .lista-content {
+      width: calc(100% - 32px);
+      max-width: 420px;
+      position: relative; z-index: 1;
+      padding-bottom: 24px;
+    }
+    .ruletas-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 8px;
+    }
+    .ruleta-card {
+      background: rgba(255,255,255,0.6);
+      backdrop-filter: blur(8px);
+      border-radius: 20px;
+      padding: 16px 18px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      box-shadow: 0 4px 16px rgba(255,77,121,0.12);
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .ruleta-card:active { transform: scale(0.97); box-shadow: 0 2px 8px rgba(255,77,121,0.1); }
+    .ruleta-card-icon {
+      width: 52px; height: 52px;
+      border-radius: 16px;
+      background: linear-gradient(145deg, #fff0f5, #ffe0eb);
       display: flex; align-items: center; justify-content: center;
-      font-size: 20px; box-shadow: 0 4px 10px var(--shadow);
-      text-decoration: none; border: none; cursor: pointer;
+      font-size: 26px;
+      box-shadow: 0 3px 10px var(--shadow);
+      flex-shrink: 0;
     }
-    h1 { color: var(--pink-accent); font-size: 22px; font-weight: 900; }
+    .ruleta-card-info { flex: 1; min-width: 0; }
+    .ruleta-card-name {
+      font-size: 16px; font-weight: 900; color: #cc3366;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .ruleta-card-count { font-size: 12px; font-weight: 700; color: #ff85a1; margin-top: 2px; }
+    .ruleta-card-arrow { font-size: 20px; color: var(--pink-mid); flex-shrink: 0; }
+    .ruleta-card-delete {
+      background: none; border: none; font-size: 18px; cursor: pointer;
+      padding: 6px; color: #ffb3c6; -webkit-tap-highlight-color: transparent;
+      flex-shrink: 0; transition: color 0.15s;
+    }
+    .ruleta-card-delete:active { color: var(--pink-accent); }
 
-    /* Lista de Ruletas */
-    #listaRuletas {
-      width: 100%; padding: 0 20px;
-      display: grid; grid-template-columns: 1fr 1fr; gap: 15px;
-      margin-top: 10px;
+    .empty-state { text-align: center; padding: 48px 20px; }
+    .empty-state .empty-emoji { font-size: 56px; }
+    .empty-state p { font-size: 15px; font-weight: 700; margin-top: 12px; color: #ffb3c6; }
+
+    .crear-btn {
+      width: 100%; margin-top: 16px; padding: 15px;
+      background: linear-gradient(135deg, var(--pink-accent), #ff85a1);
+      color: white; font-family: 'Nunito', sans-serif; font-size: 16px; font-weight: 900;
+      border: none; border-radius: 999px; cursor: pointer;
+      box-shadow: 0 6px 20px var(--shadow); -webkit-tap-highlight-color: transparent;
+      transition: transform 0.1s, box-shadow 0.1s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
     }
-    .card-ruleta {
-      background: white; padding: 15px; border-radius: 20px;
+    .crear-btn:active { transform: scale(0.96); box-shadow: 0 3px 10px var(--shadow); }
+
+    /* ══ SCREEN DETALLE ══ */
+    #screenRuleta {
+      width: 100%; display: none;
+      flex-direction: column; align-items: center; flex: 1;
+    }
+    #screenRuleta.active { display: flex; }
+
+    .wheel-section {
+      position: relative; z-index: 1;
       display: flex; flex-direction: column; align-items: center;
-      box-shadow: 0 6px 15px var(--shadow); position: relative;
+      padding: 10px 0 0; width: 100%;
     }
-    .card-ruleta .emoji { font-size: 30px; margin-bottom: 5px; }
-    .card-ruleta .nombre { font-size: 14px; font-weight: 800; color: #555; text-align: center; }
-    .btn-del {
-      position: absolute; top: -5px; right: -5px;
-      background: #ff4d4d; color: white; border: none;
-      width: 22px; height: 22px; border-radius: 50%; font-size: 12px;
-    }
-
-    /* Sección Ruleta Activa */
-    #seccionJuego {
-      display: none; width: 100%; flex-direction: column; align-items: center;
-      padding: 20px; margin-top: 10px;
-    }
-    .wheel-main {
-      width: 280px; height: 280px; border-radius: 50%;
-      border: 8px solid white; position: relative;
-      box-shadow: 0 10px 30px var(--shadow);
-      overflow: hidden; background: white;
-      transition: transform 4s cubic-bezier(0.15, 0, 0.15, 1);
+    .pointer-wrap {
+      position: relative;
+      width: min(300px, 84vw); height: min(300px, 84vw);
+      margin: 0 auto;
     }
     .pointer {
-      width: 40px; height: 40px; background: var(--pink-accent);
-      clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
-      position: absolute; top: -15px; z-index: 20; transform: rotate(180deg);
+      position: absolute; top: -14px; left: 50%;
+      transform: translateX(-50%); z-index: 10;
+      width: 0; height: 0;
+      border-left: 13px solid transparent;
+      border-right: 13px solid transparent;
+      border-top: 26px solid var(--pink-accent);
+      filter: drop-shadow(0 3px 6px var(--shadow));
     }
-    .btn-spin {
-      margin-top: 30px; background: var(--pink-accent); color: white;
-      border: none; padding: 15px 50px; border-radius: 30px;
-      font-size: 18px; font-weight: 900; box-shadow: 0 6px 20px var(--shadow);
+    canvas#wheel {
+      width: 100%; height: 100%; border-radius: 50%;
+      box-shadow: 0 10px 40px var(--shadow), 0 2px 10px rgba(255,77,121,0.15);
+      display: block;
     }
 
-    /* Modales */
-    .modal {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.5);
-      display: none; align-items: center; justify-content: center; z-index: 100;
-      padding: 20px;
+    .spin-btn {
+      margin-top: 18px; padding: 14px 48px;
+      background: linear-gradient(135deg, var(--pink-accent), #ff85a1);
+      color: white; font-family: 'Nunito', sans-serif; font-size: 18px; font-weight: 900;
+      border: none; border-radius: 999px; cursor: pointer;
+      box-shadow: 0 6px 20px var(--shadow); -webkit-tap-highlight-color: transparent;
+      transition: transform 0.1s, box-shadow 0.1s;
     }
-    .modal.show { display: flex; }
-    .modal-content {
-      background: white; width: 100%; max-width: 350px;
-      border-radius: 30px; padding: 25px; text-align: center;
+    .spin-btn:active { transform: scale(0.94); box-shadow: 0 3px 10px var(--shadow); }
+    .spin-btn:disabled { opacity: 0.6; }
+
+    .result-box {
+      min-height: 32px; margin-top: 10px; font-size: 20px; font-weight: 900;
+      color: var(--pink-accent); text-align: center; padding: 0 20px;
     }
-    input {
-      width: 100%; padding: 12px; border-radius: 15px; border: 2px solid var(--pink-bg);
-      margin: 15px 0; font-family: inherit; font-weight: 700; text-align: center;
+
+    .panel {
+      width: calc(100% - 32px); max-width: 420px;
+      background: rgba(255,255,255,0.55); backdrop-filter: blur(8px);
+      border-radius: 22px; padding: 16px 18px; margin: 14px 0 24px;
+      box-shadow: 0 4px 20px rgba(255,77,121,0.1); position: relative; z-index: 1;
     }
-    .btn-primary {
-      background: var(--pink-accent); color: white; border: none;
-      padding: 12px 25px; border-radius: 20px; font-weight: 800; width: 100%;
+    .panel h3 {
+      font-size: 13px; font-weight: 700; color: var(--pink-accent);
+      margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;
     }
-    
-    /* Indicador de carga/sync */
-    .sync-dot {
-      width: 10px; height: 10px; border-radius: 50%; background: #ccc; margin-right: 10px;
+    .panel-hint { font-weight: 400; font-size: 11px; opacity: 0.6; text-transform: none; letter-spacing: 0; }
+    .entries-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+
+    .entry-chip {
+      display: flex; align-items: center; gap: 5px;
+      border-radius: 999px; padding: 5px 8px 5px 12px;
+      font-size: 13px; font-weight: 700; color: white;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      cursor: pointer; -webkit-tap-highlight-color: transparent;
+      transition: transform 0.1s, filter 0.1s;
+      user-select: none;
     }
-    .sync-dot.active { background: #4caf50; box-shadow: 0 0 5px #4caf50; }
+    .entry-chip:active { transform: scale(0.94); filter: brightness(0.9); }
+    .chip-name { flex: 1; }
+    .chip-delete {
+      background: rgba(255,255,255,0.28); border: none; cursor: pointer;
+      color: white; font-size: 13px; line-height: 1; padding: 2px 5px;
+      border-radius: 50%; -webkit-tap-highlight-color: transparent; flex-shrink: 0;
+    }
+
+    .add-row { display: flex; gap: 8px; }
+    .add-row input {
+      flex: 1; border: 2px solid var(--pink-mid); border-radius: 999px;
+      padding: 8px 16px; font-family: 'Nunito', sans-serif; font-size: 14px;
+      font-weight: 700; color: #cc3366; background: rgba(255,255,255,0.8); outline: none;
+    }
+    .add-row input:focus { border-color: var(--pink-accent); }
+    .add-row button {
+      background: var(--pink-accent); color: white; border: none; border-radius: 999px;
+      padding: 8px 18px; font-family: 'Nunito', sans-serif; font-size: 14px; font-weight: 900;
+      cursor: pointer; -webkit-tap-highlight-color: transparent;
+    }
+
+    /* ══ OVERLAY RESULTADO ══ */
+    .overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(255, 180, 200, 0.45); backdrop-filter: blur(6px);
+      z-index: 100; align-items: center; justify-content: center;
+      flex-direction: column; gap: 16px;
+    }
+    .overlay.show { display: flex; }
+    .overlay-card {
+      background: white; border-radius: 28px; padding: 32px 40px;
+      text-align: center; box-shadow: 0 20px 60px rgba(255,77,121,0.3);
+      animation: popIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    @keyframes popIn {
+      from { transform: scale(0.6); opacity: 0; }
+      to   { transform: scale(1);   opacity: 1; }
+    }
+    .overlay-emoji  { font-size: 52px; }
+    .overlay-label  { font-size: 13px; font-weight: 700; color: #ffb3c6; margin-top: 8px; text-transform: uppercase; letter-spacing: 1px; }
+    .overlay-result { font-size: 30px; font-weight: 900; color: var(--pink-accent); margin-top: 4px; }
+    .overlay-close  {
+      background: var(--pink-accent); color: white; border: none; border-radius: 999px;
+      padding: 12px 36px; font-family: 'Nunito', sans-serif; font-size: 16px; font-weight: 900;
+      cursor: pointer; box-shadow: 0 6px 20px var(--shadow);
+    }
+
+    /* ══ MODALES (bottom sheet) ══ */
+    .modal-backdrop {
+      display: none; position: fixed; inset: 0;
+      background: rgba(255, 180, 200, 0.4); backdrop-filter: blur(6px);
+      z-index: 200; align-items: flex-end; justify-content: center;
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    .modal-backdrop.show { display: flex; }
+    .modal-sheet {
+      background: white; border-radius: 28px 28px 0 0;
+      padding: 28px 24px 36px; width: 100%; max-width: 480px;
+      box-shadow: 0 -8px 40px rgba(255,77,121,0.2);
+      animation: slideUp 0.3s cubic-bezier(0.34, 1.3, 0.64, 1);
+    }
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to   { transform: translateY(0); }
+    }
+    .modal-handle {
+      width: 40px; height: 4px; background: #ffd6e0;
+      border-radius: 99px; margin: 0 auto 20px;
+    }
+    .modal-title {
+      font-size: 20px; font-weight: 900; color: var(--pink-accent);
+      text-align: center; margin-bottom: 20px;
+    }
+    .modal-input {
+      width: 100%; border: 2px solid var(--pink-mid); border-radius: 999px;
+      padding: 12px 20px; font-family: 'Nunito', sans-serif; font-size: 16px;
+      font-weight: 700; color: #cc3366; background: #fff8fa; outline: none;
+      margin-bottom: 16px; text-align: center;
+    }
+    .modal-input:focus { border-color: var(--pink-accent); }
+
+    .modal-emoji-row {
+      display: flex; justify-content: center; gap: 10px;
+      margin-bottom: 20px; flex-wrap: wrap;
+    }
+    .emoji-opt {
+      font-size: 28px; width: 48px; height: 48px; border-radius: 14px;
+      border: 2px solid transparent; background: #fff0f5; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      -webkit-tap-highlight-color: transparent; transition: transform 0.1s, border-color 0.1s;
+    }
+    .emoji-opt.selected { border-color: var(--pink-accent); background: #ffe0eb; transform: scale(1.1); }
+
+    /* Color picker */
+    .color-label {
+      font-size: 12px; font-weight: 700; color: #ff85a1;
+      text-transform: uppercase; letter-spacing: 1px;
+      text-align: center; margin-bottom: 10px;
+    }
+    .color-picker-row {
+      display: flex; justify-content: center; gap: 10px;
+      margin-bottom: 20px; flex-wrap: wrap;
+    }
+    .color-swatch {
+      width: 34px; height: 34px; border-radius: 50%;
+      border: 3px solid transparent; cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: transform 0.1s, border-color 0.1s;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    }
+    .color-swatch.selected { border-color: #333; transform: scale(1.18); }
+
+    .modal-btn-row { display: flex; gap: 10px; }
+    .modal-btn {
+      flex: 1; padding: 13px; border: none; border-radius: 999px;
+      font-family: 'Nunito', sans-serif; font-size: 15px; font-weight: 900;
+      cursor: pointer; -webkit-tap-highlight-color: transparent; transition: transform 0.1s;
+    }
+    .modal-btn:active { transform: scale(0.96); }
+    .modal-btn.cancel  { background: #fff0f5; color: #ff85a1; }
+    .modal-btn.confirm { background: linear-gradient(135deg, var(--pink-accent), #ff85a1); color: white; box-shadow: 0 4px 16px var(--shadow); }
+    .modal-btn.danger  { background: linear-gradient(135deg, #ff4d4d, #ff7070); color: white; box-shadow: 0 4px 16px rgba(255,77,77,0.3); }
+
+    .modal-warning-text { text-align: center; font-size: 14px; font-weight: 700; color: #ff85a1; margin-bottom: 20px; line-height: 1.5; }
+    .modal-warning-name { color: var(--pink-accent); font-size: 18px; display: block; margin-top: 4px; }
+
+    .skeleton-card { background: rgba(255,255,255,0.4); border-radius: 20px; height: 84px; animation: shimmer 1.2s ease-in-out infinite; }
+    @keyframes shimmer { 0%,100%{opacity:0.4} 50%{opacity:0.7} }
   </style>
 </head>
 <body>
 
-  <header>
-    <a href="index.html" class="btn-icon">🏠</a>
-    <h1>🎡 Nuestras Ruletas</h1>
-    <div class="sync-dot" id="syncDot"></div>
-  </header>
-
-  <div id="seccionLista" style="width: 100%;">
-    <div id="listaRuletas">
+  <div id="screenLista">
+    <div class="top-bar">
+      <a class="back-btn" href="index.html">‹</a>
+      <span class="top-title top-title-offset">🎡 Ruletas</span>
+      <div class="sync-dot" id="syncDot"></div>
+    </div>
+    <div class="lista-content">
+      <div class="ruletas-grid" id="ruletasGrid">
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
       </div>
-    <div style="padding: 30px; text-align: center;">
-      <button class="btn-icon" style="width: 60px; height: 60px; margin: 0 auto;" onclick="abrirModalCrear()">➕</button>
-      <p style="margin-top: 10px; color: var(--pink-dark); font-weight: 800; font-size: 14px;">Crear Ruleta</p>
+      <button class="crear-btn" id="btnCrear">✨ Nueva ruleta</button>
     </div>
   </div>
 
-  <div id="seccionJuego">
-    <div style="display: flex; width: 100%; justify-content: space-between; margin-bottom: 20px;">
-      <button class="btn-icon" onclick="volverALista()">⬅️</button>
-      <h2 id="tituloRuleta" style="color: var(--pink-accent);">---</h2>
-      <button class="btn-icon" onclick="abrirModalOpciones()">⚙️</button>
+  <div id="screenRuleta">
+    <div class="top-bar">
+      <button class="back-btn" id="btnVolver">‹</button>
+      <span class="top-title top-title-offset" id="ruletaDetalleTitle">Ruleta</span>
+      <div class="sync-dot" id="syncDotDetalle"></div>
     </div>
-
-    <div class="pointer"></div>
-    <div class="wheel-main" id="wheelCanvas"></div>
-
-    <button class="btn-spin" id="btnSpin">¡GIRAR!</button>
-    <p id="resultadoTexto" style="margin-top: 20px; font-weight: 900; color: var(--pink-accent); font-size: 20px;"></p>
-  </div>
-
-  <div class="modal" id="modalCrear">
-    <div class="modal-content">
-      <h2>Nueva Ruleta</h2>
-      <input type="text" id="nombreRuleta" placeholder="Nombre (ej: ¿Qué cenamos?)">
-      <button class="btn-primary" onclick="crearNuevaRuleta()">Crear Ruleta</button>
-      <p onclick="cerrarModal('modalCrear')" style="margin-top: 15px; color: #888; font-size: 13px;">Cancelar</p>
+    <div class="wheel-section">
+      <div class="pointer-wrap">
+        <div class="pointer"></div>
+        <canvas id="wheel"></canvas>
+      </div>
+      <button class="spin-btn" id="spinBtn">¡Girar!</button>
+      <div class="result-box" id="resultText"></div>
     </div>
-  </div>
-
-  <div class="modal" id="modalOpciones">
-    <div class="modal-content">
-      <h3>Opciones</h3>
-      <div id="listaOpciones" style="max-height: 200px; overflow-y: auto; margin: 15px 0; text-align: left;"></div>
-      <input type="text" id="nuevaOpcionInput" placeholder="Nueva opción...">
-      <button class="btn-primary" onclick="añadirOpcion()">Añadir</button>
-      <button class="btn-primary" style="background: #ccc; margin-top: 10px;" onclick="cerrarModal('modalOpciones')">Cerrar</button>
+    <div class="panel">
+      <h3>Opciones <span class="panel-hint">(pulsa para editar)</span></h3>
+      <div class="entries-list" id="entriesList"></div>
+      <div class="add-row">
+        <input type="text" id="newEntry" placeholder="Añadir opción..." maxlength="24" />
+        <button id="addBtn">+</button>
+      </div>
     </div>
   </div>
 
-  <script>
-    // Aplicar Tema
-    if(localStorage.getItem('theme') === 'blue') document.documentElement.setAttribute('data-theme', 'blue');
-  </script>
+  <div class="overlay" id="overlay">
+    <div class="overlay-card">
+      <div class="overlay-emoji">🎉</div>
+      <div class="overlay-label">¡La ruleta dice...</div>
+      <div class="overlay-result" id="overlayResult"></div>
+    </div>
+    <button class="overlay-close" id="closeOverlay">¡Genial!</button>
+  </div>
+
+  <div class="modal-backdrop" id="modalCrear">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Nueva ruleta ✨</div>
+      <div class="modal-emoji-row" id="emojiRow"></div>
+      <input class="modal-input" id="inputNombre" type="text" placeholder="Nombre de la ruleta..." maxlength="32" />
+      <div class="modal-btn-row">
+        <button class="modal-btn cancel" id="btnCancelarCrear">Cancelar</button>
+        <button class="modal-btn confirm" id="btnConfirmarCrear">Crear 🎡</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="modalEditarOpcion">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Editar opción ✏️</div>
+      <input class="modal-input" id="inputEditarNombre" type="text" placeholder="Nombre..." maxlength="24" />
+      <div class="color-label">Color en la ruleta</div>
+      <div class="color-picker-row" id="colorPickerRow"></div>
+      <div class="modal-btn-row">
+        <button class="modal-btn cancel" id="btnCancelarEditarOpcion">Cancelar</button>
+        <button class="modal-btn confirm" id="btnGuardarOpcion">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="modalBorrar">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-title">¿Eliminar ruleta? 🗑️</div>
+      <div class="modal-warning-text">
+        Vas a eliminar la ruleta
+        <span class="modal-warning-name" id="borrarNombre"></span>
+        y todas sus opciones. Esto no se puede deshacer.
+      </div>
+      <div class="modal-btn-row">
+        <button class="modal-btn cancel" id="btnCancelarBorrar">Cancelar</button>
+        <button class="modal-btn danger" id="btnConfirmarBorrar">Eliminar</button>
+      </div>
+    </div>
+  </div>
 
   <script type="module">
-    import { db, auth } from './firebase.js';
-    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
-    import { collection, doc, onSnapshot, addDoc, updateDoc, deleteDoc, getDoc, query, where } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+    import { db } from './firebase.js';
+    import {
+      collection, doc, onSnapshot, addDoc, deleteDoc,
+      updateDoc, query, orderBy
+    } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
-    let usuarioActual = null;
-    let parejaId = null;
-    let ruletas = [];
-    let ruletaActivaId = null;
-    const syncDot = document.getElementById('syncDot');
+    // ══ PALETA DE COLORES ══
+    const PALETTE = [
+      '#ff4d79','#ff85a1','#ffb347','#ff6b35',
+      '#6bcb77','#4d9de0','#9b5de5','#f15bb5',
+      '#00bbf9','#fee440','#e84393','#3a86ff',
+      '#e63368','#f7c59f','#43aa8b','#577590'
+    ];
 
-    // 1. Verificar Usuario y Pareja
-    onAuthStateChanged(auth, async (user) => {
-      if (!user) { window.location.href = "auth.html"; return; }
-      usuarioActual = user;
-      
-      const userDoc = await getDoc(doc(db, "usuarios", user.uid));
-      if (userDoc.exists()) {
-        parejaId = userDoc.data().parejaId;
-        escucharRuletas();
-      }
-    });
+    const DEFAULT_COLORS = [
+      '#ff85a1','#ffb3c6','#ff4d79','#ffc2d4',
+      '#ff6b95','#ffb347','#e63368','#9b5de5'
+    ];
 
-    // 2. Escuchar Ruletas de la Pareja (Sincronización Real)
-    function escucharRuletas() {
-      const ids = [usuarioActual.uid];
-      if (parejaId) ids.push(parejaId);
+    // ══ ESTADO GLOBAL ══
+    const RULETAS_COL = collection(db, 'ruletas');
+    let ruletasCache = [];
+    let ruletaActual = null;
+    let unsub = null;
+    let entries = []; // [{ nombre, color }]
+    let spinning = false;
+    let currentAngle = 0;
 
-      const q = query(collection(db, "ruletas"), where("creador", "in", ids));
-      onSnapshot(q, (snapshot) => {
-        syncDot.classList.add('active');
-        ruletas = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-        renderLista();
-        if (ruletaActivaId) actualizarRuletaVisual();
-        setTimeout(() => syncDot.classList.remove('active'), 1000);
-      });
-    }
+    // ══ CANVAS ══
+    const canvas = document.getElementById('wheel');
+    const ctx    = canvas.getContext('2d');
+    const SIZE   = 600;
+    canvas.width = canvas.height = SIZE;
 
-    // 3. Renderizar Lista
-    function renderLista() {
-      const lista = document.getElementById('listaRuletas');
-      lista.innerHTML = '';
-      ruletas.forEach(r => {
-        const card = document.createElement('div');
-        card.className = 'card-ruleta';
-        card.innerHTML = `
-          <button class="btn-del" onclick="event.stopPropagation(); borrarRuleta('${r.id}')">✕</button>
-          <div class="emoji">🎡</div>
-          <div class="nombre">${r.nombre}</div>
-        `;
-        card.onclick = () => abrirRuleta(r.id);
-        lista.appendChild(card);
-      });
-    }
-
-    // 4. Lógica de Juego
-    window.abrirRuleta = (id) => {
-      ruletaActivaId = id;
-      document.getElementById('seccionLista').style.display = 'none';
-      document.getElementById('seccionJuego').style.display = 'flex';
-      actualizarRuletaVisual();
-    };
-
-    window.volverALista = () => {
-      ruletaActivaId = null;
-      document.getElementById('seccionLista').style.display = 'block';
-      document.getElementById('seccionJuego').style.display = 'none';
-    };
-
-    function actualizarRuletaVisual() {
-      const r = ruletas.find(x => x.id === ruletaActivaId);
-      if (!r) return;
-      document.getElementById('tituloRuleta').textContent = r.nombre;
-      const canvas = document.getElementById('wheelCanvas');
-      canvas.innerHTML = '';
-      
-      const ops = r.opciones || [];
-      if (ops.length === 0) {
-        canvas.innerHTML = '<div style="padding: 100px; font-size: 12px; color: #ccc;">Añade opciones en ajustes</div>';
+    function drawWheel(angle) {
+      const n = entries.length;
+      ctx.clearRect(0, 0, SIZE, SIZE);
+      if (n === 0) {
+        ctx.fillStyle = '#ffb3c6';
+        ctx.beginPath();
+        ctx.arc(SIZE/2, SIZE/2, SIZE/2 - 4, 0, Math.PI*2);
+        ctx.fill();
+        ctx.fillStyle = 'white';
+        ctx.font = 'bold 26px Nunito';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('Añade opciones', SIZE/2, SIZE/2);
         return;
       }
+      const slice = (Math.PI * 2) / n;
+      for (let i = 0; i < n; i++) {
+        const start = angle + i * slice;
+        const end   = start + slice;
+        const mid   = start + slice / 2;
+        ctx.beginPath();
+        ctx.moveTo(SIZE/2, SIZE/2);
+        ctx.arc(SIZE/2, SIZE/2, SIZE/2 - 4, start, end);
+        ctx.closePath();
+        ctx.fillStyle = entries[i].color || DEFAULT_COLORS[i % DEFAULT_COLORS.length];
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.save();
+        ctx.translate(SIZE/2, SIZE/2);
+        ctx.rotate(mid);
+        ctx.textAlign = 'right';
+        ctx.fillStyle = 'white';
+        ctx.shadowColor = 'rgba(0,0,0,0.25)';
+        ctx.shadowBlur = 4;
+        ctx.font = `bold ${Math.max(16, Math.min(26, 260 / n))}px Nunito`;
+        ctx.textBaseline = 'middle';
+        ctx.fillText(entries[i].nombre, SIZE/2 - 24, 0);
+        ctx.restore();
+      }
+      ctx.beginPath();
+      ctx.arc(SIZE/2, SIZE/2, 28, 0, Math.PI*2);
+      ctx.fillStyle = 'white';
+      ctx.shadowColor = 'rgba(255,77,121,0.3)';
+      ctx.shadowBlur = 12;
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = '#ff4d79';
+      ctx.font = 'bold 22px Nunito';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('💖', SIZE/2, SIZE/2);
+    }
 
-      const angleStep = 360 / ops.length;
-      ops.forEach((op, i) => {
-        const slice = document.createElement('div');
-        slice.style.position = 'absolute';
-        slice.style.width = '100%'; slice.style.height = '100%';
-        slice.style.clipPath = ops.length === 1 ? 'none' : `polygon(50% 50%, 50% 0%, ${50 + 50 * Math.tan(angleStep/2 * Math.PI/180)}% 0%)`;
-        slice.style.background = i % 2 === 0 ? 'var(--pink-mid)' : 'var(--pink-bg)';
-        slice.style.transformOrigin = '50% 50%';
-        slice.style.transform = `rotate(${i * angleStep}deg)`;
+    function getWinner(angle) {
+      const n = entries.length;
+      const slice = (Math.PI * 2) / n;
+      const rel = ((-Math.PI / 2 - angle) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+      return entries[Math.floor(rel / slice) % n].nombre;
+    }
+
+    // ── Spin ──
+    document.getElementById('spinBtn').addEventListener('click', () => {
+      if (spinning || entries.length === 0) return;
+      spinning = true;
+      document.getElementById('spinBtn').disabled = true;
+      document.getElementById('resultText').textContent = '';
+      const targetAngle = currentAngle + (5 + Math.floor(Math.random()*4)) * Math.PI*2 + Math.random()*Math.PI*2;
+      const duration    = 4000 + Math.random() * 1200;
+      const start       = performance.now();
+      const startAngle  = currentAngle;
+      const easeOut     = t => 1 - Math.pow(1 - t, 4);
+      function animate(now) {
+        const t = Math.min((now - start) / duration, 1);
+        currentAngle = startAngle + (targetAngle - startAngle) * easeOut(t);
+        drawWheel(currentAngle);
+        if (t < 1) { requestAnimationFrame(animate); return; }
+        currentAngle = targetAngle % (Math.PI * 2);
+        spinning = false;
+        document.getElementById('spinBtn').disabled = false;
+        document.getElementById('overlayResult').textContent = getWinner(currentAngle);
+        document.getElementById('overlay').classList.add('show');
+      }
+      requestAnimationFrame(animate);
+    });
+
+    document.getElementById('closeOverlay').addEventListener('click', () => {
+      document.getElementById('overlay').classList.remove('show');
+    });
+
+    // ── Render chips (CORREGIDO) ──
+    function renderEntries() {
+      const list = document.getElementById('entriesList');
+      list.innerHTML = '';
+      entries.forEach((e, i) => {
+        const color = e.color || DEFAULT_COLORS[i % DEFAULT_COLORS.length];
+        const chip = document.createElement('div');
+        chip.className = 'entry-chip';
+        chip.style.background = color;
+        chip.innerHTML = `<span class="chip-name">${e.nombre}</span><button class="chip-delete">×</button>`;
         
-        const txt = document.createElement('span');
-        txt.textContent = op;
-        txt.style.position = 'absolute';
-        txt.style.top = '20px'; txt.style.left = '50%';
-        txt.style.transform = 'translateX(-50%)';
-        txt.style.fontSize = '12px'; txt.style.fontWeight = '800';
-        txt.style.color = 'var(--pink-accent)';
+        // Abre el editor al pulsar el chip (no el botón de borrar)
+        chip.addEventListener('click', (ev) => {
+          if (ev.target.classList.contains('chip-delete')) return;
+          abrirEditarOpcion(i);
+        });
         
-        slice.appendChild(txt);
-        canvas.appendChild(slice);
+        chip.querySelector('.chip-delete').addEventListener('click', (ev) => {
+          ev.stopPropagation();
+          removeEntry(i);
+        });
+        list.appendChild(chip);
+      });
+      drawWheel(currentAngle);
+    }
+
+    // ══ MODAL EDITAR OPCIÓN ══
+    let editandoIdx   = null;
+    let editandoColor = null;
+
+    function buildColorPicker() {
+      const row = document.getElementById('colorPickerRow');
+      row.innerHTML = '';
+      PALETTE.forEach(c => {
+        const sw = document.createElement('div');
+        sw.className = 'color-swatch' + (c === editandoColor ? ' selected' : '');
+        sw.style.background = c;
+        sw.addEventListener('click', () => { editandoColor = c; buildColorPicker(); });
+        row.appendChild(sw);
       });
     }
 
-    // 5. Girar
-    document.getElementById('btnSpin').onclick = () => {
-      const r = ruletas.find(x => x.id === ruletaActivaId);
-      if (!r || !r.opciones.length) return;
-      
-      const randomDeg = 1800 + Math.random() * 360;
-      const wheel = document.getElementById('wheelCanvas');
-      wheel.style.transform = `rotate(${randomDeg}deg)`;
-      
-      document.getElementById('resultadoTexto').textContent = "Girando...";
-      
-      setTimeout(() => {
-        const actualDeg = randomDeg % 360;
-        const index = Math.floor(((360 - actualDeg) % 360) / (360 / r.opciones.length));
-        document.getElementById('resultadoTexto').textContent = "¡" + r.opciones[index] + "!";
-      }, 4000);
-    };
+    function abrirEditarOpcion(idx) {
+      editandoIdx   = idx;
+      editandoColor = entries[idx].color || DEFAULT_COLORS[idx % DEFAULT_COLORS.length];
+      document.getElementById('inputEditarNombre').value = entries[idx].nombre;
+      buildColorPicker();
+      document.getElementById('modalEditarOpcion').classList.add('show');
+      setTimeout(() => document.getElementById('inputEditarNombre').focus(), 300);
+    }
 
-    // 6. Operaciones Firebase
-    window.crearNuevaRuleta = async () => {
-      const nombre = document.getElementById('nombreRuleta').value;
-      if (!nombre) return;
-      await addDoc(collection(db, "ruletas"), {
-        nombre, creador: usuarioActual.uid, opciones: ["Opción A", "Opción B"], fecha: Date.now()
+    document.getElementById('btnCancelarEditarOpcion').addEventListener('click', () => {
+      document.getElementById('modalEditarOpcion').classList.remove('show');
+    });
+    document.getElementById('modalEditarOpcion').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) e.currentTarget.classList.remove('show');
+    });
+    document.getElementById('btnGuardarOpcion').addEventListener('click', guardarOpcion);
+    document.getElementById('inputEditarNombre').addEventListener('keydown', e => {
+      if (e.key === 'Enter') guardarOpcion();
+    });
+
+    async function guardarOpcion() {
+      const nombre = document.getElementById('inputEditarNombre').value.trim();
+      if (!nombre || editandoIdx === null || !ruletaActual) return;
+      
+      const nuevas = entries.map((e, i) =>
+        i === editandoIdx ? { ...e, nombre, color: editandoColor } : e
+      );
+
+      document.getElementById('modalEditarOpcion').classList.remove('show');
+      document.getElementById('syncDotDetalle').className = 'sync-dot syncing';
+      
+      try {
+        await updateDoc(doc(db, 'ruletas', ruletaActual.id), { opciones: nuevas });
+        editandoIdx = null;
+      } catch (err) {
+        console.error("Error al guardar:", err);
+        document.getElementById('syncDotDetalle').className = 'sync-dot connected';
+      }
+    }
+
+    // ══ AÑADIR / ELIMINAR OPCIÓN ══
+    async function addEntry() {
+      const input = document.getElementById('newEntry');
+      const val = input.value.trim();
+      if (!val || !ruletaActual) return;
+      input.value = '';
+      const color = DEFAULT_COLORS[entries.length % DEFAULT_COLORS.length];
+      const nuevas = [...entries, { nombre: val, color }];
+      document.getElementById('syncDotDetalle').className = 'sync-dot syncing';
+      await updateDoc(doc(db, 'ruletas', ruletaActual.id), { opciones: nuevas });
+    }
+
+    async function removeEntry(idx) {
+      if (!ruletaActual) return;
+      const nuevas = entries.filter((_, i) => i !== idx);
+      document.getElementById('syncDotDetalle').className = 'sync-dot syncing';
+      await updateDoc(doc(db, 'ruletas', ruletaActual.id), { opciones: nuevas });
+    }
+
+    document.getElementById('addBtn').addEventListener('click', addEntry);
+    document.getElementById('newEntry').addEventListener('keydown', e => {
+      if (e.key === 'Enter') addEntry();
+    });
+
+    // ══ FIRESTORE: DETALLE ══
+    const syncDotDetalle = document.getElementById('syncDotDetalle');
+
+    function iniciarListenerRuleta(id) {
+      if (unsub) unsub();
+      const rDoc = doc(db, 'ruletas', id);
+      syncDotDetalle.className = 'sync-dot syncing';
+      unsub = onSnapshot(rDoc, snap => {
+        syncDotDetalle.className = 'sync-dot connected';
+        if (snap.exists()) {
+          ruletaActual = { id: snap.id, ...snap.data() };
+          const raw = ruletaActual.opciones || [];
+          entries = raw.map((o, i) =>
+            typeof o === 'string'
+              ? { nombre: o, color: DEFAULT_COLORS[i % DEFAULT_COLORS.length] }
+              : o
+          );
+        } else {
+          entries = [];
+        }
+        renderEntries();
+      }, () => { syncDotDetalle.className = 'sync-dot'; });
+    }
+
+    // ══ NAVEGACIÓN ══
+    function abrirRuleta(id) {
+      const r = ruletasCache.find(x => x.id === id);
+      if (!r) return;
+      ruletaActual = r;
+      currentAngle = 0;
+      document.getElementById('screenLista').style.display = 'none';
+      const sr = document.getElementById('screenRuleta');
+      sr.style.display = 'flex';
+      sr.classList.add('active');
+      document.getElementById('ruletaDetalleTitle').textContent = r.emoji + ' ' + r.nombre;
+      document.getElementById('resultText').textContent = '';
+      iniciarListenerRuleta(id);
+    }
+
+    document.getElementById('btnVolver').addEventListener('click', () => {
+      if (unsub) { unsub(); unsub = null; }
+      ruletaActual = null; spinning = false; entries = [];
+      document.getElementById('screenRuleta').style.display = 'none';
+      document.getElementById('screenRuleta').classList.remove('active');
+      document.getElementById('screenLista').style.display = 'flex';
+    });
+
+    // ══ FIRESTORE: LISTA ══
+    const syncDot = document.getElementById('syncDot');
+
+    onSnapshot(query(RULETAS_COL, orderBy('creadaEn', 'asc')), snap => {
+      syncDot.className = 'sync-dot connected';
+      ruletasCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderLista();
+    }, () => { syncDot.className = 'sync-dot'; });
+
+    function renderLista() {
+      const grid = document.getElementById('ruletasGrid');
+      grid.innerHTML = '';
+      if (ruletasCache.length === 0) {
+        grid.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-emoji">🎡</div>
+            <p>Aún no hay ruletas.<br>¡Crea la primera!</p>
+          </div>`;
+        return;
+      }
+      ruletasCache.forEach(r => {
+        const card = document.createElement('div');
+        card.className = 'ruleta-card';
+        const count = (r.opciones || []).length;
+        card.innerHTML = `
+          <div class="ruleta-card-icon">${r.emoji || '🎡'}</div>
+          <div class="ruleta-card-info">
+            <div class="ruleta-card-name">${r.nombre}</div>
+            <div class="ruleta-card-count">${count} opción${count !== 1 ? 'es' : ''}</div>
+          </div>
+          <span class="ruleta-card-arrow">›</span>
+          <button class="ruleta-card-delete">🗑️</button>
+        `;
+        card.addEventListener('click', (e) => {
+          if (e.target.closest('.ruleta-card-delete')) return;
+          abrirRuleta(r.id);
+        });
+        card.querySelector('.ruleta-card-delete').addEventListener('click', (e) => {
+          e.stopPropagation();
+          pedirConfirmacionBorrar(r.id, r.nombre);
+        });
+        grid.appendChild(card);
       });
-      cerrarModal('modalCrear');
-    };
+    }
 
-    window.borrarRuleta = async (id) => {
-      if (confirm("¿Borrar esta ruleta?")) await deleteDoc(doc(db, "ruletas", id));
-    };
+    // ══ MODAL CREAR RULETA ══
+    const EMOJIS = ['🍕','👗','🎬','🎮','🏖️','📚','🍣','💪','🎨','🌍'];
+    let emojiSeleccionado = EMOJIS[0];
 
-    window.añadirOpcion = async () => {
-      const r = ruletas.find(x => x.id === ruletaActivaId);
-      const nueva = document.getElementById('nuevaOpcionInput').value;
-      if (!nueva) return;
-      const nuevasOpciones = [...(r.opciones || []), nueva];
-      await updateDoc(doc(db, "ruletas", ruletaActivaId), { opciones: nuevasOpciones });
-      document.getElementById('nuevaOpcionInput').value = '';
-      abrirModalOpciones(); // Refresca lista modal
-    };
-
-    window.abrirModalOpciones = () => {
-      const r = ruletas.find(x => x.id === ruletaActivaId);
-      const lista = document.getElementById('listaOpciones');
-      lista.innerHTML = '';
-      r.opciones.forEach((op, i) => {
-        lista.innerHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-          <span>${op}</span>
-          <button onclick="borrarOpcion(${i})" style="color:red; border:none; background:none;">✕</button>
-        </div>`;
+    function renderEmojiRow() {
+      const row = document.getElementById('emojiRow');
+      row.innerHTML = '';
+      EMOJIS.forEach(e => {
+        const btn = document.createElement('button');
+        btn.className = 'emoji-opt' + (e === emojiSeleccionado ? ' selected' : '');
+        btn.textContent = e;
+        btn.addEventListener('click', () => { emojiSeleccionado = e; renderEmojiRow(); });
+        row.appendChild(btn);
       });
-      document.getElementById('modalOpciones').classList.add('show');
-    };
+    }
 
-    window.borrarOpcion = async (index) => {
-      const r = ruletas.find(x => x.id === ruletaActivaId);
-      const nuevasOpciones = r.opciones.filter((_, i) => i !== index);
-      await updateDoc(doc(db, "ruletas", ruletaActivaId), { opciones: nuevasOpciones });
-      abrirModalOpciones();
-    };
+    document.getElementById('btnCrear').addEventListener('click', () => {
+      emojiSeleccionado = EMOJIS[0];
+      renderEmojiRow();
+      document.getElementById('inputNombre').value = '';
+      document.getElementById('modalCrear').classList.add('show');
+      setTimeout(() => document.getElementById('inputNombre').focus(), 300);
+    });
+    document.getElementById('btnCancelarCrear').addEventListener('click', () => {
+      document.getElementById('modalCrear').classList.remove('show');
+    });
+    document.getElementById('modalCrear').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) e.currentTarget.classList.remove('show');
+    });
+    document.getElementById('btnConfirmarCrear').addEventListener('click', crearRuleta);
+    document.getElementById('inputNombre').addEventListener('keydown', e => {
+      if (e.key === 'Enter') crearRuleta();
+    });
 
-    // Auxiliares modales
-    window.abrirModalCrear = () => document.getElementById('modalCrear').classList.add('show');
-    window.cerrarModal = (id) => document.getElementById(id).classList.remove('show');
+    async function crearRuleta() {
+      const nombre = document.getElementById('inputNombre').value.trim();
+      if (!nombre) { document.getElementById('inputNombre').focus(); return; }
+      document.getElementById('modalCrear').classList.remove('show');
+      syncDot.className = 'sync-dot syncing';
+      await addDoc(RULETAS_COL, { nombre, emoji: emojiSeleccionado, opciones: [], creadaEn: Date.now() });
+    }
+
+    // ══ MODAL BORRAR RULETA ══
+    let ruletaABorrarId = null;
+
+    function pedirConfirmacionBorrar(id, nombre) {
+      ruletaABorrarId = id;
+      document.getElementById('borrarNombre').textContent = nombre;
+      document.getElementById('modalBorrar').classList.add('show');
+    }
+    document.getElementById('btnCancelarBorrar').addEventListener('click', () => {
+      document.getElementById('modalBorrar').classList.remove('show');
+      ruletaABorrarId = null;
+    });
+    document.getElementById('modalBorrar').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) { e.currentTarget.classList.remove('show'); ruletaABorrarId = null; }
+    });
+    document.getElementById('btnConfirmarBorrar').addEventListener('click', async () => {
+      if (!ruletaABorrarId) return;
+      document.getElementById('modalBorrar').classList.remove('show');
+      syncDot.className = 'sync-dot syncing';
+      await deleteDoc(doc(db, 'ruletas', ruletaABorrarId));
+      ruletaABorrarId = null;
+    });
+
+    drawWheel(0);
   </script>
 </body>
 </html>

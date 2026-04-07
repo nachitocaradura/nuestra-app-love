@@ -5,147 +5,191 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>💕 Nuestra App</title>
   
-  <link rel="manifest" href="manifest.json?v=2">
+  <link rel="manifest" href="manifest.json?v=3">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="apple-touch-icon" href="icono-app-192.png?v=2">
+  <link rel="apple-touch-icon" href="icono-app-192.png?v=3">
 
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
   
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
+    /* VARIABLES DE TEMA (Rosa por defecto) */
     :root {
-      --pink-bg: #ffd6e0;
-      --pink-mid: #ffb3c6;
-      --pink-dark: #ff85a1;
-      --pink-accent: #ff4d79;
-      --white: #fff;
+      --bg: #ffd6e0;
+      --mid: #ffb3c6;
+      --dark: #ff85a1;
+      --accent: #ff4d79;
       --shadow: rgba(255, 77, 121, 0.25);
     }
 
+    /* TEMA AZUL */
+    [data-theme="blue"] {
+      --bg: #d6eaff;
+      --mid: #b3d9ff;
+      --dark: #85bfff;
+      --accent: #4d94ff;
+      --shadow: rgba(77, 148, 255, 0.25);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; transition: background 0.3s ease, color 0.3s ease; }
+
     body {
       font-family: 'Nunito', sans-serif;
-      background: var(--pink-bg);
+      background: var(--bg);
       min-height: 100dvh;
       display: flex;
       flex-direction: column;
       overflow: hidden;
+    }
+
+    /* Barra Superior del Sistema */
+    .system-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 40px 20px 10px; /* Más espacio arriba para el notch del iPhone */
       position: relative;
+      z-index: 10;
     }
 
-    /* Fondo decorativo */
-    body::before, body::after {
-      content: ''; position: fixed; border-radius: 50%; filter: blur(60px); z-index: 0; pointer-events: none;
-    }
-    body::before { width: 300px; height: 300px; background: radial-gradient(circle, #ffb3c6aa, transparent); top: -80px; right: -80px; }
-    body::after { width: 250px; height: 250px; background: radial-gradient(circle, #ffc2d4aa, transparent); bottom: -60px; left: -60px; }
-
-    /* Barra superior */
-    .status-bar {
-      position: relative; z-index: 1;
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 14px 22px 6px; font-size: 12px; font-weight: 700; color: var(--pink-accent);
+    .top-btn {
+      width: 45px; height: 45px;
+      background: white;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+      box-shadow: 0 4px 10px var(--shadow);
+      text-decoration: none;
+      border: none; cursor: pointer;
     }
 
-    /* Cabecera */
-    .header {
-      position: relative; z-index: 1; text-align: center; padding: 10px 20px 20px;
-    }
-    .header h1 { font-size: 26px; font-weight: 900; color: var(--pink-accent); letter-spacing: -0.5px; }
-    .header p { font-size: 13px; color: #ff85a1; margin-top: 2px; }
+    /* Cabecera Principal */
+    .header { text-align: center; padding: 20px; }
+    .header h1 { font-size: 28px; font-weight: 900; color: var(--accent); }
+    .header p { font-size: 14px; color: var(--dark); }
 
-    /* Grid de Iconos */
+    /* Grid de Aplicaciones (Sin el icono de perfil) */
     .grid {
-      position: relative; z-index: 1; flex: 1;
       display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
-      padding: 10px 24px; align-content: start;
+      padding: 30px 24px; flex: 1; align-content: start;
     }
 
     .app-icon {
-      display: flex; flex-direction: column; align-items: center; gap: 7px;
-      cursor: pointer; text-decoration: none; -webkit-tap-highlight-color: transparent;
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      text-decoration: none; -webkit-tap-highlight-color: transparent;
     }
-    .app-icon .icon-wrap {
-      width: 68px; height: 68px; border-radius: 20px;
-      background: linear-gradient(145deg, #fff0f5, #ffe0eb);
-      box-shadow: 0 6px 20px var(--shadow), 0 2px 6px rgba(255,77,121,0.1);
+    .icon-box {
+      width: 70px; height: 70px; border-radius: 22px;
+      background: white;
+      box-shadow: 0 8px 20px var(--shadow);
       display: flex; align-items: center; justify-content: center;
-      font-size: 34px; transition: transform 0.15s ease;
+      font-size: 35px; transition: 0.2s;
     }
-    .app-icon:active .icon-wrap { transform: scale(0.91); }
-    .app-icon span { font-size: 12px; font-weight: 700; color: #cc3366; text-align: center; }
+    .app-icon:active .icon-box { transform: scale(0.9); }
+    .app-icon span { font-size: 12px; font-weight: 800; color: var(--accent); }
 
-    /* Corazones animados */
-    .hearts { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
-    .heart { position: absolute; font-size: 16px; opacity: 0; animation: floatUp 6s ease-in infinite; }
+    /* Ventana de Ajustes (Modal) */
+    #settingsModal {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+      display: none; align-items: center; justify-content: center; z-index: 100;
+    }
+    .modal-content {
+      background: white; width: 85%; max-width: 350px;
+      border-radius: 30px; padding: 25px;
+      text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+    .modal-content h2 { color: var(--accent); margin-bottom: 20px; }
+    
+    .theme-options { display: flex; justify-content: space-around; margin-top: 15px; }
+    .theme-btn {
+      padding: 15px; border-radius: 15px; border: 2px solid #eee;
+      cursor: pointer; width: 45%; font-weight: bold;
+    }
+    .btn-pink { background: #ffd6e0; color: #ff4d79; }
+    .btn-blue { background: #d6eaff; color: #4d94ff; }
+
+    .close-btn { 
+      margin-top: 25px; padding: 10px 20px; border-radius: 20px;
+      background: var(--accent); color: white; border: none; font-weight: bold;
+    }
+
+    /* Corazones Flotantes */
+    .heart { position: absolute; pointer-events: none; opacity: 0; animation: floatUp 6s infinite; }
     @keyframes floatUp {
-      0% { opacity: 0; transform: translateY(0) scale(0.8); }
-      10% { opacity: 0.6; }
-      100% { opacity: 0; transform: translateY(-110vh) scale(1.1); }
+      0% { opacity: 0; transform: translateY(0) scale(0.5); }
+      20% { opacity: 0.5; }
+      100% { opacity: 0; transform: translateY(-100vh) scale(1.2); }
     }
-
-    .bottom-bar { position: relative; z-index: 1; height: 22px; display: flex; justify-content: center; margin-bottom: 8px; }
-    .home-indicator { width: 120px; height: 5px; background: var(--pink-dark); border-radius: 99px; opacity: 0.5; }
   </style>
 </head>
-<body>
+<body id="mainBody">
 
-  <div class="hearts" id="hearts"></div>
-
-  <div class="status-bar">
-    <span id="clock">--:--</span>
-    <span>💕</span>
+  <div class="system-bar">
+    <a href="perfil.html" class="top-btn" id="userInitial">👤</a>
+    <button class="top-btn" onclick="openSettings()">⚙️</button>
   </div>
 
   <div class="header">
-    <h1 id="welcomeText">Cargando...</h1>
-    <p>Nuestro espacio favorito</p>
+    <h1 id="welcomeText">Hola... 💕</h1>
+    <p>Un lugar para nosotros dos</p>
   </div>
 
   <div class="grid">
-    <a class="app-icon" href="ruleta.html">
-      <div class="icon-wrap">🎡</div>
+    <a href="ruleta.html" class="app-icon">
+      <div class="icon-box">🎡</div>
       <span>Ruleta</span>
     </a>
-
-    <a class="app-icon" href="calendario.html">
-      <div class="icon-wrap">📅</div>
+    <a href="calendario.html" class="app-icon">
+      <div class="icon-box">📅</div>
       <span>Calendario</span>
     </a>
+    </div>
 
-    <a class="app-icon" href="perfil.html">
-      <div class="icon-wrap">👤</div>
-      <span>Perfil</span>
-    </a>
-  </div>
-
-  <div class="bottom-bar">
-    <div class="home-indicator"></div>
+  <div id="settingsModal">
+    <div class="modal-content">
+      <h2>Personalizar</h2>
+      <p>Elige tu color favorito:</p>
+      <div class="theme-options">
+        <div class="theme-btn btn-pink" onclick="setTheme('pink')">Rosa</div>
+        <div class="theme-btn btn-blue" onclick="setTheme('blue')">Azul</div>
+      </div>
+      <button class="close-btn" onclick="closeSettings()">Cerrar</button>
+    </div>
   </div>
 
   <script>
-    // Reloj dinámico
-    function updateClock() {
-      const now = new Date();
-      document.getElementById('clock').textContent = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+    // --- LÓGICA DE TEMAS ---
+    function setTheme(theme) {
+      if(theme === 'blue') {
+        document.documentElement.setAttribute('data-theme', 'blue');
+        localStorage.setItem('theme', 'blue');
+      } else {
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.setItem('theme', 'pink');
+      }
     }
-    updateClock();
-    setInterval(updateClock, 10000);
 
-    // Generador de corazones
-    const heartsEl = document.getElementById('hearts');
+    // Cargar tema guardado al abrir
+    const savedTheme = localStorage.getItem('theme');
+    if(savedTheme === 'blue') setTheme('blue');
+
+    // --- LÓGICA DE AJUSTES ---
+    function openSettings() { document.getElementById('settingsModal').style.display = 'flex'; }
+    function closeSettings() { document.getElementById('settingsModal').style.display = 'none'; }
+
+    // --- CORAZONES Y RELOJ ---
     const emojis = ['💕','💗','💖','🌸','✨'];
-    for (let i = 0; i < 12; i++) {
+    setInterval(() => {
       const h = document.createElement('span');
       h.className = 'heart';
       h.textContent = emojis[Math.floor(Math.random() * emojis.length)];
-      h.style.left = (Math.random() * 100) + '%';
-      h.style.bottom = '-30px';
-      h.style.animationDelay = (Math.random() * 6) + 's';
-      heartsEl.appendChild(h);
-    }
+      h.style.left = Math.random() * 100 + 'vw';
+      h.style.bottom = '-5vh';
+      h.style.fontSize = (Math.random() * 20 + 10) + 'px';
+      document.body.appendChild(h);
+      setTimeout(() => h.remove(), 6000);
+    }, 1000);
   </script>
 
   <script type="module">
@@ -158,6 +202,10 @@
       } else {
         const nombre = user.displayName ? user.displayName.split(' ')[0] : "Amor";
         document.getElementById('welcomeText').textContent = "¡Hola, " + nombre + "! 💕";
+        // Si tiene foto de perfil en Google, la ponemos en el circulito
+        if(user.photoURL) {
+          document.getElementById('userInitial').innerHTML = `<img src="${user.photoURL}" style="width:100%; border-radius:50%">`;
+        }
       }
     });
   </script>

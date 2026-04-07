@@ -9,14 +9,21 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     :root {
-      
-      --pink-bg: #ffd6e0;
-      --pink-mid: #ffb3c6;
-      --pink-dark: #ff85a1;
-      --pink-accent: #ff4d79;
-      --white: #fff;
-      --shadow: rgba(255, 77, 121, 0.25);
-    }
+  --pink-bg: #ffd6e0;
+  --pink-mid: #ffb3c6;
+  --pink-dark: #ff85a1;
+  --pink-accent: #ff4d79;
+  --shadow: rgba(255, 77, 121, 0.25);
+}
+
+[data-theme="blue"] {
+  --pink-bg: #d6eaff;
+  --pink-mid: #b3d9ff;
+  --pink-dark: #85bfff;
+  --pink-accent: #4d94ff;
+  --shadow: rgba(77, 148, 255, 0.25);
+}
+
 
     body {
       font-family: 'Nunito', sans-serif;
@@ -365,6 +372,7 @@
     .skeleton-card { background: rgba(255,255,255,0.4); border-radius: 20px; height: 84px; animation: shimmer 1.2s ease-in-out infinite; }
     @keyframes shimmer { 0%,100%{opacity:0.4} 50%{opacity:0.7} }
   </style>
+  <script src="global.js"></script>
 </head>
 <body>
 

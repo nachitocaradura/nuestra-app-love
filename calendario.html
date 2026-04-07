@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>📅 Calendario Pro</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --pink-bg: #ffd6e0;
+      --pink-mid: #ffb3c6;
+      --pink-dark: #ff85a1;
+      --pink-accent: #ff4d79;
+      --white: #fff;
+      --shadow: rgba(255, 77, 121, 0.25);
+    }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--pink-bg);
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    body::before, body::after {
+      content: ''; position: fixed; border-radius: 50%; filter: blur(60px); z-index: 0; pointer-events: none;
+    }
+    body::before { width: 300px; height: 300px; background: radial-gradient(circle, #ffb3c6aa, transparent); top: -80px; right: -80px; }
+    body::after { width: 250px; height: 250px; background: radial-gradient(circle, #ffc2d4aa, transparent); bottom: -60px; left: -60px; }
+
+    .top-bar { width: 100%; display: flex; align-items: center; padding: 14px 18px 6px; position: relative; z-index: 2; }
+    .back-btn {
+      text-decoration: none; font-size: 20px; background: rgba(255,255,255,0.6);
+      border-radius: 12px; padding: 6px 10px; color: var(--pink-accent); font-weight: 900;
+      box-shadow: 0 2px 8px var(--shadow); cursor: pointer; border: none;
+    }
+
+    .calendar-card {
+      width: calc(100% - 32px); max-width: 420px;
+      background: rgba(255, 255, 255, 0.55); backdrop-filter: blur(10px);
+      border-radius: 30px; padding: 20px; margin-top: 10px;
+      box-shadow: 0 10px 30px var(--shadow); position: relative; z-index: 1;
+    }
+
+    .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    
+    /* El título ahora es clickable */
+    .current-month {
+      font-size: 20px; font-weight: 900; color: var(--pink-accent);
+      cursor: pointer; padding: 5px 10px; border-radius: 12px;
+      transition: background 0.2s;
+    }
+    .current-month:active { background: rgba(255, 77, 121, 0.1); }
+
+    .nav-btns { display: flex; gap: 8px; }
+    .nav-btn {
+      background: var(--white); border: none; width: 36px; height: 36px;
+      border-radius: 12px; color: var(--pink-accent); font-size: 18px;
+      font-weight: 900; cursor: pointer; box-shadow: 0 3px 10px rgba(255, 77, 121, 0.15);
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
+    .weekday { text-align: center; font-size: 12px; font-weight: 900; color: var(--pink-dark); padding-bottom: 10px; }
+    .day {
+      aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+      font-size: 15px; font-weight: 700; color: #cc3366; border-radius: 14px;
+    }
+    .day.today { background: var(--pink-accent); color: white; box-shadow: 0 4px 12px var(--shadow); font-weight: 900; }
+    .day.empty { opacity: 0; }
+
+    /* ── MODAL SELECTOR (Carrusel) ── */
+    .modal-backdrop {
+      display: none; position: fixed; inset: 0; background: rgba(255, 180, 200, 0.4);
+      backdrop-filter: blur(6px); z-index: 200; align-items: flex-end;
+    }
+    .modal-backdrop.show { display: flex; }
+    .modal-sheet {
+      background: white; border-radius: 28px 28px 0 0; padding: 20px 24px 40px;
+      width: 100%; animation: slideUp 0.3s cubic-bezier(0.34, 1.3, 0.64, 1);
+    }
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+    .picker-container {
+      display: flex; flex-direction: column; align-items: center; gap: 20px;
+    }
+    
+    /* Estilo del "Carrusel" horizontal */
+    .wheel-wrapper {
+      width: 100%; overflow-x: auto; display: flex; gap: 15px;
+      padding: 20px 0; scroll-snap-type: x mandatory;
+      scrollbar-width: none; /* Ocultar scroll en Firefox */
+    }
+    .wheel-wrapper::-webkit-scrollbar { display: none; } /* Ocultar scroll en Chrome/Safari */
+
+    .wheel-item {
+      flex: 0 0 120px; text-align: center; font-size: 18px; font-weight: 900;
+      color: var(--pink-mid); scroll-snap-align: center; transition: all 0.3s;
+      cursor: pointer;
+    }
+    .wheel-item.selected { color: var(--pink-accent); transform: scale(1.3); }
+
+    .modal-btn-confirm {
+      width: 100%; padding: 15px; border: none; border-radius: 999px;
+      background: linear-gradient(135deg, var(--pink-accent), #ff85a1);
+      color: white; font-family: 'Nunito', sans-serif; font-size: 16px; font-weight: 900;
+      box-shadow: 0 6px 20px var(--shadow); margin-top: 20px;
+    }
+
+    .footer-note { margin-top: 25px; text-align: center; font-size: 13px; color: var(--pink-dark); font-weight: 700; }
+  </style>
+</head>
+<body>
+
+  <div class="top-bar">
+    <a class="back-btn" href="index.html">‹</a>
+    <span class="top-title" style="margin-right: 40px;">📅 Calendario</span>
+  </div>
+
+  <div class="calendar-card">
+    <div class="calendar-header">
+      <div class="current-month" id="monthDisplay" onclick="openPicker()">Enero 2024</div>
+      <div class="nav-btns">
+        <button class="nav-btn" onclick="changeMonth(-1)">‹</button>
+        <button class="nav-btn" onclick="changeMonth(1)">›</button>
+      </div>
+    </div>
+    <div class="calendar-grid" id="calendarGrid">
+      <div class="weekday">LU</div><div class="weekday">MA</div><div class="weekday">MI</div>
+      <div class="weekday">JU</div><div class="weekday">VI</div><div class="weekday">SÁ</div><div class="weekday">DO</div>
+    </div>
+  </div>
+
+  <div class="footer-note">Desliza para cambiar mes o año 💖</div>
+
+  <div class="modal-backdrop" id="pickerModal">
+    <div class="modal-sheet">
+      <div style="width: 40px; height: 4px; background: #ffd6e0; border-radius: 99px; margin: 0 auto 20px;"></div>
+      <h3 style="text-align: center; color: var(--pink-accent); margin-bottom: 10px;">Seleccionar Fecha</h3>
+      
+      <div class="picker-container">
+        <div class="wheel-wrapper" id="monthWheel"></div>
+        <div class="wheel-wrapper" id="yearWheel"></div>
+      </div>
+
+      <button class="modal-btn-confirm" onclick="closePicker()">Listo ✨</button>
+    </div>
+  </div>
+
+  <script>
+    let date = new Date();
+    const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+
+    function renderCalendar() {
+      const monthDisplay = document.getElementById('monthDisplay');
+      const grid = document.getElementById('calendarGrid');
+      const weekdays = document.querySelectorAll('.weekday');
+      grid.innerHTML = '';
+      weekdays.forEach(wd => grid.appendChild(wd));
+
+      const year = date.getFullYear();
+      const month = date.getMonth();
+      monthDisplay.textContent = `${monthNames[month]} ${year}`;
+
+      let firstDay = new Date(year, month, 1).getDay();
+      firstDay = firstDay === 0 ? 6 : firstDay - 1; 
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const today = new Date();
+
+      for (let i = 0; i < firstDay; i++) {
+        const div = document.createElement('div'); div.className = 'day empty'; grid.appendChild(div);
+      }
+
+      for (let i = 1; i <= daysInMonth; i++) {
+        const div = document.createElement('div');
+        div.className = 'day';
+        div.textContent = i;
+        if (i === today.getDate() && month === today.getMonth() && year === today.getFullYear()) div.classList.add('today');
+        grid.appendChild(div);
+      }
+    }
+
+    function changeMonth(delta) {
+      date.setMonth(date.getMonth() + delta);
+      renderCalendar();
+    }
+
+    // ── LÓGICA DEL PICKER ──
+    function openPicker() {
+      const modal = document.getElementById('pickerModal');
+      const mWheel = document.getElementById('monthWheel');
+      const yWheel = document.getElementById('yearWheel');
+      
+      mWheel.innerHTML = '';
+      yWheel.innerHTML = '';
+
+      // Generar Meses
+      monthNames.forEach((m, i) => {
+        const item = document.createElement('div');
+        item.className = 'wheel-item' + (i === date.getMonth() ? ' selected' : '');
+        item.textContent = m;
+        item.onclick = () => { date.setMonth(i); openPicker(); renderCalendar(); };
+        mWheel.appendChild(item);
+        if(i === date.getMonth()) setTimeout(() => item.scrollIntoView({behavior: 'smooth', inline: 'center'}), 100);
+      });
+
+      // Generar Años (Rango de 10 años atrás y adelante)
+      const currentY = date.getFullYear();
+      for(let y = currentY - 5; y <= currentY + 5; y++) {
+        const item = document.createElement('div');
+        item.className = 'wheel-item' + (y === currentY ? ' selected' : '');
+        item.textContent = y;
+        item.onclick = () => { date.setFullYear(y); openPicker(); renderCalendar(); };
+        yWheel.appendChild(item);
+        if(y === currentY) setTimeout(() => item.scrollIntoView({behavior: 'smooth', inline: 'center'}), 100);
+      }
+
+      modal.classList.add('show');
+    }
+
+    function closePicker() {
+      document.getElementById('pickerModal').classList.remove('show');
+    }
+
+    // Cerrar al clickear fuera
+    document.getElementById('pickerModal').onclick = (e) => {
+      if(e.target.id === 'pickerModal') closePicker();
+    };
+
+    renderCalendar();
+  </script>
+</body>
+</html>

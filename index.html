@@ -5,134 +5,141 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>💕 Nuestra App</title>
   
-  <link rel="manifest" href="manifest.json?v=3">
-  <meta name="mobile-web-app-capable" content="yes">
+  <link rel="manifest" href="manifest.json?v=4">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="apple-touch-icon" href="icono-app-192.png?v=3">
+  <link rel="apple-touch-icon" href="icono-app-192.png?v=4">
 
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
   
   <style>
-    /* VARIABLES DE TEMA (Rosa por defecto) */
     :root {
-      --bg: #ffd6e0;
-      --mid: #ffb3c6;
-      --dark: #ff85a1;
-      --accent: #ff4d79;
-      --shadow: rgba(255, 77, 121, 0.25);
+      --bg: #ffd6e0; --mid: #ffb3c6; --dark: #ff85a1; --accent: #ff4d79; --shadow: rgba(255, 77, 121, 0.2);
+      --sidebar-bg: #fff; --text-main: #444;
     }
 
-    /* TEMA AZUL */
     [data-theme="blue"] {
-      --bg: #d6eaff;
-      --mid: #b3d9ff;
-      --dark: #85bfff;
-      --accent: #4d94ff;
-      --shadow: rgba(77, 148, 255, 0.25);
+      --bg: #d6eaff; --mid: #b3d9ff; --dark: #85bfff; --accent: #4d94ff; --shadow: rgba(77, 148, 255, 0.2);
     }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; transition: background 0.3s ease, color 0.3s ease; }
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
     body {
       font-family: 'Nunito', sans-serif;
       background: var(--bg);
       min-height: 100dvh;
-      display: flex;
-      flex-direction: column;
+      transition: background 0.4s cubic-bezier(0.4, 0, 0.2, 1);
       overflow: hidden;
     }
 
-    /* Barra Superior del Sistema */
-    .system-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 40px 20px 10px; /* Más espacio arriba para el notch del iPhone */
-      position: relative;
-      z-index: 10;
+    /* BARRA SUPERIOR PROFESIONAL */
+    .top-system-bar {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 50px 25px 15px; /* Espacio para el notch */
+      position: relative; z-index: 10;
     }
 
-    .top-btn {
-      width: 45px; height: 45px;
-      background: white;
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 22px;
-      box-shadow: 0 4px 10px var(--shadow);
-      text-decoration: none;
-      border: none; cursor: pointer;
+    /* Botón configuración (serio, sin apariencia de botón) */
+    .settings-trigger {
+      font-size: 24px; color: var(--accent); cursor: pointer;
+      opacity: 0.8; transition: 0.3s;
     }
+    .settings-trigger:active { transform: scale(0.9); opacity: 1; }
 
-    /* Cabecera Principal */
-    .header { text-align: center; padding: 20px; }
-    .header h1 { font-size: 28px; font-weight: 900; color: var(--accent); }
-    .header p { font-size: 14px; color: var(--dark); }
+    /* Perfil arriba a la derecha */
+    .profile-trigger {
+      width: 42px; height: 42px; border-radius: 50%;
+      border: 2px solid white; box-shadow: 0 4px 10px var(--shadow);
+      overflow: hidden; cursor: pointer; background: white;
+    }
+    .profile-trigger img { width: 100%; height: 100%; object-fit: cover; }
 
-    /* Grid de Aplicaciones (Sin el icono de perfil) */
+    /* MENÚ LATERAL (SIDEBAR) */
+    .sidebar {
+      position: fixed; top: 0; left: -280px; width: 280px; height: 100%;
+      background: var(--sidebar-bg); z-index: 100;
+      box-shadow: 10px 0 30px rgba(0,0,0,0.1);
+      transition: left 0.3s ease; padding: 60px 20px;
+    }
+    .sidebar.open { left: 0; }
+
+    .sidebar-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.3);
+      display: none; z-index: 99; backdrop-filter: blur(2px);
+    }
+    .sidebar-overlay.show { display: block; }
+
+    .sidebar h3 { color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px; }
+
+    /* Acordeón / Colapsable */
+    .menu-item { margin-bottom: 10px; }
+    .menu-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 15px; border-radius: 12px; background: #f8f8f8;
+      font-weight: 700; color: var(--text-main); cursor: pointer;
+    }
+    .menu-content {
+      max-height: 0; overflow: hidden; transition: max-height 0.3s ease;
+      background: #fff; padding: 0 15px;
+    }
+    .menu-content.open { max-height: 150px; padding: 15px; }
+
+    .theme-bubble {
+      display: flex; gap: 10px; margin-top: 5px;
+    }
+    .dot { width: 30px; height: 30px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; }
+    .dot.active { border-color: #444; }
+    .dot-pink { background: #ffb3c6; }
+    .dot-blue { background: #b3d9ff; }
+
+    /* CONTENIDO PRINCIPAL */
+    .header { text-align: center; margin-top: 20px; }
+    .header h1 { font-size: 26px; color: var(--accent); font-weight: 900; }
+
     .grid {
       display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
-      padding: 30px 24px; flex: 1; align-content: start;
+      padding: 40px 25px; align-content: start;
     }
-
-    .app-icon {
-      display: flex; flex-direction: column; align-items: center; gap: 8px;
-      text-decoration: none; -webkit-tap-highlight-color: transparent;
-    }
+    .app-icon { text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 8px; }
     .icon-box {
-      width: 70px; height: 70px; border-radius: 22px;
-      background: white;
+      width: 72px; height: 72px; border-radius: 22px; background: white;
+      display: flex; align-items: center; justify-content: center; font-size: 32px;
       box-shadow: 0 8px 20px var(--shadow);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 35px; transition: 0.2s;
     }
-    .app-icon:active .icon-box { transform: scale(0.9); }
     .app-icon span { font-size: 12px; font-weight: 800; color: var(--accent); }
-
-    /* Ventana de Ajustes (Modal) */
-    #settingsModal {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.5);
-      display: none; align-items: center; justify-content: center; z-index: 100;
-    }
-    .modal-content {
-      background: white; width: 85%; max-width: 350px;
-      border-radius: 30px; padding: 25px;
-      text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    }
-    .modal-content h2 { color: var(--accent); margin-bottom: 20px; }
-    
-    .theme-options { display: flex; justify-content: space-around; margin-top: 15px; }
-    .theme-btn {
-      padding: 15px; border-radius: 15px; border: 2px solid #eee;
-      cursor: pointer; width: 45%; font-weight: bold;
-    }
-    .btn-pink { background: #ffd6e0; color: #ff4d79; }
-    .btn-blue { background: #d6eaff; color: #4d94ff; }
-
-    .close-btn { 
-      margin-top: 25px; padding: 10px 20px; border-radius: 20px;
-      background: var(--accent); color: white; border: none; font-weight: bold;
-    }
-
-    /* Corazones Flotantes */
-    .heart { position: absolute; pointer-events: none; opacity: 0; animation: floatUp 6s infinite; }
-    @keyframes floatUp {
-      0% { opacity: 0; transform: translateY(0) scale(0.5); }
-      20% { opacity: 0.5; }
-      100% { opacity: 0; transform: translateY(-100vh) scale(1.2); }
-    }
   </style>
 </head>
-<body id="mainBody">
+<body>
 
-  <div class="system-bar">
-    <a href="perfil.html" class="top-btn" id="userInitial">👤</a>
-    <button class="top-btn" onclick="openSettings()">⚙️</button>
+  <div class="sidebar-overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+  <div class="sidebar" id="sidebar">
+    <h3>Menú del Sistema</h3>
+    
+    <div class="menu-item">
+      <div class="menu-header" onclick="toggleAccordion('acc-personalizar')">
+        <span>Personalizar</span>
+        <span id="arrow">▾</span>
+      </div>
+      <div class="menu-content" id="acc-personalizar">
+        <p style="font-size: 13px; color: #666; margin-bottom: 10px;">Color de la App:</p>
+        <div class="theme-bubble">
+          <div class="dot dot-pink" id="dot-pink" onclick="setTheme('pink')"></div>
+          <div class="dot dot-blue" id="dot-blue" onclick="setTheme('blue')"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="top-system-bar">
+    <div class="settings-trigger" onclick="toggleSidebar()">☰</div>
+    <div class="profile-trigger" onclick="window.location.href='perfil.html'">
+      <img id="userPhoto" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Perfil">
+    </div>
   </div>
 
   <div class="header">
     <h1 id="welcomeText">Hola... 💕</h1>
-    <p>Un lugar para nosotros dos</p>
   </div>
 
   <div class="grid">
@@ -144,21 +151,25 @@
       <div class="icon-box">📅</div>
       <span>Calendario</span>
     </a>
-    </div>
-
-  <div id="settingsModal">
-    <div class="modal-content">
-      <h2>Personalizar</h2>
-      <p>Elige tu color favorito:</p>
-      <div class="theme-options">
-        <div class="theme-btn btn-pink" onclick="setTheme('pink')">Rosa</div>
-        <div class="theme-btn btn-blue" onclick="setTheme('blue')">Azul</div>
-      </div>
-      <button class="close-btn" onclick="closeSettings()">Cerrar</button>
-    </div>
   </div>
 
   <script>
+    // --- LÓGICA DEL SIDEBAR ---
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+      document.getElementById('overlay').classList.toggle('show');
+    }
+
+    function toggleAccordion(id) {
+      const content = document.getElementById(id);
+      const isOpening = !content.classList.contains('open');
+      
+      // Cerrar otros si hubiera más
+      document.querySelectorAll('.menu-content').forEach(el => el.classList.remove('open'));
+      
+      if(isOpening) content.classList.add('open');
+    }
+
     // --- LÓGICA DE TEMAS ---
     function setTheme(theme) {
       if(theme === 'blue') {
@@ -168,28 +179,18 @@
         document.documentElement.removeAttribute('data-theme');
         localStorage.setItem('theme', 'pink');
       }
+      updateDots();
     }
 
-    // Cargar tema guardado al abrir
-    const savedTheme = localStorage.getItem('theme');
-    if(savedTheme === 'blue') setTheme('blue');
+    function updateDots() {
+      const t = localStorage.getItem('theme');
+      document.getElementById('dot-pink').classList.toggle('active', t !== 'blue');
+      document.getElementById('dot-blue').classList.toggle('active', t === 'blue');
+    }
 
-    // --- LÓGICA DE AJUSTES ---
-    function openSettings() { document.getElementById('settingsModal').style.display = 'flex'; }
-    function closeSettings() { document.getElementById('settingsModal').style.display = 'none'; }
-
-    // --- CORAZONES Y RELOJ ---
-    const emojis = ['💕','💗','💖','🌸','✨'];
-    setInterval(() => {
-      const h = document.createElement('span');
-      h.className = 'heart';
-      h.textContent = emojis[Math.floor(Math.random() * emojis.length)];
-      h.style.left = Math.random() * 100 + 'vw';
-      h.style.bottom = '-5vh';
-      h.style.fontSize = (Math.random() * 20 + 10) + 'px';
-      document.body.appendChild(h);
-      setTimeout(() => h.remove(), 6000);
-    }, 1000);
+    // Carga inicial
+    if(localStorage.getItem('theme') === 'blue') setTheme('blue');
+    updateDots();
   </script>
 
   <script type="module">
@@ -202,10 +203,7 @@
       } else {
         const nombre = user.displayName ? user.displayName.split(' ')[0] : "Amor";
         document.getElementById('welcomeText').textContent = "¡Hola, " + nombre + "! 💕";
-        // Si tiene foto de perfil en Google, la ponemos en el circulito
-        if(user.photoURL) {
-          document.getElementById('userInitial').innerHTML = `<img src="${user.photoURL}" style="width:100%; border-radius:50%">`;
-        }
+        if(user.photoURL) document.getElementById('userPhoto').src = user.photoURL;
       }
     });
   </script>

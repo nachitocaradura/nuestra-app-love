@@ -12,32 +12,26 @@
     [data-theme="blue"] {
       --bg: #d6eaff; --mid: #b3d9ff; --dark: #85bfff; --accent: #4d94ff; --shadow: rgba(77, 148, 255, 0.25);
     }
-
     * { margin: 0; padding: 0; box-sizing: border-box; }
-
     html, body { height: 100%; overflow: hidden; background: var(--bg); }
     body { font-family: 'Nunito', sans-serif; display: flex; flex-direction: column; height: 100dvh; transition: background 0.4s ease; }
-
     .chat-header {
       padding: 50px 20px 15px; background: white; display: flex; flex-direction: column; 
       align-items: center; justify-content: center; box-shadow: 0 2px 10px var(--shadow);
       flex-shrink: 0; position: relative;
     }
-    
     .back-btn {
       position: absolute; left: 18px; bottom: 12px; text-decoration: none; font-size: 20px; 
       background: rgba(255,255,255,0.6); border-radius: 12px; padding: 6px 10px; 
       color: var(--accent); font-weight: 900; box-shadow: 0 2px 8px var(--shadow); 
       cursor: pointer; border: none; display: flex; align-items: center; justify-content: center;
     }
-
     .menu-btn {
       position: absolute; right: 18px; bottom: 12px; background: white; border-radius: 50%; 
       width: 35px; height: 35px; display: flex; align-items: center; justify-content: center;
       color: var(--accent); font-size: 20px; box-shadow: 0 2px 8px var(--shadow);
       cursor: pointer; border: none; z-index: 10;
     }
-
     .dropdown-menu {
       position: absolute; right: 20px; top: 95px; background: white; border-radius: 15px; 
       box-shadow: 0 5px 20px rgba(0,0,0,0.15); display: none; flex-direction: column; 
@@ -45,37 +39,18 @@
     }
     .dropdown-menu.show { display: flex; }
     .menu-item { padding: 12px 20px; font-size: 14px; font-weight: 700; color: #ff4d4d; cursor: pointer; text-align: left; }
-
     .chat-header h2 { font-size: 18px; color: var(--accent); font-weight: 900; }
-    
-    @keyframes dotFlashing {
-      0% { opacity: 0.2; }
-      50% { opacity: 1; }
-      100% { opacity: 0.2; }
-    }
-    .dot { animation: dotFlashing 1s infinite linear; }
-    .dot:nth-child(2) { animation-delay: 0.2s; }
-    .dot:nth-child(3) { animation-delay: 0.4s; }
-
     #chat-container { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 12px; }
-
-    #typing-area {
-      display: none; align-items: center; gap: 8px; margin-bottom: 10px; padding-left: 5px;
-    }
+    #typing-area { display: none; align-items: center; gap: 8px; margin-bottom: 10px; padding-left: 5px; }
     #typing-area.active { display: flex; }
     .typing-text { font-size: 13px; color: var(--dark); font-weight: 700; }
-
     .message-row { display: flex; align-items: flex-end; gap: 8px; max-width: 85%; }
     .message-row.me { align-self: flex-end; flex-direction: row-reverse; }
     .mini-avatar { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; border: 2px solid white; flex-shrink: 0; }
     .bubble { padding: 10px 14px; border-radius: 18px; font-size: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
     .me .bubble { background: var(--accent); color: white; border-bottom-right-radius: 4px; }
     .them .bubble { background: white; color: #444; border-bottom-left-radius: 4px; }
-
-    .input-area {
-      background: white; display: flex; gap: 10px; align-items: center; border-top: 1px solid #eee;
-      padding: 12px 15px 60px;
-    }
+    .input-area { background: white; display: flex; gap: 10px; align-items: center; border-top: 1px solid #eee; padding: 12px 15px 60px; }
     input { flex: 1; padding: 12px 18px; border-radius: 25px; border: 2px solid var(--bg); outline: none; font-size: 16px; }
     .send-btn { width: 45px; height: 45px; border-radius: 50%; background: var(--accent); border: none; color: white; font-size: 20px; display: flex; align-items: center; justify-content: center; }
     #statusDot { position: absolute; top: 58px; right: 28%; width:8px; height:8px; border-radius:50%; background:#ccc; }
@@ -99,7 +74,7 @@
 
   <div id="typing-area">
     <img id="typing-img" src="" class="mini-avatar">
-    <span class="typing-text"><span id="typing-name"></span> está escribiendo<span class="dot">.</span><span class="dot">.</span><span class="dot">.</span></span>
+    <span class="typing-text"><span id="typing-name"></span> está escribiendo...</span>
   </div>
 
   <div class="input-area">
@@ -112,36 +87,28 @@
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
     import { collection, addDoc, query, where, orderBy, onSnapshot, doc, getDoc, setDoc, serverTimestamp, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
-    let user = null, parejaId = null, typingTimeout = null, inicializado = false; 
+    let user = null, parejaId = null, typingTimeout = null;
     const container = document.getElementById('chat-container');
     const msgInput = document.getElementById('msgInput');
-    const typingArea = document.getElementById('typing-area');
 
-    // REGISTRAR SERVICE WORKER
+    // 1. REGISTRAR EL MOTOR (SW)
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js').then(reg => {
-        console.log("Motor listo");
-        // Enviar datos al SW si ya está activo
-        if (reg.active && user && parejaId) {
-            reg.active.postMessage({ type: 'SET_CHAT_DATA', userId: user.uid, parejaId: parejaId });
-        }
+        console.log("Motor registrado");
       });
     }
 
+    // 2. PEDIR PERMISOS
     async function solicitarPermisos() {
       if (!("Notification" in window)) return;
       const permission = await Notification.requestPermission();
       if(permission === 'granted') {
         navigator.serviceWorker.ready.then(reg => {
-          reg.showNotification("¡Todo listo! 💕", { body: "Recibirás avisos de tu pareja aquí." });
+          reg.showNotification("¡Conectados! 💕", { body: "Avisos activos." });
         });
       }
     }
-
-    // Pedir permiso al primer toque
-    document.body.addEventListener('click', () => { 
-      if(Notification.permission !== 'granted') solicitarPermisos(); 
-    }, { once: true });
+    document.body.addEventListener('click', () => { if(Notification.permission !== 'granted') solicitarPermisos(); }, { once: true });
 
     onAuthStateChanged(auth, async (u) => {
       if (!u) { window.location.href = 'auth.html'; return; }
@@ -151,12 +118,13 @@
         parejaId = userDoc.data().parejaId;
         document.getElementById('statusDot').style.background = '#4CAF50';
         
-        // AVISAR AL SERVICE WORKER
+        // ENVIAR TUS DATOS AL MOTOR PARA QUE VIGILE
         navigator.serviceWorker.ready.then(reg => {
-          reg.active.postMessage({ type: 'SET_CHAT_DATA', userId: user.uid, parejaId: parejaId });
+          if (reg.active) {
+            reg.active.postMessage({ type: 'SET_CHAT_DATA', userId: user.uid, parejaId: parejaId });
+          }
         });
 
-        cargarEventosParaNotificar(); // Opcional: si quieres lógica extra
         cargarMensajes();
         escucharEscribiendo();
       }
@@ -164,11 +132,7 @@
 
     function cargarMensajes() {
       const q = query(collection(db, "mensajes"), where("chatId", "in", [user.uid + parejaId, parejaId + user.uid]), orderBy("timestamp", "asc"));
-      
       onSnapshot(q, (snap) => {
-        // NOTA: La lógica de notificaciones ahora la gestiona el sw.js 
-        // basándose en si la app está visible o no.
-        
         container.innerHTML = '';
         snap.forEach(d => {
           const m = d.data();
@@ -178,12 +142,11 @@
           div.innerHTML = `<img src="${m.senderPhoto || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'}" class="mini-avatar"><div class="bubble">${m.text}</div>`;
           container.appendChild(div);
         });
-
-        inicializado = true;
         container.scrollTo(0, container.scrollHeight);
       });
     }
 
+    // EL RESTO DE TUS FUNCIONES (Iguales)
     msgInput.addEventListener('input', () => {
       if (!user || !parejaId) return;
       setDoc(doc(db, "typing", user.uid), { isTyping: true, to: parejaId, name: user.displayName || "Tu pareja", photo: user.photoURL }, { merge: true });
@@ -197,10 +160,10 @@
         if (data && data.isTyping && data.to === user.uid) {
           document.getElementById('typing-img').src = data.photo;
           document.getElementById('typing-name').textContent = data.name;
-          typingArea.classList.add('active');
+          document.getElementById('typing-area').classList.add('active');
           container.scrollTo(0, container.scrollHeight);
         } else {
-          typingArea.classList.remove('active');
+          document.getElementById('typing-area').classList.remove('active');
         }
       });
     }
@@ -221,8 +184,7 @@
       setDoc(doc(db, "typing", user.uid), { isTyping: false }, { merge: true });
       await addDoc(collection(db, "mensajes"), {
         chatId: user.uid + parejaId, text, senderId: user.uid,
-        senderPhoto: user.photoURL, timestamp: serverTimestamp(),
-        senderName: user.displayName || "Tu amor"
+        senderPhoto: user.photoURL, senderName: user.displayName || "Tu amor", timestamp: serverTimestamp()
       });
     }
 

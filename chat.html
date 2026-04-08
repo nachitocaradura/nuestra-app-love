@@ -113,15 +113,23 @@
     import { collection, addDoc, query, where, orderBy, onSnapshot, doc, getDoc, setDoc, serverTimestamp, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
     let user = null, parejaId = null, typingTimeout = null;
-    let inicializado = false; // NOTIFICACIONES: Para no avisar de mensajes viejos al abrir
+    let inicializado = false; 
     const container = document.getElementById('chat-container');
     const msgInput = document.getElementById('msgInput');
     const typingArea = document.getElementById('typing-area');
 
-    // NOTIFICACIONES: Pedir permiso al entrar
-    if (Notification.permission !== "granted" && Notification.permission !== "denied") {
-      Notification.requestPermission();
+    // NOTIFICACIONES: Función para pedir permiso (necesaria para iPhone)
+    async function solicitarPermisos() {
+      if (!("Notification" in window)) return;
+      if (Notification.permission === "default") {
+        await Notification.requestPermission();
+      }
     }
+
+    // NOTIFICACIONES: Se activa al primer clic en la pantalla (Truco para iOS)
+    document.body.addEventListener('click', () => {
+      solicitarPermisos();
+    }, { once: true });
 
     onAuthStateChanged(auth, async (u) => {
       if (!u) { window.location.href = 'auth.html'; return; }
@@ -178,16 +186,23 @@
       const q = query(collection(db, "mensajes"), where("chatId", "in", [user.uid + parejaId, parejaId + user.uid]), orderBy("timestamp", "asc"));
       
       onSnapshot(q, (snap) => {
-        // NOTIFICACIONES: Detectar mensajes nuevos
+        // NOTIFICACIONES: Lógica de disparo
         snap.docChanges().forEach((change) => {
           if (change.type === "added" && inicializado) {
             const m = change.doc.data();
-            // Si el mensaje es de ella y no estoy mirando el chat... ¡AVISAR!
-            if (m.senderId !== user.uid && document.visibilityState !== "visible") {
-              new Notification("Mensaje de tu amor 💕", {
+            // Si el mensaje es de la pareja y NO estamos viendo la app
+            if (m.senderId !== user.uid && (document.visibilityState !== "visible" || !document.hasFocus())) {
+              const notification = new Notification("Mensaje de tu amor 💕", {
                 body: m.text,
-                icon: m.senderPhoto || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'
+                icon: m.senderPhoto || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png',
+                tag: 'chat-notification', // Evita duplicados
+                renotify: true
               });
+
+              notification.onclick = () => {
+                window.focus();
+                notification.close();
+              };
             }
           }
         });
@@ -202,7 +217,7 @@
           container.appendChild(div);
         });
 
-        inicializado = true; // Ya cargamos el historial, ahora sí podemos notificar nuevos
+        inicializado = true;
         container.scrollTo(0, container.scrollHeight);
       });
     }

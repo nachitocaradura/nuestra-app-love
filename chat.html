@@ -7,10 +7,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg: #ffd6e0; --mid: #ffb3c6; --dark: #ff85a1; --accent: #ff4d79; --shadow: rgba(255, 77, 121, 0.2);
+      --bg: #ffd6e0; --mid: #ffb3c6; --dark: #ff85a1; --accent: #ff4d79; --shadow: rgba(255, 77, 121, 0.25);
     }
     [data-theme="blue"] {
-      --bg: #d6eaff; --mid: #b3d9ff; --dark: #85bfff; --accent: #4d94ff; --shadow: rgba(77, 148, 255, 0.2);
+      --bg: #d6eaff; --mid: #b3d9ff; --dark: #85bfff; --accent: #4d94ff; --shadow: rgba(77, 148, 255, 0.25);
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -39,7 +39,7 @@
       position: relative;
     }
     
-    /* BOTÓN COPIADO EXACTAMENTE DE CALENDARIO.HTML */
+    /* BOTÓN COPIADO EXACTAMENTE DE TU CALENDARIO.HTML */
     .back-btn {
       position: absolute;
       left: 18px;
@@ -86,7 +86,7 @@
     .me .bubble { background: var(--accent); color: white; border-bottom-right-radius: 4px; }
     .them .bubble { background: white; color: #444; border-bottom-left-radius: 4px; }
 
-    /* BARRA DE ESCRITURA SUBIDA PARA TU HONOR */
+    /* BARRA DE ESCRITURA - SUBIDA A 60PX */
     .input-area {
       background: white;
       display: flex; 
@@ -94,8 +94,8 @@
       align-items: center;
       flex-shrink: 0;
       border-top: 1px solid #eee;
-      /* He subido el margen inferior a 40px fijos para que no la tapen tus botones */
-      padding: 12px 15px 40px; 
+      /* Margen de 60px para que los botones de Honor no estorben */
+      padding: 12px 15px 60px; 
     }
 
     input {
@@ -128,7 +128,7 @@
   <div id="chat-container"></div>
 
   <div class="input-area">
-    <input type="text" id="msgInput" placeholder="Dile algo bonito..." autocomplete="off">
+    <input type="text" id="msgInput" placeholder="Escribe aquí..." autocomplete="off">
     <button class="send-btn" id="sendBtn">➤</button>
   </div>
 
@@ -167,7 +167,7 @@
           const div = document.createElement('div');
           div.className = `message-row ${isMe ? 'me' : 'them'}`;
           div.innerHTML = `
-            <img src="${data.senderPhoto || ''}" class="mini-avatar">
+            <img src="${data.senderPhoto || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'}" class="mini-avatar">
             <div class="bubble">${data.text}</div>
           `;
           container.appendChild(div);

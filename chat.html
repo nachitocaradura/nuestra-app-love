@@ -33,83 +33,53 @@
     .chat-header {
       padding: 50px 20px 15px;
       background: white;
-      display: flex; align-items: center; justify-content: center;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
       box-shadow: 0 2px 10px var(--shadow);
       flex-shrink: 0;
       position: relative;
     }
     
+    /* BOTÓN FLECHA (ESTILO CALENDARIO.HTML) */
     .back-btn {
-      position: absolute;
-      left: 18px;
-      bottom: 12px;
-      text-decoration: none; 
-      font-size: 20px; 
-      background: rgba(255,255,255,0.6);
-      border-radius: 12px; 
-      padding: 6px 10px; 
-      color: var(--accent); 
-      font-weight: 900;
-      box-shadow: 0 2px 8px var(--shadow); 
-      cursor: pointer; 
-      border: none;
+      position: absolute; left: 18px; bottom: 12px;
+      text-decoration: none; font-size: 20px; background: rgba(255,255,255,0.6);
+      border-radius: 12px; padding: 6px 10px; color: var(--accent); font-weight: 900;
+      box-shadow: 0 2px 8px var(--shadow); cursor: pointer; border: none;
       display: flex; align-items: center; justify-content: center;
     }
 
-    /* BOTÓN TRES PUNTOS */
+    /* TRES PUNTOS */
     .menu-btn {
-      position: absolute;
-      right: 18px;
-      bottom: 12px;
-      background: white;
-      border-radius: 50%;
-      width: 35px; height: 35px;
+      position: absolute; right: 18px; bottom: 12px;
+      background: white; border-radius: 50%; width: 35px; height: 35px;
       display: flex; align-items: center; justify-content: center;
-      color: var(--accent);
-      font-size: 20px;
-      box-shadow: 0 2px 8px var(--shadow);
-      cursor: pointer;
-      border: none;
-      z-index: 10;
+      color: var(--accent); font-size: 20px; box-shadow: 0 2px 8px var(--shadow);
+      cursor: pointer; border: none; z-index: 10;
     }
 
-    /* MENÚ DESPLEGABLE */
     .dropdown-menu {
-      position: absolute;
-      right: 20px;
-      top: 95px;
-      background: white;
-      border-radius: 15px;
-      box-shadow: 0 5px 20px rgba(0,0,0,0.15);
-      display: none;
-      flex-direction: column;
-      overflow: hidden;
-      z-index: 100;
-      min-width: 150px;
+      position: absolute; right: 20px; top: 95px; background: white;
+      border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+      display: none; flex-direction: column; overflow: hidden; z-index: 100; min-width: 150px;
     }
     .dropdown-menu.show { display: flex; }
     
     .menu-item {
-      padding: 12px 20px;
-      font-size: 14px;
-      font-weight: 700;
-      color: #ff4d4d;
-      cursor: pointer;
-      transition: background 0.2s;
-      text-align: left;
+      padding: 12px 20px; font-size: 14px; font-weight: 700; color: #ff4d4d;
+      cursor: pointer; transition: background 0.2s; text-align: left;
     }
     .menu-item:active { background: #fdf2f2; }
 
     .chat-header h2 { font-size: 18px; color: var(--accent); font-weight: 900; }
+    
+    /* SUB-TÍTULO "ESCRIBIENDO..." */
+    #typing-status {
+      font-size: 12px; color: var(--dark); font-weight: 700; height: 14px; margin-top: 2px;
+    }
 
     #chat-container {
-      flex: 1;
-      overflow-y: auto;
-      padding: 15px;
-      display: flex; 
-      flex-direction: column; 
-      gap: 12px;
-      -webkit-overflow-scrolling: touch;
+      flex: 1; overflow-y: auto; padding: 15px; display: flex; 
+      flex-direction: column; gap: 12px; -webkit-overflow-scrolling: touch;
     }
 
     .message-row { display: flex; align-items: flex-end; gap: 8px; max-width: 85%; }
@@ -118,36 +88,29 @@
     .mini-avatar { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; border: 2px solid white; flex-shrink: 0; }
 
     .bubble {
-      padding: 10px 14px;
-      border-radius: 18px;
-      font-size: 15px;
-      line-height: 1.4;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      padding: 10px 14px; border-radius: 18px; font-size: 15px;
+      line-height: 1.4; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     }
     .me .bubble { background: var(--accent); color: white; border-bottom-right-radius: 4px; }
     .them .bubble { background: white; color: #444; border-bottom-left-radius: 4px; }
 
+    /* MARGEN DE 60PX PARA BOTONES HONOR */
     .input-area {
-      background: white;
-      display: flex; 
-      gap: 10px; 
-      align-items: center;
-      flex-shrink: 0;
-      border-top: 1px solid #eee;
+      background: white; display: flex; gap: 10px; align-items: center;
+      flex-shrink: 0; border-top: 1px solid #eee;
       padding: 12px 15px 60px; 
     }
 
     input {
       flex: 1; padding: 12px 18px; border-radius: 25px;
-      border: 2px solid var(--bg); font-family: inherit; outline: none;
-      font-size: 16px;
+      border: 2px solid var(--bg); font-family: inherit; outline: none; font-size: 16px;
     }
     .send-btn {
       width: 45px; height: 45px; border-radius: 50%; background: var(--accent);
       border: none; color: white; font-size: 20px; display: flex; align-items: center; justify-content: center;
     }
     
-    #statusDot { width:8px; height:8px; border-radius:50%; background:#ccc; margin-left: 8px; }
+    #statusDot { position: absolute; top: 58px; right: 28%; width:8px; height:8px; border-radius:50%; background:#ccc; }
   </style>
 </head>
 <body>
@@ -161,6 +124,7 @@
   <div class="chat-header">
     <a href="index.html" class="back-btn">‹</a>
     <h2>Nuestro Chat 💕</h2>
+    <div id="typing-status"></div>
     <div id="statusDot"></div>
     <button class="menu-btn" onclick="toggleMenu()">⋮</button>
   </div>
@@ -179,11 +143,14 @@
   <script type="module">
     import { db, auth } from './firebase.js';
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
-    import { collection, addDoc, query, where, orderBy, onSnapshot, doc, getDoc, serverTimestamp, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+    import { collection, addDoc, query, where, orderBy, onSnapshot, doc, getDoc, setDoc, serverTimestamp, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
     let user = null;
     let parejaId = null;
+    let typingTimeout = null;
     const container = document.getElementById('chat-container');
+    const typingDisplay = document.getElementById('typing-status');
+    const msgInput = document.getElementById('msgInput');
 
     onAuthStateChanged(auth, async (u) => {
       if (!u) { window.location.href = 'auth.html'; return; }
@@ -193,48 +160,55 @@
         parejaId = userDoc.data().parejaId;
         document.getElementById('statusDot').style.background = '#4CAF50';
         cargarMensajes();
+        escucharEscribiendo();
       }
     });
 
-    // Función para mostrar/ocultar menú
+    // LÓGICA DE DETECCIÓN DE ESCRITURA
+    msgInput.addEventListener('input', () => {
+      if (!user || !parejaId) return;
+      setDoc(doc(db, "typing", user.uid), { isTyping: true, to: parejaId }, { merge: true });
+      clearTimeout(typingTimeout);
+      typingTimeout = setTimeout(() => {
+        setDoc(doc(db, "typing", user.uid), { isTyping: false, to: parejaId }, { merge: true });
+      }, 2000);
+    });
+
+    function escucharEscribiendo() {
+      onSnapshot(doc(db, "typing", parejaId), (docSnap) => {
+        if (docSnap.exists() && docSnap.data().isTyping && docSnap.data().to === user.uid) {
+          typingDisplay.textContent = "está escribiendo...";
+        } else {
+          typingDisplay.textContent = "";
+        }
+      });
+    }
+
     window.toggleMenu = function() {
       document.getElementById('chatMenu').classList.toggle('show');
     }
 
-    // Cerrar menú si se pulsa fuera
     window.onclick = function(event) {
       if (!event.target.matches('.menu-btn')) {
         document.getElementById('chatMenu').classList.remove('show');
       }
     }
 
-    // VACIAR CHAT
     window.vaciarChat = async function() {
       if(!confirm("¿Seguro que quieres borrar todos los mensajes? Esto no se puede deshacer.")) return;
-      
-      const q = query(
-        collection(db, "mensajes"),
-        where("chatId", "in", [user.uid + parejaId, parejaId + user.uid])
-      );
-
+      const q = query(collection(db, "mensajes"), where("chatId", "in", [user.uid + parejaId, parejaId + user.uid]));
       const querySnapshot = await getDocs(q);
       const deletePromises = querySnapshot.docs.map(d => deleteDoc(doc(db, "mensajes", d.id)));
-      
       await Promise.all(deletePromises);
       toggleMenu();
     }
 
     function cargarMensajes() {
-      const q = query(
-        collection(db, "mensajes"),
-        where("chatId", "in", [user.uid + parejaId, parejaId + user.uid]),
-        orderBy("timestamp", "asc")
-      );
-
+      const q = query(collection(db, "mensajes"), where("chatId", "in", [user.uid + parejaId, parejaId + user.uid]), orderBy("timestamp", "asc"));
       onSnapshot(q, (snapshot) => {
         container.innerHTML = '';
-        snapshot.forEach(doc => {
-          const data = doc.data();
+        snapshot.forEach(docSnap => {
+          const data = docSnap.data();
           const isMe = data.senderId === user.uid;
           const div = document.createElement('div');
           div.className = `message-row ${isMe ? 'me' : 'them'}`;
@@ -249,10 +223,11 @@
     }
 
     async function enviarMensaje() {
-      const input = document.getElementById('msgInput');
-      const text = input.value.trim();
+      const text = msgInput.value.trim();
       if (!text || !parejaId) return;
-      input.value = '';
+      msgInput.value = '';
+      setDoc(doc(db, "typing", user.uid), { isTyping: false, to: parejaId }, { merge: true });
+      
       await addDoc(collection(db, "mensajes"), {
         chatId: user.uid + parejaId,
         text: text,
@@ -263,7 +238,7 @@
     }
 
     document.getElementById('sendBtn').onclick = enviarMensaje;
-    document.getElementById('msgInput').onkeypress = (e) => { if(e.key === 'Enter') enviarMensaje(); };
+    msgInput.onkeypress = (e) => { if(e.key === 'Enter') enviarMensaje(); };
   </script>
 </body>
 </html>

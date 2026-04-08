@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>💬 Nuestro Chat</title>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
   <style>
@@ -15,7 +15,6 @@
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
-    /* Evitar el scroll molesto del body */
     html, body { 
       height: 100%; 
       overflow: hidden; 
@@ -26,10 +25,10 @@
       font-family: 'Nunito', sans-serif;
       display: flex; 
       flex-direction: column;
-      height: 100dvh; /* Altura dinámica real del móvil */
+      height: 100dvh; 
     }
 
-    /* Header fijo arriba */
+    /* BARRA SUPERIOR CON BOTÓN DE RULETA */
     .chat-header {
       padding: 50px 20px 15px;
       background: white;
@@ -37,10 +36,21 @@
       box-shadow: 0 2px 10px var(--shadow);
       flex-shrink: 0;
     }
-    .back-btn { text-decoration: none; font-size: 20px; color: var(--accent); }
+    
+    .back-btn {
+      width: 40px; height: 40px;
+      background: white;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      text-decoration: none;
+      color: var(--accent);
+      font-size: 20px;
+      font-weight: 900;
+      box-shadow: 0 4px 10px var(--shadow);
+    }
+
     .chat-header h2 { font-size: 18px; color: var(--accent); flex: 1; font-weight: 900; }
 
-    /* Contenedor de mensajes que se estira solo */
     #chat-container {
       flex: 1;
       overflow-y: auto;
@@ -48,14 +58,12 @@
       display: flex; 
       flex-direction: column; 
       gap: 12px;
-      background: transparent;
-      -webkit-overflow-scrolling: touch; /* Scroll suave en iOS */
+      -webkit-overflow-scrolling: touch;
     }
 
     .message-row { display: flex; align-items: flex-end; gap: 8px; max-width: 85%; }
     .message-row.me { align-self: flex-end; flex-direction: row-reverse; }
     .message-row.them { align-self: flex-start; }
-
     .mini-avatar { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; border: 2px solid white; flex-shrink: 0; }
 
     .bubble {
@@ -63,54 +71,48 @@
       border-radius: 18px;
       font-size: 15px;
       line-height: 1.4;
-      position: relative;
-      word-wrap: break-word;
     }
     .me .bubble { background: var(--accent); color: white; border-bottom-right-radius: 4px; }
     .them .bubble { background: white; color: #444; border-bottom-left-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
 
-    .time { font-size: 10px; opacity: 0.6; margin-top: 4px; display: block; text-align: right; }
-    .me .time { color: rgba(255,255,255,0.8); }
-
-    /* Barra de escribir FIJA abajo */
+    /* AJUSTE PARA TUS BOTONES DE ANDROID */
     .input-area {
-      padding: 10px 15px 30px; /* Padding extra abajo para el "home bar" del iPhone */
       background: white;
-      display: flex; gap: 10px; align-items: center;
+      display: flex; 
+      gap: 10px; 
+      align-items: center;
       flex-shrink: 0;
       border-top: 1px solid #eee;
+      padding: 15px 15px calc(25px + env(safe-area-inset-bottom)); /* Más margen abajo */
     }
+
     input {
       flex: 1; padding: 12px 18px; border-radius: 25px;
       border: 2px solid var(--bg); font-family: inherit; outline: none;
-      font-size: 16px; /* Evita que iOS haga zoom al pulsar */
+      font-size: 16px;
     }
     .send-btn {
       width: 45px; height: 45px; border-radius: 50%; background: var(--accent);
-      border: none; color: white; font-size: 20px; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
+      border: none; color: white; font-size: 20px; display: flex; align-items: center; justify-content: center;
     }
+    
+    #statusDot { width:10px; height:10px; border-radius:50%; background:#ccc; }
   </style>
 </head>
 <body>
 
   <div class="chat-header">
-    <a href="index.html" class="back-btn">🏠</a>
+    <a href="index.html" class="back-btn">‹</a>
     <h2 id="chatWith">Nuestro Chat 💕</h2>
-    <div id="statusDot" style="width:10px; height:10px; border-radius:50%; background:#ccc;"></div>
+    <div id="statusDot"></div>
   </div>
 
-  <div id="chat-container">
-    </div>
+  <div id="chat-container"></div>
 
   <div class="input-area">
     <input type="text" id="msgInput" placeholder="Dile algo bonito..." autocomplete="off">
     <button class="send-btn" id="sendBtn">➤</button>
   </div>
-
-  <script>
-    if(localStorage.getItem('theme') === 'blue') document.documentElement.setAttribute('data-theme', 'blue');
-  </script>
 
   <script type="module">
     import { db, auth } from './firebase.js';
@@ -124,19 +126,15 @@
     onAuthStateChanged(auth, async (u) => {
       if (!u) { window.location.href = 'auth.html'; return; }
       user = u;
-      
       const userDoc = await getDoc(doc(db, "usuarios", u.uid));
       if (userDoc.exists() && userDoc.data().parejaId) {
         parejaId = userDoc.data().parejaId;
         document.getElementById('statusDot').style.background = '#4CAF50';
         cargarMensajes();
-      } else {
-        container.innerHTML = "<p style='text-align:center; color:gray; padding-top:40px;'>Vincula a tu pareja en Perfil para chatear 💕</p>";
       }
     });
 
     function cargarMensajes() {
-      // Esta consulta es la que necesita el ÍNDICE en Firebase
       const q = query(
         collection(db, "mensajes"),
         where("chatId", "in", [user.uid + parejaId, parejaId + user.uid]),
@@ -147,50 +145,31 @@
         container.innerHTML = '';
         snapshot.forEach(doc => {
           const data = doc.data();
-          renderBubble(data);
+          const isMe = data.senderId === user.uid;
+          const div = document.createElement('div');
+          div.className = `message-row ${isMe ? 'me' : 'them'}`;
+          div.innerHTML = `
+            <img src="${data.senderPhoto || ''}" class="mini-avatar">
+            <div class="bubble">${data.text}</div>
+          `;
+          container.appendChild(div);
         });
-        // Scroll automático al final
         container.scrollTo(0, container.scrollHeight);
       });
-    }
-
-    function renderBubble(data) {
-      const isMe = data.senderId === user.uid;
-      let timeStr = "";
-      if (data.timestamp) {
-        const d = data.timestamp.toDate();
-        timeStr = d.getHours() + ":" + String(d.getMinutes()).padStart(2, '0');
-      }
-      
-      const div = document.createElement('div');
-      div.className = `message-row ${isMe ? 'me' : 'them'}`;
-      div.innerHTML = `
-        <img src="${data.senderPhoto || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'}" class="mini-avatar">
-        <div class="bubble">
-          ${data.text}
-          <span class="time">${timeStr}</span>
-        </div>
-      `;
-      container.appendChild(div);
     }
 
     async function enviarMensaje() {
       const input = document.getElementById('msgInput');
       const text = input.value.trim();
       if (!text || !parejaId) return;
-
       input.value = '';
-      try {
-        await addDoc(collection(db, "mensajes"), {
-          chatId: user.uid + parejaId,
-          text: text,
-          senderId: user.uid,
-          senderPhoto: user.photoURL,
-          timestamp: serverTimestamp()
-        });
-      } catch (e) {
-        console.error("Error al enviar:", e);
-      }
+      await addDoc(collection(db, "mensajes"), {
+        chatId: user.uid + parejaId,
+        text: text,
+        senderId: user.uid,
+        senderPhoto: user.photoURL,
+        timestamp: serverTimestamp()
+      });
     }
 
     document.getElementById('sendBtn').onclick = enviarMensaje;

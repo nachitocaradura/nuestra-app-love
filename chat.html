@@ -112,24 +112,29 @@
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
     import { collection, addDoc, query, where, orderBy, onSnapshot, doc, getDoc, setDoc, serverTimestamp, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
-    let user = null, parejaId = null, typingTimeout = null;
-    let inicializado = false; 
+    let user = null, parejaId = null, typingTimeout = null, inicializado = false; 
     const container = document.getElementById('chat-container');
     const msgInput = document.getElementById('msgInput');
     const typingArea = document.getElementById('typing-area');
 
-    // NOTIFICACIONES: Función para pedir permiso (necesaria para iPhone)
+    // REGISTRAR SERVICE WORKER (Indispensable para móviles)
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').then(() => console.log("Motor de notificaciones listo"));
+    }
+
     async function solicitarPermisos() {
       if (!("Notification" in window)) return;
-      if (Notification.permission === "default") {
-        await Notification.requestPermission();
+      const permission = await Notification.requestPermission();
+      if(permission === 'granted') {
+        // Notificación de prueba para asegurar que el canal está abierto
+        navigator.serviceWorker.ready.then(registration => {
+          registration.showNotification("¡Notificaciones Activas! 💕", { body: "Recibirás avisos cuando te escriban." });
+        });
       }
     }
 
-    // NOTIFICACIONES: Se activa al primer clic en la pantalla (Truco para iOS)
-    document.body.addEventListener('click', () => {
-      solicitarPermisos();
-    }, { once: true });
+    // Activar al primer toque
+    document.body.addEventListener('click', () => { if(Notification.permission !== 'granted') solicitarPermisos(); }, { once: true });
 
     onAuthStateChanged(auth, async (u) => {
       if (!u) { window.location.href = 'auth.html'; return; }
@@ -143,66 +148,25 @@
       }
     });
 
-    msgInput.addEventListener('input', () => {
-      if (!user || !parejaId) return;
-      setDoc(doc(db, "typing", user.uid), { 
-        isTyping: true, to: parejaId, 
-        name: user.displayName || "Tu pareja", 
-        photo: user.photoURL || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png' 
-      }, { merge: true });
-
-      clearTimeout(typingTimeout);
-      typingTimeout = setTimeout(() => {
-        setDoc(doc(db, "typing", user.uid), { isTyping: false }, { merge: true });
-      }, 2000);
-    });
-
-    function escucharEscribiendo() {
-      onSnapshot(doc(db, "typing", parejaId), (snap) => {
-        const data = snap.data();
-        if (data && data.isTyping && data.to === user.uid) {
-          document.getElementById('typing-img').src = data.photo;
-          document.getElementById('typing-name').textContent = data.name;
-          typingArea.classList.add('active');
-          container.scrollTo(0, container.scrollHeight);
-        } else {
-          typingArea.classList.remove('active');
-        }
-      });
-    }
-
-    window.toggleMenu = () => document.getElementById('chatMenu').classList.toggle('show');
-    window.onclick = (e) => { if (!e.target.matches('.menu-btn')) document.getElementById('chatMenu').classList.remove('show'); };
-
-    window.vaciarChat = async () => {
-      if(!confirm("¿Borrar todo el chat?")) return;
-      const q = query(collection(db, "mensajes"), where("chatId", "in", [user.uid + parejaId, parejaId + user.uid]));
-      const snap = await getDocs(q);
-      await Promise.all(snap.docs.map(d => deleteDoc(doc(db, "mensajes", d.id))));
-      toggleMenu();
-    };
-
     function cargarMensajes() {
       const q = query(collection(db, "mensajes"), where("chatId", "in", [user.uid + parejaId, parejaId + user.uid]), orderBy("timestamp", "asc"));
       
       onSnapshot(q, (snap) => {
-        // NOTIFICACIONES: Lógica de disparo
         snap.docChanges().forEach((change) => {
           if (change.type === "added" && inicializado) {
             const m = change.doc.data();
-            // Si el mensaje es de la pareja y NO estamos viendo la app
             if (m.senderId !== user.uid && (document.visibilityState !== "visible" || !document.hasFocus())) {
-              const notification = new Notification("Mensaje de tu amor 💕", {
-                body: m.text,
-                icon: m.senderPhoto || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png',
-                tag: 'chat-notification', // Evita duplicados
-                renotify: true
+              
+              // LANZAR NOTIFICACIÓN VÍA SERVICE WORKER (Mucho más estable en móvil)
+              navigator.serviceWorker.ready.then(registration => {
+                registration.showNotification("Mensaje de tu amor 💕", {
+                  body: m.text,
+                  icon: m.senderPhoto || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png',
+                  badge: 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png',
+                  tag: 'chat-msg',
+                  renotify: true
+                });
               });
-
-              notification.onclick = () => {
-                window.focus();
-                notification.close();
-              };
             }
           }
         });
@@ -221,6 +185,37 @@
         container.scrollTo(0, container.scrollHeight);
       });
     }
+
+    // Lógica de "escribiendo" y envío (Mismo código que ya tenías)
+    msgInput.addEventListener('input', () => {
+      if (!user || !parejaId) return;
+      setDoc(doc(db, "typing", user.uid), { isTyping: true, to: parejaId, name: user.displayName || "Tu pareja", photo: user.photoURL }, { merge: true });
+      clearTimeout(typingTimeout);
+      typingTimeout = setTimeout(() => { setDoc(doc(db, "typing", user.uid), { isTyping: false }, { merge: true }); }, 2000);
+    });
+
+    function escucharEscribiendo() {
+      onSnapshot(doc(db, "typing", parejaId), (snap) => {
+        const data = snap.data();
+        if (data && data.isTyping && data.to === user.uid) {
+          document.getElementById('typing-img').src = data.photo;
+          document.getElementById('typing-name').textContent = data.name;
+          typingArea.classList.add('active');
+          container.scrollTo(0, container.scrollHeight);
+        } else {
+          typingArea.classList.remove('active');
+        }
+      });
+    }
+
+    window.toggleMenu = () => document.getElementById('chatMenu').classList.toggle('show');
+    window.vaciarChat = async () => {
+      if(!confirm("¿Borrar todo el chat?")) return;
+      const q = query(collection(db, "mensajes"), where("chatId", "in", [user.uid + parejaId, parejaId + user.uid]));
+      const snap = await getDocs(q);
+      await Promise.all(snap.docs.map(d => deleteDoc(doc(db, "mensajes", d.id))));
+      toggleMenu();
+    };
 
     async function enviarMensaje() {
       const text = msgInput.value.trim();

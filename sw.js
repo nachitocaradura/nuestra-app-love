@@ -1,3 +1,6 @@
+// sw.js - VERSIÓN 1.0.1
+const VERSION = 'v1.0.1'; 
+
 importScripts('https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js');
 importScripts('https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js');
 
@@ -13,27 +16,34 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
+let currentListener = null;
+
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SET_CHAT_DATA') {
     const { userId, parejaId } = event.data;
     
-    db.collection("mensajes")
+    // Si ya había un vigilante, lo quitamos para no duplicar
+    if (currentListener) currentListener();
+
+    currentListener = db.collection("mensajes")
       .where("chatId", "in", [userId + parejaId, parejaId + userId])
       .orderBy("timestamp", "desc")
       .limit(1)
       .onSnapshot(async (snapshot) => {
         const clients = await self.clients.matchAll({ type: 'window' });
-        const isVisible = clients.some(c => c.visibilityState === 'visible');
+        // Comprobamos si hay alguna pestaña de nuestra web abierta y visible
+        const isAppActive = clients.some(c => c.visibilityState === 'visible');
 
-        if (!isVisible) {
+        if (!isAppActive) {
           snapshot.docChanges().forEach((change) => {
             if (change.type === "added") {
               const m = change.doc.data();
               if (m.senderId !== userId) {
-                self.registration.showNotification("Nuevo mensaje 💕", {
+                self.registration.showNotification("Mensaje nuevo 💕", {
                   body: m.text,
                   icon: m.senderPhoto || '',
-                  tag: 'chat'
+                  tag: 'chat-notification',
+                  renotify: true
                 });
               }
             }
@@ -43,6 +53,6 @@ self.addEventListener('message', (event) => {
   }
 });
 
-// Esto obliga al SW a no morir
-self.addEventListener('install', (event) => self.skipWaiting());
+// Forzar actualización inmediata
+self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', (event) => event.waitUntil(self.clients.claim()));

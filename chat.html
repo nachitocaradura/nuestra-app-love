@@ -91,40 +91,14 @@
     const container = document.getElementById('chat-container');
     const msgInput = document.getElementById('msgInput');
 
-    // 1. REGISTRO ROBUSTO DEL SERVICE WORKER
-    async function initSW() {
-      if ('serviceWorker' in navigator) {
-        try {
-          const reg = await navigator.serviceWorker.register('sw.js');
-          console.log("SW registrado");
-          
-          // Forzar que el SW se active si hay una versión nueva
-          reg.onupdatefound = () => {
-            const installingWorker = reg.installing;
-            installingWorker.onstatechange = () => {
-              if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                location.reload(); 
-              }
-            };
-          };
-        } catch (e) { console.error("Error SW", e); }
-      }
+    // REGISTRAR SW DE FORMA AGRESIVA
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').then(reg => {
+          console.log("Motor registrado con éxito");
+        });
+      });
     }
-    initSW();
-
-    // 2. PEDIR PERMISOS (CON FEEDBACK)
-    async function solicitarPermisos() {
-      const permission = await Notification.requestPermission();
-      if(permission === 'granted') {
-        const reg = await navigator.serviceWorker.ready;
-        reg.showNotification("¡Modo alerta activado! ❤️");
-      } else {
-        alert("¡Activa las notificaciones en los ajustes del navegador para que funcione!");
-      }
-    }
-    document.body.addEventListener('click', () => { 
-      if(Notification.permission !== 'granted') solicitarPermisos(); 
-    }, { once: true });
 
     onAuthStateChanged(auth, async (u) => {
       if (!u) { window.location.href = 'auth.html'; return; }
@@ -134,20 +108,21 @@
         parejaId = userDoc.data().parejaId;
         document.getElementById('statusDot').style.background = '#4CAF50';
         
-        // ENVIAR DATOS AL MOTOR CONSTANTEMENTE
-        const syncSW = () => {
-          navigator.serviceWorker.ready.then(reg => {
-            if (reg.active) {
-              reg.active.postMessage({
-                type: 'SET_CHAT_DATA',
-                userId: user.uid,
-                parejaId: parejaId
-              });
-            }
-          });
+        // Función para despertar al SW
+        const despertarSW = () => {
+          if (navigator.serviceWorker.controller) {
+            navigator.serviceWorker.controller.postMessage({
+              type: 'SET_CHAT_DATA',
+              userId: user.uid,
+              parejaId: parejaId
+            });
+          }
         };
-        syncSW();
-        setInterval(syncSW, 10000); // Re-sincronizar cada 10 seg por si el móvil lo "duerme"
+
+        // Lo intentamos varias veces para asegurar que el SW ha cargado
+        despertarSW();
+        setTimeout(despertarSW, 2000);
+        setTimeout(despertarSW, 5000);
 
         cargarMensajes();
         escucharEscribiendo();
@@ -155,7 +130,10 @@
     });
 
     function cargarMensajes() {
-      const q = query(collection(db, "mensajes"), where("chatId", "in", [user.uid + parejaId, parejaId + user.uid]), orderBy("timestamp", "asc"));
+      const q = query(collection(db, "mensajes"), 
+                where("chatId", "in", [user.uid + parejaId, parejaId + user.uid]), 
+                orderBy("timestamp", "asc"));
+      
       onSnapshot(q, (snap) => {
         container.innerHTML = '';
         snap.forEach(d => {
@@ -174,20 +152,20 @@
       const text = msgInput.value.trim();
       if (!text || !parejaId) return;
       msgInput.value = '';
-      setDoc(doc(db, "typing", user.uid), { isTyping: false }, { merge: true });
       await addDoc(collection(db, "mensajes"), {
-        chatId: user.uid + parejaId, 
-        text, 
+        chatId: user.uid + parejaId,
+        text: text,
         senderId: user.uid,
-        senderPhoto: user.photoURL, 
-        senderName: user.displayName || "Tu pareja",
+        senderPhoto: user.photoURL,
+        senderName: user.displayName || "Tu amor",
         timestamp: serverTimestamp()
       });
     }
 
+    // Lógica de escribiendo...
     msgInput.addEventListener('input', () => {
       if (!user || !parejaId) return;
-      setDoc(doc(db, "typing", user.uid), { isTyping: true, to: parejaId, name: user.displayName || "Tu pareja", photo: user.photoURL }, { merge: true });
+      setDoc(doc(db, "typing", user.uid), { isTyping: true, to: parejaId, name: user.displayName, photo: user.photoURL }, { merge: true });
       clearTimeout(typingTimeout);
       typingTimeout = setTimeout(() => { setDoc(doc(db, "typing", user.uid), { isTyping: false }, { merge: true }); }, 2000);
     });
@@ -195,20 +173,21 @@
     function escucharEscribiendo() {
       onSnapshot(doc(db, "typing", parejaId), (snap) => {
         const data = snap.data();
+        const area = document.getElementById('typing-area');
         if (data && data.isTyping && data.to === user.uid) {
           document.getElementById('typing-img').src = data.photo;
           document.getElementById('typing-name').textContent = data.name;
-          document.getElementById('typing-area').classList.add('active');
+          area.classList.add('active');
           container.scrollTo(0, container.scrollHeight);
         } else {
-          document.getElementById('typing-area').classList.remove('active');
+          area.classList.remove('active');
         }
       });
     }
 
     window.toggleMenu = () => document.getElementById('chatMenu').classList.toggle('show');
     window.vaciarChat = async () => {
-      if(!confirm("¿Borrar todo el chat?")) return;
+      if(!confirm("¿Borrar chat?")) return;
       const q = query(collection(db, "mensajes"), where("chatId", "in", [user.uid + parejaId, parejaId + user.uid]));
       const snap = await getDocs(q);
       await Promise.all(snap.docs.map(d => deleteDoc(doc(db, "mensajes", d.id))));

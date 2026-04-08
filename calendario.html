@@ -21,13 +21,12 @@
       min-height: 100dvh;
       display: flex;
       flex-direction: column;
-      align-items: center; /* CENTRADO HORIZONTAL */
-      justify-content: center; /* CENTRADO VERTICAL */
+      align-items: center; /* Centrado horizontal */
+      justify-content: center; /* Centrado vertical */
       overflow-x: hidden;
       position: relative;
     }
 
-    /* BARRA SUPERIOR FIJA ARRIBA */
     .top-bar { 
       width: 100%; display: flex; align-items: center; padding: 14px 18px; 
       position: absolute; top: 0; z-index: 2; 
@@ -66,11 +65,10 @@
     .day.today { background: var(--pink-accent); color: white; box-shadow: 0 4px 12px var(--shadow); font-weight: 900; }
     .day.empty { opacity: 0; pointer-events: none; }
 
-    /* ICONOS EN EL CALENDARIO */
-    .event-icon { font-size: 10px; position: absolute; bottom: 2px; }
-    .event-photo { width: 18px; height: 18px; border-radius: 50%; border: 1px solid white; position: absolute; top: -5px; right: -5px; }
+    .event-icon { font-size: 12px; position: absolute; bottom: 2px; }
+    .event-photo { width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid white; position: absolute; top: -5px; right: -5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
 
-    /* MODALES */
+    /* Estilos de los Modales */
     .modal-backdrop {
       display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3);
       backdrop-filter: blur(6px); z-index: 200; align-items: center; justify-content: center;
@@ -84,7 +82,7 @@
     .menu-option {
       width: 100%; padding: 15px; margin: 8px 0; border: 2px solid var(--pink-bg);
       border-radius: 15px; background: white; color: var(--pink-dark);
-      font-weight: 900; text-align: left; cursor: pointer; display: flex; justify-content: space-between;
+      font-weight: 900; text-align: left; cursor: pointer; display: flex; justify-content: space-between; align-items: center;
     }
     .menu-option:active { background: var(--pink-bg); }
 
@@ -116,12 +114,9 @@
 
   <div class="modal-backdrop" id="eventModal">
     <div class="modal-sheet" id="modalContent">
-      <h3 id="modalTitle" style="color: var(--pink-accent); margin-bottom: 15px;">Añadir evento</h3>
-      <div id="optionsList">
-        <div class="menu-option" onclick="showSubMenu('cumple')">Añadir cumpleaños 🎂</div>
-        <div class="menu-option" onclick="showSubMenu('ani')">Añadir aniversario 💍</div>
-      </div>
-      <button class="nav-btn" style="width:100%; margin-top:15px; height:45px;" onclick="closeModals()">Cancelar</button>
+      <h3 id="modalTitle" style="color: var(--pink-accent); margin-bottom: 15px; text-align: center;">Gestionar día</h3>
+      <div id="optionsList"></div>
+      <button class="nav-btn" style="width:100%; margin-top:15px; height:45px; border: 1px solid #ddd;" onclick="closeModals()">Cerrar</button>
     </div>
   </div>
 
@@ -136,7 +131,7 @@
 
   <script type="module">
     import { db, auth } from './firebase.js';
-    import { collection, addDoc, onSnapshot, query, where, getDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+    import { collection, addDoc, onSnapshot, query, where, getDoc, doc, deleteDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
     let date = new Date();
     let selectedDay = null;
@@ -145,7 +140,6 @@
     let eventos = [];
     const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
 
-    // 1. CARGAR DATOS DE USUARIOS
     auth.onAuthStateChanged(async (user) => {
       if (user) {
         const uDoc = await getDoc(doc(db, "usuarios", user.uid));
@@ -159,9 +153,9 @@
     });
 
     function cargarEventos() {
-      const q = query(collection(db, "eventos_calendario"));
-      onSnapshot(q, (snapshot) => {
-        eventos = snapshot.docs.map(d => d.data());
+      // Escucha en tiempo real: tu pareja verá lo que pongas al instante
+      onSnapshot(collection(db, "eventos_calendario"), (snapshot) => {
+        eventos = snapshot.docs.map(d => ({ ...d.data(), firestoreId: d.id }));
         renderCalendar();
       });
     }
@@ -185,14 +179,14 @@
         const div = document.createElement('div');
         div.className = 'day';
         div.textContent = i;
-        const currentId = `${date.getFullYear()}-${date.getMonth()}-${i}`;
         
-        // Dibujar eventos guardados
-        const ev = eventos.find(e => e.id === currentId);
+        // Lógica de repetición anual: buscamos por día y mes
+        const ev = eventos.find(e => e.dia === i && e.mes === date.getMonth());
+        
         if(ev) {
           if(ev.tipo === 'cumple') {
             div.innerHTML += `<span class="event-icon">🎂</span><img src="${ev.foto}" class="event-photo">`;
-          } else {
+          } else if(ev.tipo === 'ani') {
             div.innerHTML += `<span class="event-icon">💍</span>`;
           }
         }
@@ -205,14 +199,26 @@
       }
     }
 
-    // 2. MENÚ FLOTANTE
     window.openEventMenu = (day) => {
       selectedDay = day;
-      document.getElementById('modalTitle').textContent = "Añadir evento";
-      document.getElementById('optionsList').innerHTML = `
-        <div class="menu-option" onclick="showSubMenu('cumple')">Añadir cumpleaños 🎂</div>
-        <div class="menu-option" onclick="showSubMenu('ani')">Añadir aniversario 💍</div>
-      `;
+      const ev = eventos.find(e => e.dia === day && e.mes === date.getMonth());
+      const title = document.getElementById('modalTitle');
+      const list = document.getElementById('optionsList');
+
+      if(ev) {
+        title.textContent = "Evento detectado";
+        list.innerHTML = `
+          <div class="menu-option" onclick="eliminarEvento('${ev.firestoreId}')" style="color: #ff4d4d; border-color: #ffb3c6;">
+            Eliminar este evento 🗑️
+          </div>
+        `;
+      } else {
+        title.textContent = "Añadir evento";
+        list.innerHTML = `
+          <div class="menu-option" onclick="showSubMenu('cumple')">Añadir cumpleaños 🎂</div>
+          <div class="menu-option" onclick="showSubMenu('ani')">Añadir aniversario 💍</div>
+        `;
+      }
       document.getElementById('eventModal').classList.add('show');
     };
 
@@ -230,12 +236,12 @@
     };
 
     window.saveEvent = async (tipo, quien = null) => {
-      const eventId = `${date.getFullYear()}-${date.getMonth()}-${selectedDay}`;
+      // Guardamos día y mes por separado para que repita cada año
       const data = {
-        id: eventId,
+        dia: selectedDay,
+        mes: date.getMonth(),
         tipo: tipo,
-        creadoPor: auth.currentUser.uid,
-        timestamp: new Date()
+        creadoPor: auth.currentUser.uid
       };
 
       if(tipo === 'cumple') {
@@ -248,15 +254,20 @@
       closeModals();
     };
 
+    window.eliminarEvento = async (firestoreId) => {
+      if(confirm("¿Seguro que quieres borrar este evento?")) {
+        await deleteDoc(doc(db, "eventos_calendario", firestoreId));
+        closeModals();
+      }
+    };
+
     window.closeModals = () => document.getElementById('eventModal').classList.remove('show');
     window.changeMonth = (delta) => { date.setMonth(date.getMonth() + delta); renderCalendar(); };
 
-    // 3. LOGICA PICKER (Igual que el tuyo pero modular)
     window.openPicker = () => {
       const mWheel = document.getElementById('monthWheel');
       const yWheel = document.getElementById('yearWheel');
       mWheel.innerHTML = ''; yWheel.innerHTML = '';
-
       monthNames.forEach((m, i) => {
         const item = document.createElement('div');
         item.className = 'wheel-item' + (i === date.getMonth() ? ' selected' : '');
@@ -264,7 +275,6 @@
         item.onclick = () => { date.setMonth(i); openPicker(); renderCalendar(); };
         mWheel.appendChild(item);
       });
-
       for(let y = date.getFullYear() - 5; y <= date.getFullYear() + 5; y++) {
         const item = document.createElement('div');
         item.className = 'wheel-item' + (y === date.getFullYear() ? ' selected' : '');
@@ -276,7 +286,6 @@
     };
 
     window.closePicker = () => document.getElementById('pickerModal').classList.remove('show');
-
     renderCalendar();
   </script>
 </body>

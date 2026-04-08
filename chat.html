@@ -117,9 +117,15 @@
     const msgInput = document.getElementById('msgInput');
     const typingArea = document.getElementById('typing-area');
 
-    // NOTIFICACIONES: Registrar el "motor" (Service Worker)
+    // REGISTRAR SERVICE WORKER
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js').then(() => console.log("Motor listo"));
+      navigator.serviceWorker.register('sw.js').then(reg => {
+        console.log("Motor listo");
+        // Enviar datos al SW si ya está activo
+        if (reg.active && user && parejaId) {
+            reg.active.postMessage({ type: 'SET_CHAT_DATA', userId: user.uid, parejaId: parejaId });
+        }
+      });
     }
 
     async function solicitarPermisos() {
@@ -132,7 +138,7 @@
       }
     }
 
-    // NOTIFICACIONES: Pedir permiso al primer toque en la pantalla
+    // Pedir permiso al primer toque
     document.body.addEventListener('click', () => { 
       if(Notification.permission !== 'granted') solicitarPermisos(); 
     }, { once: true });
@@ -144,6 +150,13 @@
       if (userDoc.exists() && userDoc.data().parejaId) {
         parejaId = userDoc.data().parejaId;
         document.getElementById('statusDot').style.background = '#4CAF50';
+        
+        // AVISAR AL SERVICE WORKER
+        navigator.serviceWorker.ready.then(reg => {
+          reg.active.postMessage({ type: 'SET_CHAT_DATA', userId: user.uid, parejaId: parejaId });
+        });
+
+        cargarEventosParaNotificar(); // Opcional: si quieres lógica extra
         cargarMensajes();
         escucharEscribiendo();
       }
@@ -153,24 +166,9 @@
       const q = query(collection(db, "mensajes"), where("chatId", "in", [user.uid + parejaId, parejaId + user.uid]), orderBy("timestamp", "asc"));
       
       onSnapshot(q, (snap) => {
-        // NOTIFICACIONES: Lógica de disparo sin filtros de visibilidad (PARA PRUEBA)
-        snap.docChanges().forEach((change) => {
-          if (change.type === "added" && inicializado) {
-            const m = change.doc.data();
-            if (m.senderId !== user.uid) {
-              navigator.serviceWorker.ready.then(reg => {
-                reg.showNotification(m.senderName || "Mensaje nuevo 💕", {
-                  body: m.text,
-                  icon: m.senderPhoto || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png',
-                  badge: 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png',
-                  tag: 'chat-msg',
-                  renotify: true
-                });
-              });
-            }
-          }
-        });
-
+        // NOTA: La lógica de notificaciones ahora la gestiona el sw.js 
+        // basándose en si la app está visible o no.
+        
         container.innerHTML = '';
         snap.forEach(d => {
           const m = d.data();
@@ -223,7 +221,8 @@
       setDoc(doc(db, "typing", user.uid), { isTyping: false }, { merge: true });
       await addDoc(collection(db, "mensajes"), {
         chatId: user.uid + parejaId, text, senderId: user.uid,
-        senderPhoto: user.photoURL, timestamp: serverTimestamp()
+        senderPhoto: user.photoURL, timestamp: serverTimestamp(),
+        senderName: user.displayName || "Tu amor"
       });
     }
 

@@ -6,19 +6,44 @@
   <title>💬 Nuestro Chat</title>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
   <style>
-    :root { --bg: #ffd6e0; --mid: #ffb3c6; --dark: #ff85a1; --accent: #ff4d79; --shadow: rgba(255, 77, 121, 0.25); }
-    [data-theme="blue"] { --bg: #d6eaff; --mid: #b3d9ff; --dark: #85bfff; --accent: #4d94ff; --shadow: rgba(77, 148, 255, 0.25); }
+    :root {
+      --bg: #ffd6e0; --mid: #ffb3c6; --dark: #ff85a1; --accent: #ff4d79; --shadow: rgba(255, 77, 121, 0.25);
+    }
+    [data-theme="blue"] {
+      --bg: #d6eaff; --mid: #b3d9ff; --dark: #85bfff; --accent: #4d94ff; --shadow: rgba(77, 148, 255, 0.25);
+    }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { height: 100%; overflow: hidden; background: var(--bg); }
     body { font-family: 'Nunito', sans-serif; display: flex; flex-direction: column; height: 100dvh; transition: background 0.4s ease; }
-    .chat-header { padding: 50px 20px 15px; background: white; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 2px 10px var(--shadow); flex-shrink: 0; position: relative; }
-    .back-btn { position: absolute; left: 18px; bottom: 12px; text-decoration: none; font-size: 20px; background: rgba(255,255,255,0.6); border-radius: 12px; padding: 6px 10px; color: var(--accent); font-weight: 900; box-shadow: 0 2px 8px var(--shadow); cursor: pointer; border: none; display: flex; align-items: center; justify-content: center; }
-    .menu-btn { position: absolute; right: 18px; bottom: 12px; background: white; border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; color: var(--accent); font-size: 20px; box-shadow: 0 2px 8px var(--shadow); cursor: pointer; border: none; z-index: 10; }
-    .dropdown-menu { position: absolute; right: 20px; top: 95px; background: white; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.15); display: none; flex-direction: column; overflow: hidden; z-index: 100; min-width: 150px; }
+    .chat-header {
+      padding: 50px 20px 15px; background: white; display: flex; flex-direction: column; 
+      align-items: center; justify-content: center; box-shadow: 0 2px 10px var(--shadow);
+      flex-shrink: 0; position: relative;
+    }
+    .back-btn {
+      position: absolute; left: 18px; bottom: 12px; text-decoration: none; font-size: 20px; 
+      background: rgba(255,255,255,0.6); border-radius: 12px; padding: 6px 10px; 
+      color: var(--accent); font-weight: 900; box-shadow: 0 2px 8px var(--shadow); 
+      cursor: pointer; border: none; display: flex; align-items: center; justify-content: center;
+    }
+    .menu-btn {
+      position: absolute; right: 18px; bottom: 12px; background: white; border-radius: 50%; 
+      width: 35px; height: 35px; display: flex; align-items: center; justify-content: center;
+      color: var(--accent); font-size: 20px; box-shadow: 0 2px 8px var(--shadow);
+      cursor: pointer; border: none; z-index: 10;
+    }
+    .dropdown-menu {
+      position: absolute; right: 20px; top: 95px; background: white; border-radius: 15px; 
+      box-shadow: 0 5px 20px rgba(0,0,0,0.15); display: none; flex-direction: column; 
+      overflow: hidden; z-index: 100; min-width: 150px;
+    }
     .dropdown-menu.show { display: flex; }
     .menu-item { padding: 12px 20px; font-size: 14px; font-weight: 700; color: #ff4d4d; cursor: pointer; text-align: left; }
     .chat-header h2 { font-size: 18px; color: var(--accent); font-weight: 900; }
     #chat-container { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 12px; }
+    #typing-area { display: none; align-items: center; gap: 8px; margin-bottom: 10px; padding-left: 5px; }
+    #typing-area.active { display: flex; }
+    .typing-text { font-size: 13px; color: var(--dark); font-weight: 700; }
     .message-row { display: flex; align-items: flex-end; gap: 8px; max-width: 85%; }
     .message-row.me { align-self: flex-end; flex-direction: row-reverse; }
     .mini-avatar { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; border: 2px solid white; flex-shrink: 0; }
@@ -28,15 +53,30 @@
     .input-area { background: white; display: flex; gap: 10px; align-items: center; border-top: 1px solid #eee; padding: 12px 15px 60px; }
     input { flex: 1; padding: 12px 18px; border-radius: 25px; border: 2px solid var(--bg); outline: none; font-size: 16px; }
     .send-btn { width: 45px; height: 45px; border-radius: 50%; background: var(--accent); border: none; color: white; font-size: 20px; display: flex; align-items: center; justify-content: center; }
+    #statusDot { position: absolute; top: 58px; right: 28%; width:8px; height:8px; border-radius:50%; background:#ccc; }
   </style>
 </head>
 <body>
   <script>if(localStorage.getItem('theme') === 'blue') document.documentElement.setAttribute('data-theme', 'blue');</script>
+
   <div class="chat-header">
     <a href="index.html" class="back-btn">‹</a>
     <h2>Nuestro Chat 💕</h2>
+    <div id="statusDot"></div>
+    <button class="menu-btn" onclick="toggleMenu()">⋮</button>
   </div>
+
+  <div class="dropdown-menu" id="chatMenu">
+    <div class="menu-item" onclick="vaciarChat()">🗑️ Vaciar chat</div>
+  </div>
+
   <div id="chat-container"></div>
+
+  <div id="typing-area">
+    <img id="typing-img" src="" class="mini-avatar">
+    <span class="typing-text"><span id="typing-name"></span> está escribiendo...</span>
+  </div>
+
   <div class="input-area">
     <input type="text" id="msgInput" placeholder="Escribe aquí..." autocomplete="off">
     <button class="send-btn" id="sendBtn">➤</button>
@@ -45,55 +85,69 @@
   <script type="module">
     import { db, auth } from './firebase.js';
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
-    import { collection, addDoc, query, where, orderBy, onSnapshot, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+    import { collection, addDoc, query, where, orderBy, onSnapshot, doc, getDoc, setDoc, serverTimestamp, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+    // IMPORTACIÓN PARA NOTIFICACIONES FCM
     import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-messaging.js";
 
-    let user = null, parejaId = null;
-    let primeraCarga = true;
+    let user = null, parejaId = null, typingTimeout = null;
     const container = document.getElementById('chat-container');
     const msgInput = document.getElementById('msgInput');
     const messaging = getMessaging();
 
-    // 1. REGISTRAR SERVICE WORKER
+    // REGISTRAR SW DE FORMA AGRESIVA
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js').then(reg => {
-        console.log("Service Worker listo.");
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').then(reg => {
+          console.log("Motor registrado con éxito");
+        });
       });
     }
 
-    // 2. PEDIR PERMISOS Y GUARDAR TOKEN
-    async function setupFCM(userId) {
+    // FUNCIÓN PARA ACTIVAR FCM Y OBTENER TOKEN
+    async function activarNotificacionesFCM(userId) {
       try {
-        const permission = await Notification.requestPermission();
-        if (permission === 'granted') {
-          const token = await getToken(messaging, { vapidKey: 'BCAD1wd4akkmElcAqzk2sOVuMPGV5ntxBeo7rF4q3K7Ey_4hIMhLVVvriRcRGUo46L51Tk73F49-IpISwRs0nOk' });
-          if (token) await setDoc(doc(db, "usuarios", userId), { fcmToken: token }, { merge: true });
-        }
-      } catch (err) { console.error("Error FCM:", err); }
-    }
-
-    // 3. LANZAR NOTIFICACIÓN LOCAL
-    function lanzarNotificacion(texto) {
-      if (Notification.permission === 'granted') {
-        navigator.serviceWorker.ready.then(reg => {
-          reg.showNotification("Nuevo mensaje 💕", {
-            body: texto,
-            icon: 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png',
-            vibrate: [200, 100, 200],
-            tag: 'chat-msg'
-          });
+        const token = await getToken(messaging, { 
+          vapidKey: 'BCAD1wd4akkmElcAqzk2sOVuMPGV5ntxBeo7rF4q3K7Ey_4hIMhLVVvriRcRGUo46L51Tk73F49-IpISwRs0nOk' 
         });
+        
+        if (token) {
+          console.log("Token FCM obtenido:", token);
+          // Guardamos el token en Firestore para saber dónde enviar las notificaciones
+          await setDoc(doc(db, "usuarios", userId), { fcmToken: token }, { merge: true });
+        }
+      } catch (err) {
+        console.error("Error al activar FCM:", err);
       }
     }
 
     onAuthStateChanged(auth, async (u) => {
       if (!u) { window.location.href = 'auth.html'; return; }
       user = u;
-      setupFCM(u.uid);
+      
+      // Activar notificaciones para el usuario actual
+      activarNotificacionesFCM(u.uid);
+
       const userDoc = await getDoc(doc(db, "usuarios", u.uid));
       if (userDoc.exists() && userDoc.data().parejaId) {
         parejaId = userDoc.data().parejaId;
+        document.getElementById('statusDot').style.background = '#4CAF50';
+        
+        const despertarSW = () => {
+          if (navigator.serviceWorker.controller) {
+            navigator.serviceWorker.controller.postMessage({
+              type: 'SET_CHAT_DATA',
+              userId: user.uid,
+              parejaId: parejaId
+            });
+          }
+        };
+
+        despertarSW();
+        setTimeout(despertarSW, 2000);
+        setTimeout(despertarSW, 5000);
+
         cargarMensajes();
+        escucharEscribiendo();
       }
     });
 
@@ -103,41 +157,66 @@
                 orderBy("timestamp", "asc"));
       
       onSnapshot(q, (snap) => {
-        const cambios = snap.docChanges();
-        
-        if (!primeraCarga) {
-          cambios.forEach(change => {
-            if (change.type === "added") {
-              const m = change.doc.data();
-              if (m.senderId === parejaId) {
-                lanzarNotificacion(m.text);
-              }
-            }
-          });
-        }
-
         container.innerHTML = '';
         snap.forEach(d => {
           const m = d.data();
+          const isMe = m.senderId === user.uid;
           const div = document.createElement('div');
-          div.className = `message-row ${m.senderId === user.uid ? 'me' : 'them'}`;
-          div.innerHTML = `<img src="${m.senderPhoto || ''}" class="mini-avatar"><div class="bubble">${m.text}</div>`;
+          div.className = `message-row ${isMe ? 'me' : 'them'}`;
+          div.innerHTML = `<img src="${m.senderPhoto || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'}" class="mini-avatar"><div class="bubble">${m.text}</div>`;
           container.appendChild(div);
         });
         container.scrollTo(0, container.scrollHeight);
-        primeraCarga = false;
       });
     }
 
-    document.getElementById('sendBtn').onclick = async () => {
+    async function enviarMensaje() {
       const text = msgInput.value.trim();
       if (!text || !parejaId) return;
       msgInput.value = '';
       await addDoc(collection(db, "mensajes"), {
-        chatId: user.uid + parejaId, text, senderId: user.uid,
-        senderPhoto: user.photoURL, timestamp: serverTimestamp()
+        chatId: user.uid + parejaId,
+        text: text,
+        senderId: user.uid,
+        senderPhoto: user.photoURL,
+        senderName: user.displayName || "Tu amor",
+        timestamp: serverTimestamp()
       });
+    }
+
+    msgInput.addEventListener('input', () => {
+      if (!user || !parejaId) return;
+      setDoc(doc(db, "typing", user.uid), { isTyping: true, to: parejaId, name: user.displayName, photo: user.photoURL }, { merge: true });
+      clearTimeout(typingTimeout);
+      typingTimeout = setTimeout(() => { setDoc(doc(db, "typing", user.uid), { isTyping: false }, { merge: true }); }, 2000);
+    });
+
+    function escucharEscribiendo() {
+      onSnapshot(doc(db, "typing", parejaId), (snap) => {
+        const data = snap.data();
+        const area = document.getElementById('typing-area');
+        if (data && data.isTyping && data.to === user.uid) {
+          document.getElementById('typing-img').src = data.photo;
+          document.getElementById('typing-name').textContent = data.name;
+          area.classList.add('active');
+          container.scrollTo(0, container.scrollHeight);
+        } else {
+          area.classList.remove('active');
+        }
+      });
+    }
+
+    window.toggleMenu = () => document.getElementById('chatMenu').classList.toggle('show');
+    window.vaciarChat = async () => {
+      if(!confirm("¿Borrar chat?")) return;
+      const q = query(collection(db, "mensajes"), where("chatId", "in", [user.uid + parejaId, parejaId + user.uid]));
+      const snap = await getDocs(q);
+      await Promise.all(snap.docs.map(d => deleteDoc(doc(db, "mensajes", d.id))));
+      toggleMenu();
     };
+
+    document.getElementById('sendBtn').onclick = enviarMensaje;
+    msgInput.onkeypress = (e) => { if(e.key === 'Enter') enviarMensaje(); };
   </script>
 </body>
 </html>

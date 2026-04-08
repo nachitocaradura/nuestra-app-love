@@ -39,21 +39,24 @@
       position: relative;
     }
     
-    /* BOTÓN EXACTO DE LA RULETA */
+    /* BOTÓN COPIADO DE CALENDARIO.HTML */
     .back-btn {
       position: absolute;
-      left: 20px;
+      left: 18px;
       bottom: 12px;
-      width: 40px; height: 40px;
-      background: white;
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      text-decoration: none;
-      color: var(--accent);
-      font-size: 24px;
+      text-decoration: none; 
+      font-size: 20px; 
+      background: rgba(255,255,255,0.6);
+      border-radius: 12px; 
+      padding: 6px 10px; 
+      color: var(--accent); 
       font-weight: 900;
-      box-shadow: 0 4px 15px var(--shadow);
-      z-index: 10;
+      box-shadow: 0 2px 8px var(--shadow); 
+      cursor: pointer; 
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .chat-header h2 { font-size: 18px; color: var(--accent); font-weight: 900; }
@@ -83,7 +86,7 @@
     .me .bubble { background: var(--accent); color: white; border-bottom-right-radius: 4px; }
     .them .bubble { background: white; color: #444; border-bottom-left-radius: 4px; }
 
-    /* ÁREA DE ESCRITURA CORREGIDA */
+    /* BARRA DE ESCRITURA AJUSTADA */
     .input-area {
       background: white;
       display: flex; 
@@ -91,7 +94,7 @@
       align-items: center;
       flex-shrink: 0;
       border-top: 1px solid #eee;
-      padding: 10px 15px calc(15px + env(safe-area-inset-bottom)); /* Ajuste fino */
+      padding: 12px 15px calc(20px + env(safe-area-inset-bottom)); /* Margen seguro para botones de Honor */
     }
 
     input {

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>💬 Nuestro Chat - Nuestra App</title>
+  <title>💬 Nuestro Chat</title>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
   <style>
     :root {
@@ -15,78 +15,88 @@
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
-    body {
-      font-family: 'Nunito', sans-serif;
+    /* Evitar el scroll molesto del body */
+    html, body { 
+      height: 100%; 
+      overflow: hidden; 
       background: var(--bg);
-      height: 100dvh;
-      display: flex; flex-direction: column;
-      transition: background 0.4s ease;
     }
 
-    /* Header */
+    body {
+      font-family: 'Nunito', sans-serif;
+      display: flex; 
+      flex-direction: column;
+      height: 100dvh; /* Altura dinámica real del móvil */
+    }
+
+    /* Header fijo arriba */
     .chat-header {
       padding: 50px 20px 15px;
       background: white;
       display: flex; align-items: center; gap: 15px;
       box-shadow: 0 2px 10px var(--shadow);
-      z-index: 10;
+      flex-shrink: 0;
     }
     .back-btn { text-decoration: none; font-size: 20px; color: var(--accent); }
-    .chat-header h2 { font-size: 18px; color: var(--accent); flex: 1; }
+    .chat-header h2 { font-size: 18px; color: var(--accent); flex: 1; font-weight: 900; }
 
-    /* Área de mensajes */
+    /* Contenedor de mensajes que se estira solo */
     #chat-container {
       flex: 1;
       overflow-y: auto;
-      padding: 20px;
-      display: flex; flex-direction: column; gap: 15px;
+      padding: 15px;
+      display: flex; 
+      flex-direction: column; 
+      gap: 12px;
+      background: transparent;
+      -webkit-overflow-scrolling: touch; /* Scroll suave en iOS */
     }
 
     .message-row { display: flex; align-items: flex-end; gap: 8px; max-width: 85%; }
     .message-row.me { align-self: flex-end; flex-direction: row-reverse; }
     .message-row.them { align-self: flex-start; }
 
-    .mini-avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 2px solid white; }
+    .mini-avatar { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; border: 2px solid white; flex-shrink: 0; }
 
     .bubble {
-      padding: 12px 16px;
-      border-radius: 20px;
-      font-size: 14px;
+      padding: 10px 14px;
+      border-radius: 18px;
+      font-size: 15px;
       line-height: 1.4;
       position: relative;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      word-wrap: break-word;
     }
     .me .bubble { background: var(--accent); color: white; border-bottom-right-radius: 4px; }
-    .them .bubble { background: white; color: #444; border-bottom-left-radius: 4px; }
+    .them .bubble { background: white; color: #444; border-bottom-left-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
 
-    .time { font-size: 10px; opacity: 0.7; margin-top: 4px; display: block; text-align: right; }
+    .time { font-size: 10px; opacity: 0.6; margin-top: 4px; display: block; text-align: right; }
     .me .time { color: rgba(255,255,255,0.8); }
 
-    /* Input box */
+    /* Barra de escribir FIJA abajo */
     .input-area {
-      padding: 15px 20px 30px;
+      padding: 10px 15px 30px; /* Padding extra abajo para el "home bar" del iPhone */
       background: white;
       display: flex; gap: 10px; align-items: center;
+      flex-shrink: 0;
+      border-top: 1px solid #eee;
     }
     input {
       flex: 1; padding: 12px 18px; border-radius: 25px;
       border: 2px solid var(--bg); font-family: inherit; outline: none;
+      font-size: 16px; /* Evita que iOS haga zoom al pulsar */
     }
     .send-btn {
       width: 45px; height: 45px; border-radius: 50%; background: var(--accent);
       border: none; color: white; font-size: 20px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
     }
-
-    /* Scrollbar */
-    #chat-container::-webkit-scrollbar { width: 4px; }
-    #chat-container::-webkit-scrollbar-thumb { background: var(--mid); border-radius: 10px; }
   </style>
 </head>
 <body>
 
   <div class="chat-header">
     <a href="index.html" class="back-btn">🏠</a>
-    <h2 id="chatWith">Chat</h2>
+    <h2 id="chatWith">Nuestro Chat 💕</h2>
     <div id="statusDot" style="width:10px; height:10px; border-radius:50%; background:#ccc;"></div>
   </div>
 
@@ -94,7 +104,7 @@
     </div>
 
   <div class="input-area">
-    <input type="text" id="msgInput" placeholder="Escribe algo tierno..." autocomplete="off">
+    <input type="text" id="msgInput" placeholder="Dile algo bonito..." autocomplete="off">
     <button class="send-btn" id="sendBtn">➤</button>
   </div>
 
@@ -121,12 +131,12 @@
         document.getElementById('statusDot').style.background = '#4CAF50';
         cargarMensajes();
       } else {
-        container.innerHTML = "<p style='text-align:center; color:gray; margin-top:20px;'>Vincula a tu pareja en Perfil para chatear 💕</p>";
+        container.innerHTML = "<p style='text-align:center; color:gray; padding-top:40px;'>Vincula a tu pareja en Perfil para chatear 💕</p>";
       }
     });
 
     function cargarMensajes() {
-      // Buscamos mensajes donde los participantes seamos nosotros dos
+      // Esta consulta es la que necesita el ÍNDICE en Firebase
       const q = query(
         collection(db, "mensajes"),
         where("chatId", "in", [user.uid + parejaId, parejaId + user.uid]),
@@ -139,13 +149,18 @@
           const data = doc.data();
           renderBubble(data);
         });
-        container.scrollTop = container.scrollHeight;
+        // Scroll automático al final
+        container.scrollTo(0, container.scrollHeight);
       });
     }
 
     function renderBubble(data) {
       const isMe = data.senderId === user.uid;
-      const time = data.timestamp ? new Date(data.timestamp.toDate()).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : "";
+      let timeStr = "";
+      if (data.timestamp) {
+        const d = data.timestamp.toDate();
+        timeStr = d.getHours() + ":" + String(d.getMinutes()).padStart(2, '0');
+      }
       
       const div = document.createElement('div');
       div.className = `message-row ${isMe ? 'me' : 'them'}`;
@@ -153,24 +168,29 @@
         <img src="${data.senderPhoto || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'}" class="mini-avatar">
         <div class="bubble">
           ${data.text}
-          <span class="time">${time}</span>
+          <span class="time">${timeStr}</span>
         </div>
       `;
       container.appendChild(div);
     }
 
     async function enviarMensaje() {
-      const text = document.getElementById('msgInput').value.trim();
+      const input = document.getElementById('msgInput');
+      const text = input.value.trim();
       if (!text || !parejaId) return;
 
-      document.getElementById('msgInput').value = '';
-      await addDoc(collection(db, "mensajes"), {
-        chatId: user.uid + parejaId, // ID único de la pareja
-        text: text,
-        senderId: user.uid,
-        senderPhoto: user.photoURL,
-        timestamp: serverTimestamp()
-      });
+      input.value = '';
+      try {
+        await addDoc(collection(db, "mensajes"), {
+          chatId: user.uid + parejaId,
+          text: text,
+          senderId: user.uid,
+          senderPhoto: user.photoURL,
+          timestamp: serverTimestamp()
+        });
+      } catch (e) {
+        console.error("Error al enviar:", e);
+      }
     }
 
     document.getElementById('sendBtn').onclick = enviarMensaje;

@@ -26,30 +26,37 @@
       display: flex; 
       flex-direction: column;
       height: 100dvh; 
+      transition: background 0.4s ease;
     }
 
-    /* BARRA SUPERIOR CON BOTÓN DE RULETA */
+    /* BARRA SUPERIOR */
     .chat-header {
       padding: 50px 20px 15px;
       background: white;
-      display: flex; align-items: center; gap: 15px;
+      display: flex; align-items: center; justify-content: center;
       box-shadow: 0 2px 10px var(--shadow);
       flex-shrink: 0;
+      position: relative;
     }
     
+    /* BOTÓN EXACTO DE LA RULETA */
     .back-btn {
+      position: absolute;
+      left: 20px;
+      bottom: 12px;
       width: 40px; height: 40px;
       background: white;
       border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
       text-decoration: none;
       color: var(--accent);
-      font-size: 20px;
+      font-size: 24px;
       font-weight: 900;
-      box-shadow: 0 4px 10px var(--shadow);
+      box-shadow: 0 4px 15px var(--shadow);
+      z-index: 10;
     }
 
-    .chat-header h2 { font-size: 18px; color: var(--accent); flex: 1; font-weight: 900; }
+    .chat-header h2 { font-size: 18px; color: var(--accent); font-weight: 900; }
 
     #chat-container {
       flex: 1;
@@ -71,11 +78,12 @@
       border-radius: 18px;
       font-size: 15px;
       line-height: 1.4;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     }
     .me .bubble { background: var(--accent); color: white; border-bottom-right-radius: 4px; }
-    .them .bubble { background: white; color: #444; border-bottom-left-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+    .them .bubble { background: white; color: #444; border-bottom-left-radius: 4px; }
 
-    /* AJUSTE PARA TUS BOTONES DE ANDROID */
+    /* ÁREA DE ESCRITURA CORREGIDA */
     .input-area {
       background: white;
       display: flex; 
@@ -83,7 +91,7 @@
       align-items: center;
       flex-shrink: 0;
       border-top: 1px solid #eee;
-      padding: 15px 15px calc(25px + env(safe-area-inset-bottom)); /* Más margen abajo */
+      padding: 10px 15px calc(15px + env(safe-area-inset-bottom)); /* Ajuste fino */
     }
 
     input {
@@ -96,14 +104,20 @@
       border: none; color: white; font-size: 20px; display: flex; align-items: center; justify-content: center;
     }
     
-    #statusDot { width:10px; height:10px; border-radius:50%; background:#ccc; }
+    #statusDot { width:8px; height:8px; border-radius:50%; background:#ccc; margin-left: 8px; }
   </style>
 </head>
 <body>
 
+  <script>
+    if(localStorage.getItem('theme') === 'blue') {
+      document.documentElement.setAttribute('data-theme', 'blue');
+    }
+  </script>
+
   <div class="chat-header">
     <a href="index.html" class="back-btn">‹</a>
-    <h2 id="chatWith">Nuestro Chat 💕</h2>
+    <h2>Nuestro Chat 💕</h2>
     <div id="statusDot"></div>
   </div>
 

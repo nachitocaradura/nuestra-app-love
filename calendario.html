@@ -21,8 +21,8 @@
       min-height: 100dvh;
       display: flex;
       flex-direction: column;
-      align-items: center; /* Centrado horizontal */
-      justify-content: center; /* Centrado vertical */
+      align-items: center; 
+      justify-content: center; 
       overflow-x: hidden;
       position: relative;
     }
@@ -66,9 +66,8 @@
     .day.empty { opacity: 0; pointer-events: none; }
 
     .event-icon { font-size: 12px; position: absolute; bottom: 2px; }
-    .event-photo { width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid white; position: absolute; top: -5px; right: -5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .event-photo { width: 22px; height: 22px; border-radius: 50%; border: 2px solid white; position: absolute; top: -5px; right: -5px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); object-fit: cover; }
 
-    /* Estilos de los Modales */
     .modal-backdrop {
       display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3);
       backdrop-filter: blur(6px); z-index: 200; align-items: center; justify-content: center;
@@ -131,7 +130,7 @@
 
   <script type="module">
     import { db, auth } from './firebase.js';
-    import { collection, addDoc, onSnapshot, query, where, getDoc, doc, deleteDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+    import { collection, addDoc, onSnapshot, query, getDoc, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
     let date = new Date();
     let selectedDay = null;
@@ -142,6 +141,7 @@
 
     auth.onAuthStateChanged(async (user) => {
       if (user) {
+        // Carga de datos usando el campo 'foto'
         const uDoc = await getDoc(doc(db, "usuarios", user.uid));
         userData = uDoc.data();
         if (userData.parejaId) {
@@ -153,7 +153,6 @@
     });
 
     function cargarEventos() {
-      // Escucha en tiempo real: tu pareja verá lo que pongas al instante
       onSnapshot(collection(db, "eventos_calendario"), (snapshot) => {
         eventos = snapshot.docs.map(d => ({ ...d.data(), firestoreId: d.id }));
         renderCalendar();
@@ -180,7 +179,7 @@
         div.className = 'day';
         div.textContent = i;
         
-        // Lógica de repetición anual: buscamos por día y mes
+        // Búsqueda de evento ignorando el año para repetición anual
         const ev = eventos.find(e => e.dia === i && e.mes === date.getMonth());
         
         if(ev) {
@@ -206,7 +205,7 @@
       const list = document.getElementById('optionsList');
 
       if(ev) {
-        title.textContent = "Evento detectado";
+        title.textContent = "Evento guardado";
         list.innerHTML = `
           <div class="menu-option" onclick="eliminarEvento('${ev.firestoreId}')" style="color: #ff4d4d; border-color: #ffb3c6;">
             Eliminar este evento 🗑️
@@ -225,9 +224,9 @@
     window.showSubMenu = (tipo) => {
       const list = document.getElementById('optionsList');
       if (tipo === 'cumple') {
-        document.getElementById('modalTitle').textContent = "¿De quién es el cumple?";
+        document.getElementById('modalTitle').textContent = "¿De quién?";
         list.innerHTML = `
-          <div class="menu-option" onclick="saveEvent('cumple', 'yo')">${userData.nombre} (Tú) 👤</div>
+          <div class="menu-option" onclick="saveEvent('cumple', 'yo')">${userData.nombre || 'Yo'} 👤</div>
           <div class="menu-option" onclick="saveEvent('cumple', 'pareja')">${parejaData ? parejaData.nombre : 'Pareja'} ❤️</div>
         `;
       } else {
@@ -236,7 +235,6 @@
     };
 
     window.saveEvent = async (tipo, quien = null) => {
-      // Guardamos día y mes por separado para que repita cada año
       const data = {
         dia: selectedDay,
         mes: date.getMonth(),
@@ -246,8 +244,11 @@
 
       if(tipo === 'cumple') {
         const target = quien === 'yo' ? userData : parejaData;
-        data.foto = target.fotoPerfil || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
-        data.nombre = target.nombre;
+        // CORRECCIÓN: Usamos target.foto
+        data.foto = target.foto || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
+        data.nombre = target.nombre || 'Cumpleaños';
+      } else {
+        data.nombre = 'Aniversario';
       }
 
       await addDoc(collection(db, "eventos_calendario"), data);
@@ -255,7 +256,7 @@
     };
 
     window.eliminarEvento = async (firestoreId) => {
-      if(confirm("¿Seguro que quieres borrar este evento?")) {
+      if(confirm("¿Quieres borrar este evento?")) {
         await deleteDoc(doc(db, "eventos_calendario", firestoreId));
         closeModals();
       }

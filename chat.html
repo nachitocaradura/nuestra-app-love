@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>💬 Nuestro Chat - Nuestra App</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #ffd6e0; --mid: #ffb3c6; --dark: #ff85a1; --accent: #ff4d79; --shadow: rgba(255, 77, 121, 0.2);
+    }
+    [data-theme="blue"] {
+      --bg: #d6eaff; --mid: #b3d9ff; --dark: #85bfff; --accent: #4d94ff; --shadow: rgba(77, 148, 255, 0.2);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--bg);
+      height: 100dvh;
+      display: flex; flex-direction: column;
+      transition: background 0.4s ease;
+    }
+
+    /* Header */
+    .chat-header {
+      padding: 50px 20px 15px;
+      background: white;
+      display: flex; align-items: center; gap: 15px;
+      box-shadow: 0 2px 10px var(--shadow);
+      z-index: 10;
+    }
+    .back-btn { text-decoration: none; font-size: 20px; color: var(--accent); }
+    .chat-header h2 { font-size: 18px; color: var(--accent); flex: 1; }
+
+    /* Área de mensajes */
+    #chat-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex; flex-direction: column; gap: 15px;
+    }
+
+    .message-row { display: flex; align-items: flex-end; gap: 8px; max-width: 85%; }
+    .message-row.me { align-self: flex-end; flex-direction: row-reverse; }
+    .message-row.them { align-self: flex-start; }
+
+    .mini-avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 2px solid white; }
+
+    .bubble {
+      padding: 12px 16px;
+      border-radius: 20px;
+      font-size: 14px;
+      line-height: 1.4;
+      position: relative;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+    .me .bubble { background: var(--accent); color: white; border-bottom-right-radius: 4px; }
+    .them .bubble { background: white; color: #444; border-bottom-left-radius: 4px; }
+
+    .time { font-size: 10px; opacity: 0.7; margin-top: 4px; display: block; text-align: right; }
+    .me .time { color: rgba(255,255,255,0.8); }
+
+    /* Input box */
+    .input-area {
+      padding: 15px 20px 30px;
+      background: white;
+      display: flex; gap: 10px; align-items: center;
+    }
+    input {
+      flex: 1; padding: 12px 18px; border-radius: 25px;
+      border: 2px solid var(--bg); font-family: inherit; outline: none;
+    }
+    .send-btn {
+      width: 45px; height: 45px; border-radius: 50%; background: var(--accent);
+      border: none; color: white; font-size: 20px; cursor: pointer;
+    }
+
+    /* Scrollbar */
+    #chat-container::-webkit-scrollbar { width: 4px; }
+    #chat-container::-webkit-scrollbar-thumb { background: var(--mid); border-radius: 10px; }
+  </style>
+</head>
+<body>
+
+  <div class="chat-header">
+    <a href="index.html" class="back-btn">🏠</a>
+    <h2 id="chatWith">Chat</h2>
+    <div id="statusDot" style="width:10px; height:10px; border-radius:50%; background:#ccc;"></div>
+  </div>
+
+  <div id="chat-container">
+    </div>
+
+  <div class="input-area">
+    <input type="text" id="msgInput" placeholder="Escribe algo tierno..." autocomplete="off">
+    <button class="send-btn" id="sendBtn">➤</button>
+  </div>
+
+  <script>
+    if(localStorage.getItem('theme') === 'blue') document.documentElement.setAttribute('data-theme', 'blue');
+  </script>
+
+  <script type="module">
+    import { db, auth } from './firebase.js';
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
+    import { collection, addDoc, query, where, orderBy, onSnapshot, doc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+
+    let user = null;
+    let parejaId = null;
+    const container = document.getElementById('chat-container');
+
+    onAuthStateChanged(auth, async (u) => {
+      if (!u) { window.location.href = 'auth.html'; return; }
+      user = u;
+      
+      const userDoc = await getDoc(doc(db, "usuarios", u.uid));
+      if (userDoc.exists() && userDoc.data().parejaId) {
+        parejaId = userDoc.data().parejaId;
+        document.getElementById('statusDot').style.background = '#4CAF50';
+        cargarMensajes();
+      } else {
+        container.innerHTML = "<p style='text-align:center; color:gray; margin-top:20px;'>Vincula a tu pareja en Perfil para chatear 💕</p>";
+      }
+    });
+
+    function cargarMensajes() {
+      // Buscamos mensajes donde los participantes seamos nosotros dos
+      const q = query(
+        collection(db, "mensajes"),
+        where("chatId", "in", [user.uid + parejaId, parejaId + user.uid]),
+        orderBy("timestamp", "asc")
+      );
+
+      onSnapshot(q, (snapshot) => {
+        container.innerHTML = '';
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          renderBubble(data);
+        });
+        container.scrollTop = container.scrollHeight;
+      });
+    }
+
+    function renderBubble(data) {
+      const isMe = data.senderId === user.uid;
+      const time = data.timestamp ? new Date(data.timestamp.toDate()).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : "";
+      
+      const div = document.createElement('div');
+      div.className = `message-row ${isMe ? 'me' : 'them'}`;
+      div.innerHTML = `
+        <img src="${data.senderPhoto || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'}" class="mini-avatar">
+        <div class="bubble">
+          ${data.text}
+          <span class="time">${time}</span>
+        </div>
+      `;
+      container.appendChild(div);
+    }
+
+    async function enviarMensaje() {
+      const text = document.getElementById('msgInput').value.trim();
+      if (!text || !parejaId) return;
+
+      document.getElementById('msgInput').value = '';
+      await addDoc(collection(db, "mensajes"), {
+        chatId: user.uid + parejaId, // ID único de la pareja
+        text: text,
+        senderId: user.uid,
+        senderPhoto: user.photoURL,
+        timestamp: serverTimestamp()
+      });
+    }
+
+    document.getElementById('sendBtn').onclick = enviarMensaje;
+    document.getElementById('msgInput').onkeypress = (e) => { if(e.key === 'Enter') enviarMensaje(); };
+  </script>
+</body>
+</html>

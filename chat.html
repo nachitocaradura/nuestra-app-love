@@ -117,24 +117,25 @@
     const msgInput = document.getElementById('msgInput');
     const typingArea = document.getElementById('typing-area');
 
-    // REGISTRAR SERVICE WORKER (Indispensable para móviles)
+    // NOTIFICACIONES: Registrar el "motor" (Service Worker)
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js').then(() => console.log("Motor de notificaciones listo"));
+      navigator.serviceWorker.register('sw.js').then(() => console.log("Motor listo"));
     }
 
     async function solicitarPermisos() {
       if (!("Notification" in window)) return;
       const permission = await Notification.requestPermission();
       if(permission === 'granted') {
-        // Notificación de prueba para asegurar que el canal está abierto
-        navigator.serviceWorker.ready.then(registration => {
-          registration.showNotification("¡Notificaciones Activas! 💕", { body: "Recibirás avisos cuando te escriban." });
+        navigator.serviceWorker.ready.then(reg => {
+          reg.showNotification("¡Todo listo! 💕", { body: "Recibirás avisos de tu pareja aquí." });
         });
       }
     }
 
-    // Activar al primer toque
-    document.body.addEventListener('click', () => { if(Notification.permission !== 'granted') solicitarPermisos(); }, { once: true });
+    // NOTIFICACIONES: Pedir permiso al primer toque en la pantalla
+    document.body.addEventListener('click', () => { 
+      if(Notification.permission !== 'granted') solicitarPermisos(); 
+    }, { once: true });
 
     onAuthStateChanged(auth, async (u) => {
       if (!u) { window.location.href = 'auth.html'; return; }
@@ -152,14 +153,13 @@
       const q = query(collection(db, "mensajes"), where("chatId", "in", [user.uid + parejaId, parejaId + user.uid]), orderBy("timestamp", "asc"));
       
       onSnapshot(q, (snap) => {
+        // NOTIFICACIONES: Lógica de disparo sin filtros de visibilidad (PARA PRUEBA)
         snap.docChanges().forEach((change) => {
           if (change.type === "added" && inicializado) {
             const m = change.doc.data();
-            if (m.senderId !== user.uid && (document.visibilityState !== "visible" || !document.hasFocus())) {
-              
-              // LANZAR NOTIFICACIÓN VÍA SERVICE WORKER (Mucho más estable en móvil)
-              navigator.serviceWorker.ready.then(registration => {
-                registration.showNotification("Mensaje de tu amor 💕", {
+            if (m.senderId !== user.uid) {
+              navigator.serviceWorker.ready.then(reg => {
+                reg.showNotification(m.senderName || "Mensaje nuevo 💕", {
                   body: m.text,
                   icon: m.senderPhoto || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png',
                   badge: 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png',
@@ -186,7 +186,6 @@
       });
     }
 
-    // Lógica de "escribiendo" y envío (Mismo código que ya tenías)
     msgInput.addEventListener('input', () => {
       if (!user || !parejaId) return;
       setDoc(doc(db, "typing", user.uid), { isTyping: true, to: parejaId, name: user.displayName || "Tu pareja", photo: user.photoURL }, { merge: true });

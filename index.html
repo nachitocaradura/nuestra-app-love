@@ -27,40 +27,11 @@
     body {
       font-family: 'Nunito', sans-serif;
       background: var(--bg);
-      height: 100dvh;
+      min-height: 100dvh;
       transition: background 0.4s ease;
-      overflow: hidden; /* DESHABILITA EL SCROLL GLOBAL */
+      overflow-y: auto; 
+      overflow-x: hidden;
       position: relative;
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* NUEVO: Contenedor para que solo la cuadrícula de apps tenga scroll */
-    .apps-scroll-area {
-      flex: 1;
-      overflow-y: auto;
-      padding-bottom: 30px;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    /* NUEVO: Estilo para el badge de notificaciones */
-    .notification-badge {
-      position: absolute;
-      top: -5px;
-      right: -5px;
-      background: #ff4d4d;
-      color: white;
-      font-size: 12px;
-      font-weight: 900;
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      display: none; /* Se muestra vía JS */
-      align-items: center;
-      justify-content: center;
-      border: 2px solid white;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-      z-index: 10;
     }
 
     /* --- RELOJ --- */
@@ -68,7 +39,6 @@
       width: 100%;
       text-align: center;
       padding-top: 50px;
-      flex-shrink: 0;
     }
     #clock {
       font-size: 50px;
@@ -79,7 +49,8 @@
 
     /* --- ANIMACIÓN DE EMOTES --- */
     .heart-float {
-      position: absolute; bottom: -50px; pointer-events: none; z-index: 1; opacity: 0; animation: floatUp 6s linear infinite;
+      position: absolute; bottom: -50px; pointer-events: none; z-index: 1; opacity: 0;
+      animation: floatUp 6s linear infinite;
     }
     @keyframes floatUp {
       0% { transform: translateY(0) rotate(0deg); opacity: 0; }
@@ -87,149 +58,137 @@
       100% { transform: translateY(-110vh) rotate(360deg); opacity: 0; }
     }
 
-    /* --- GRID DE APPS --- */
-    .app-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 20px;
-      padding: 30px;
-      max-width: 500px;
-      margin: 0 auto;
-    }
-
-    .app-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-decoration: none;
-      transition: transform 0.2s;
-    }
-    .app-item:active { transform: scale(0.9); }
-
-    .app-icon {
-      width: 65px;
-      height: 65px;
-      background: white;
-      border-radius: 18px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 30px;
-      box-shadow: 0 8px 20px var(--shadow);
-      margin-bottom: 8px;
-      position: relative; /* Para el badge */
-    }
-
-    .app-label {
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--dark);
-    }
-
     /* --- SIDEBAR --- */
-    #sidebar {
+    .sidebar {
       position: fixed; top: 0; left: -280px; width: 280px; height: 100%;
-      background: var(--sidebar-bg); z-index: 1000; transition: left 0.3s ease;
-      box-shadow: 5px 0 25px rgba(0,0,0,0.1); padding: 60px 25px;
+      background: var(--sidebar-bg); z-index: 1000; transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 5px 0 25px rgba(0,0,0,0.1); display: flex; flex-direction: column;
     }
-    #sidebar.open { left: 0; }
-
-    .sidebar-header { display: flex; align-items: center; gap: 15px; margin-bottom: 40px; }
-    .sidebar-header img { width: 60px; height: 60px; border-radius: 50%; border: 3px solid var(--bg); object-fit: cover; }
-    .sidebar-header h2 { font-weight: 900; color: var(--accent); font-size: 20px; }
-
-    .menu-btn-trigger {
-      position: absolute; top: 50px; left: 20px; font-size: 26px; color: var(--accent); cursor: pointer; z-index: 10;
+    .sidebar.open { left: 0; }
+    .sidebar-header { padding: 60px 25px 20px; background: var(--bg); transition: background 0.4s; position: relative; }
+    .sidebar-header h3 { color: var(--accent); font-weight: 900; font-size: 24px; }
+    .sidebar-menu { padding: 20px 10px; flex: 1; overflow-y: auto; }
+    
+    .sidebar-item {
+      display: flex; align-items: center; padding: 15px 20px; margin-bottom: 5px;
+      border-radius: 15px; color: var(--text-main); font-weight: 700; text-decoration: none; transition: 0.2s;
+      cursor: pointer;
     }
+    .sidebar-item:active { background: var(--bg); transform: scale(0.98); }
 
-    /* --- ACORDEONES --- */
-    .accordion-item { margin-bottom: 15px; border-radius: 15px; overflow: hidden; background: #f9f9f9; }
-    .accordion-header { padding: 15px; font-weight: 900; color: var(--text-main); display: flex; justify-content: space-between; cursor: pointer; }
-    .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; padding: 0 15px; }
-    .accordion-item.open .accordion-content { max-height: 200px; padding-bottom: 15px; }
+    .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; padding-left: 55px; }
+    .accordion-content.open { max-height: 150px; }
+    .theme-dot { width: 30px; height: 30px; border-radius: 50%; margin-right: 15px; border: 3px solid transparent; cursor: pointer; }
+    .theme-dot.pink { background: #ff4d79; }
+    .theme-dot.blue { background: #4d94ff; }
+    .theme-dot.active { border-color: #fff; box-shadow: 0 0 10px rgba(0,0,0,0.2); }
 
-    /* --- TEMAS --- */
-    .theme-selector { display: flex; gap: 10px; margin-top: 10px; }
-    .dot { width: 35px; height: 35px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; }
-    .dot.pink { background: #ffb3c6; }
-    .dot.blue { background: #b3d9ff; }
-    .dot.active { border-color: var(--accent); }
-
-    #overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.3); backdrop-filter: blur(4px);
-      display: none; z-index: 999;
+    .overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.3); backdrop-filter: blur(2px);
+      z-index: 999; display: none;
     }
-    #overlay.show { display: block; }
+    .overlay.show { display: block; }
 
-    /* BOTÓN LOGOUT */
-    .logout-btn {
-      margin-top: 30px; padding: 12px; width: 100%; border-radius: 12px;
-      border: none; background: #ffeded; color: #ff4d4d; font-weight: 900; cursor: pointer;
+    /* --- CONTENIDO PRINCIPAL --- */
+    .container { position: relative; z-index: 10; padding: 20px 25px 60px; display: flex; flex-direction: column; align-items: center; }
+    
+    .menu-btn { position: absolute; left: 25px; top: 55px; font-size: 28px; color: var(--accent); cursor: pointer; z-index: 11; }
+
+    .welcome-card { text-align: center; margin-bottom: 30px; }
+    .user-avatar { 
+      width: 100px; height: 100px; border-radius: 35px; border: 5px solid white; 
+      box-shadow: 0 8px 20px var(--shadow); margin-bottom: 15px; object-fit: cover; 
+      cursor: pointer; transition: transform 0.2s;
     }
+    .user-avatar:active { transform: scale(0.9); }
+
+    .welcome-card h1 { color: var(--accent); font-weight: 900; font-size: 28px; margin-bottom: 5px; }
+    .welcome-card p { color: var(--text-main); font-weight: 700; opacity: 0.8; }
+
+    .main-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; width: 100%; max-width: 400px;
+    }
+    .menu-item {
+      background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(10px); border-radius: 30px;
+      padding: 25px 15px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      box-shadow: 0 10px 25px var(--shadow); transition: 0.3s; cursor: pointer; border: 2px solid transparent;
+      position: relative; /* Importante para el badge */
+    }
+    .menu-item:active { transform: scale(0.92); background: white; border-color: var(--accent); }
+    .menu-icon { font-size: 40px; margin-bottom: 12px; }
+    .menu-text { font-weight: 900; color: var(--accent); font-size: 16px; }
+
+    /* ESTILO DEL BADGE (Número de mensajes) */
+    .chat-badge {
+      position: absolute; top: 10px; right: 10px; background: #ff4d4d; color: white;
+      font-size: 12px; font-weight: 900; width: 22px; height: 22px; border-radius: 50%;
+      display: none; align-items: center; justify-content: center; border: 2px solid white;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2); animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes pop { from { transform: scale(0); } to { transform: scale(1); } }
+
   </style>
 </head>
 <body>
 
-  <div id="overlay" onclick="toggleSidebar()"></div>
-  <div class="menu-btn-trigger" onclick="toggleSidebar()">☰</div>
-
-  <div id="sidebar">
+  <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+  
+  <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
-      <img id="userPhoto" src="https://via.placeholder.com/60" alt="Tú">
-      <h2 id="welcomeText">¡Hola! 💕</h2>
+      <h3 id="sidebarTitle">Menú</h3>
     </div>
-
-    <div class="accordion-item" id="acc-themes">
-      <div class="accordion-header" onclick="toggleAccordion('acc-themes')">Personalizar 🎨</div>
-      <div class="accordion-content">
-        <p style="font-size: 14px; margin-bottom: 10px; color: #666;">Elige tu color favorito:</p>
-        <div class="theme-selector">
-          <div id="dot-pink" class="dot pink active" onclick="setTheme('pink')"></div>
-          <div id="dot-blue" class="dot blue" onclick="setTheme('blue')"></div>
+    <div class="sidebar-menu">
+      <a href="perfil.html" class="sidebar-item">👤 Mi Perfil</a>
+      <div class="sidebar-item" onclick="toggleAccordion('themesAcc')">🎨 Cambiar Tema</div>
+      <div id="themesAcc" class="accordion-content">
+        <div style="display: flex; padding: 15px 0;">
+          <div class="theme-dot pink" id="dot-pink" onclick="setTheme('pink')"></div>
+          <div class="theme-dot blue" id="dot-blue" onclick="setTheme('blue')"></div>
         </div>
       </div>
+      <a href="auth.html" class="sidebar-item" style="color: #ff4444; margin-top: 20px;">🚪 Cerrar Sesión</a>
     </div>
-
-    <div class="accordion-item" id="acc-perfil">
-      <div class="accordion-header" onclick="window.location.href='perfil.html'">Mi Perfil 👤</div>
-    </div>
-
-    <button class="logout-btn" onclick="auth.signOut()">Cerrar Sesión</button>
   </div>
+
+  <div class="menu-btn" onclick="toggleMenu()">☰</div>
 
   <div class="clock-container">
     <div id="clock">00:00</div>
   </div>
 
-  <div class="apps-scroll-area">
-    <div class="app-grid">
-      <a href="chat.html" class="app-item">
-        <div class="app-icon">
-          💬
-          <div id="chat-badge" class="notification-badge">0</div>
-        </div>
-        <span class="app-label">Chat</span>
-      </a>
-      <a href="calendario.html" class="app-item">
-        <div class="app-icon">📅</div>
-        <span class="app-label">Calendario</span>
-      </a>
-      <a href="ruleta.html" class="app-item">
-        <div class="app-icon">🎡</div>
-        <span class="app-label">Ruleta</span>
-      </a>
-      <a href="viajes.html" class="app-item">
-        <div class="app-icon">🧳</div>
-        <span class="app-label">Viajes</span>
-      </a>
-      <div class="app-item" onclick="alert('Próximamente...')">
-        <div class="app-icon">📸</div>
-        <span class="app-label">Álbum</span>
-      </a>
-      <div class="app-item" onclick="alert('Próximamente...')">
-        <div class="app-icon">🎵</div>
-        <span class="app-label">Música</span>
-      </a>
+  <div class="container">
+    <div class="welcome-card">
+      <img src="" id="userPhoto" class="user-avatar" style="display:none;" onclick="location.href='perfil.html'">
+      <h1 id="welcomeText">¡Hola! 💕</h1>
+      <p>¿Qué vamos a hacer hoy?</p>
+    </div>
+
+    <div class="main-grid">
+      <div class="menu-item" onclick="location.href='chat.html'">
+        <div class="menu-icon">💬</div>
+        <div class="menu-text">Chat</div>
+        <div id="chatBadge" class="chat-badge">0</div>
+      </div>
+      
+      <div class="menu-item" onclick="location.href='calendario.html'">
+        <div class="menu-icon">📅</div>
+        <div class="menu-text">Calendario</div>
+      </div>
+
+      <div class="menu-item" onclick="location.href='ruleta.html'">
+        <div class="menu-icon">🎡</div>
+        <div class="menu-text">Ruleta</div>
+      </div>
+
+      <div class="menu-item" onclick="location.href='viajes.html'">
+        <div class="menu-icon">🧳</div>
+        <div class="menu-text">Viajes</div>
+      </div>
+
+      <div class="menu-item" onclick="location.href='perfil.html'">
+        <div class="menu-icon">👤</div>
+        <div class="menu-text">Perfil</div>
+      </div>
     </div>
   </div>
 
@@ -238,25 +197,24 @@
       const now = new Date();
       const h = String(now.getHours()).padStart(2, '0');
       const m = String(now.getMinutes()).padStart(2, '0');
-      document.getElementById('clock').textContent = h + ":" + m;
+      document.getElementById('clock').textContent = `${h}:${m}`;
     }
     setInterval(updateClock, 1000);
     updateClock();
 
     function createHeart() {
-      const hearts = ['❤️', '💖', '✨', '🌸', '💕'];
-      const h = document.createElement('div');
-      h.className = 'heart-float';
-      h.textContent = hearts[Math.floor(Math.random() * hearts.length)];
-      h.style.left = Math.random() * 100 + "vw";
-      h.style.fontSize = (Math.random() * 20 + 15) + "px";
-      h.style.animationDuration = (Math.random() * 3 + 4) + "s";
-      document.body.appendChild(h);
-      setTimeout(() => h.remove(), 6000);
+      const heart = document.createElement('div');
+      heart.className = 'heart-float';
+      heart.innerHTML = ['❤️','💖','💕','💗','✨'][Math.floor(Math.random()*5)];
+      heart.style.left = Math.random() * 100 + 'vw';
+      heart.style.fontSize = (Math.random() * 20 + 20) + 'px';
+      heart.style.animationDuration = (Math.random() * 3 + 4) + 's';
+      document.body.appendChild(heart);
+      setTimeout(() => heart.remove(), 6000);
     }
     setInterval(createHeart, 800);
 
-    function toggleSidebar() {
+    function toggleMenu() {
       document.getElementById('sidebar').classList.toggle('open');
       document.getElementById('overlay').classList.toggle('show');
     }
@@ -264,7 +222,6 @@
       document.getElementById(id).classList.toggle('open');
     }
 
-    // Temas
     function setTheme(theme) {
       if(theme === 'blue') {
         document.documentElement.setAttribute('data-theme', 'blue');
@@ -284,7 +241,6 @@
         dotBlue.classList.toggle('active', t === 'blue');
       }
     }
-
     if(localStorage.getItem('theme') === 'blue') setTheme('blue');
     updateDots();
   </script>
@@ -292,7 +248,7 @@
   <script type="module">
     import { auth, db } from './firebase.js';
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
-    import { collection, query, where, onSnapshot, getDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+    import { collection, query, where, onSnapshot, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
     onAuthStateChanged(auth, async (user) => {
       if (!user) {
@@ -303,21 +259,17 @@
         if(user.photoURL) {
           const img = document.getElementById('userPhoto');
           img.src = user.photoURL;
+          img.style.display = 'inline-block';
         }
 
-        // LÓGICA DE NOTIFICACIONES (Badge del Chat)
-        const userRef = doc(db, "usuarios", user.uid);
-        const userSnap = await getDoc(userRef);
-        const userData = userSnap.data();
-        
+        // LÓGICA DE NOTIFICACIONES (Badge)
+        const uDoc = await getDoc(doc(db, "usuarios", user.uid));
+        const userData = uDoc.data();
         if(userData && userData.parejaId) {
-          const pId = userData.parejaId;
-          const badge = document.getElementById('chat-badge');
-          
-          // Escuchar mensajes no leídos (mensajes de la pareja hacia mí)
+          const badge = document.getElementById('chatBadge');
           const q = query(
             collection(db, "mensajes"), 
-            where("senderId", "==", pId),
+            where("senderId", "==", userData.parejaId),
             where("receiverId", "==", user.uid),
             where("leido", "==", false)
           );

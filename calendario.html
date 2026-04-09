@@ -6,15 +6,24 @@
   <title>📅 Calendario Pro</title>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
   <style>
-    /* MANTENGO TUS ESTILOS INTACTOS */
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
+    /* TEMA ROSA (POR DEFECTO) */
     :root {
-      --pink-bg: #ffd6e0; --pink-mid: #ffb3c6; --pink-dark: #ff85a1; --pink-accent: #ff4d79; --shadow: rgba(255, 77, 121, 0.25);
+      --pink-bg: #ffd6e0; 
+      --pink-mid: #ffb3c6; 
+      --pink-dark: #ff85a1; 
+      --pink-accent: #ff4d79; 
+      --shadow: rgba(255, 77, 121, 0.25);
     }
 
+    /* TEMA AZUL */
     [data-theme="blue"] {
-      --pink-bg: #d6eaff; --pink-mid: #b3d9ff; --pink-dark: #85bfff; --pink-accent: #4d94ff; --shadow: rgba(77, 148, 255, 0.25);
+      --pink-bg: #d6eaff; 
+      --pink-mid: #b3d9ff; 
+      --pink-dark: #85bfff; 
+      --pink-accent: #4d94ff; 
+      --shadow: rgba(77, 148, 255, 0.25);
     }
 
     body {
@@ -27,29 +36,85 @@
       transition: background 0.4s ease;
     }
 
-    header { width: 100%; padding: 60px 25px 20px; display: flex; align-items: center; justify-content: space-between; }
-    .back-btn { font-size: 24px; color: var(--pink-accent); text-decoration: none; font-weight: 900; }
-    .current-month { font-size: 24px; font-weight: 900; color: var(--pink-accent); cursor: pointer; }
+    header {
+      width: 100%;
+      padding: 60px 25px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .back-btn {
+      font-size: 24px;
+      color: var(--pink-accent);
+      text-decoration: none;
+      font-weight: 900;
+    }
+
+    .current-month {
+      font-size: 24px;
+      font-weight: 900;
+      color: var(--pink-accent);
+      cursor: pointer;
+    }
 
     .calendar-container {
-      width: 92%; max-width: 400px; background: rgba(255, 255, 255, 0.6);
-      backdrop-filter: blur(10px); border-radius: 35px; padding: 20px;
+      width: 92%;
+      max-width: 400px;
+      background: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(10px);
+      border-radius: 35px;
+      padding: 20px;
       box-shadow: 0 10px 30px var(--shadow);
     }
 
-    .weekdays { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; margin-bottom: 15px; }
-    .weekdays div { font-weight: 900; color: var(--pink-dark); font-size: 14px; text-transform: lowercase; }
-
-    .days-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; }
-    .day {
-      aspect-ratio: 1/1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-      background: white; border-radius: 18px; font-weight: 800; color: var(--pink-accent);
-      position: relative; transition: 0.2s; font-size: 17px; cursor: pointer;
+    .weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      text-align: center;
+      margin-bottom: 15px;
     }
-    .day.today { background: var(--pink-accent); color: white; box-shadow: 0 5px 15px var(--shadow); }
-    .day.other-month { opacity: 0.3; }
 
-    /* ESTO ES LO ÚNICO NUEVO EN CSS: LA POSICIÓN DE LA MALETA */
+    .weekdays div {
+      font-weight: 900;
+      color: var(--pink-dark);
+      font-size: 14px;
+      text-transform: lowercase;
+    }
+
+    .days-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 10px;
+    }
+
+    .day {
+      aspect-ratio: 1/1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: white;
+      border-radius: 18px;
+      font-weight: 800;
+      color: var(--pink-accent);
+      position: relative;
+      transition: 0.2s;
+      font-size: 17px;
+      cursor: pointer;
+    }
+
+    .day.today {
+      background: var(--pink-accent);
+      color: white;
+      box-shadow: 0 5px 15px var(--shadow);
+    }
+
+    .day.other-month {
+      opacity: 0.3;
+    }
+
+    /* --- IMPLEMENTACIÓN: Icono de maleta arriba a la derecha --- */
     .trip-icon {
       position: absolute;
       top: 4px;
@@ -58,39 +123,115 @@
     }
 
     .event-dot {
-      position: absolute; bottom: 6px; font-size: 10px;
+      position: absolute;
+      bottom: 6px;
+      font-size: 10px;
     }
 
-    /* MANTENGO TU MODAL DE RUEDAS Y EVENTOS */
+    /* MODALES */
     .modal {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(5px);
-      display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      backdrop-filter: blur(5px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
     }
-    .modal.show { display: flex; }
+
+    .modal.show {
+      display: flex;
+    }
+
     .modal-content {
-      background: white; padding: 30px; border-radius: 35px; width: 100%; max-width: 350px;
+      background: white;
+      padding: 30px;
+      border-radius: 35px;
+      width: 100%;
+      max-width: 350px;
       box-shadow: 0 20px 40px rgba(0,0,0,0.2);
     }
-    .modal-content h2 { color: var(--pink-accent); margin-bottom: 20px; text-align: center; font-weight: 900; }
-    
-    .wheel-container { display: flex; justify-content: space-around; height: 150px; overflow: hidden; margin: 20px 0; }
-    .wheel { flex: 1; overflow-y: scroll; scroll-snap-type: y mandatory; text-align: center; -ms-overflow-style: none; scrollbar-width: none; }
-    .wheel::-webkit-scrollbar { display: none; }
-    .wheel-item { height: 50px; line-height: 50px; scroll-snap-align: center; font-weight: 800; color: #ccc; transition: 0.3s; cursor: pointer; }
-    .wheel-item.selected { color: var(--pink-accent); font-size: 20px; }
 
-    input, select {
-      width: 100%; padding: 15px; margin: 10px 0; border-radius: 15px; border: 2px solid var(--pink-bg);
-      outline: none; font-family: inherit; font-weight: 700; background: #f9f9f9;
+    .modal-content h2 {
+      color: var(--pink-accent);
+      margin-bottom: 20px;
+      text-align: center;
+      font-weight: 900;
+    }
+    
+    /* Estilos del Selector de Ruedas */
+    .wheel-container {
+      display: flex;
+      justify-content: space-around;
+      height: 150px;
+      overflow: hidden;
+      margin: 20px 0;
     }
 
-    .btn { width: 100%; padding: 15px; border-radius: 15px; border: none; font-weight: 900; margin-top: 10px; cursor: pointer; }
+    .wheel {
+      flex: 1;
+      overflow-y: scroll;
+      scroll-snap-type: y mandatory;
+      text-align: center;
+      -ms-overflow-style: none;  /* IE and Edge */
+      scrollbar-width: none;  /* Firefox */
+    }
+
+    .wheel::-webkit-scrollbar {
+      display: none; /* Chrome, Safari and Opera */
+    }
+
+    .wheel-item {
+      height: 50px;
+      line-height: 50px;
+      scroll-snap-align: center;
+      font-weight: 800;
+      color: #ccc;
+      transition: 0.3s;
+      cursor: pointer;
+    }
+
+    .wheel-item.selected {
+      color: var(--pink-accent);
+      font-size: 20px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 15px;
+      border: 2px solid var(--pink-bg);
+      outline: none;
+      font-family: inherit;
+      font-weight: 700;
+      background: #f9f9f9;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 15px;
+      border-radius: 15px;
+      border: none;
+      font-weight: 900;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+
     .btn-save { background: var(--pink-accent); color: white; }
     .btn-cancel { background: #eee; color: #777; }
 
     .event-list-item {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 10px; background: #f9f9f9; border-radius: 10px; margin-bottom: 5px; font-weight: 700;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      background: #f9f9f9;
+      border-radius: 10px;
+      margin-bottom: 5px;
+      font-weight: 700;
     }
   </style>
 </head>
@@ -126,8 +267,11 @@
   <div class="modal" id="eventModal">
     <div class="modal-content">
       <h2 id="modalTitle">Eventos</h2>
-      <div id="eventList" style="margin-bottom: 20px; max-height: 150px; overflow-y: auto;"></div>
+      <div id="eventList" style="margin-bottom: 20px; max-height: 150px; overflow-y: auto;">
+        </div>
+
       <hr style="border: 0; border-top: 1px solid #eee; margin-bottom: 15px;">
+
       <input type="text" id="eventTitle" placeholder="Nuevo evento...">
       <select id="eventType">
         <option value="❤️">Aniversario ❤️</option>
@@ -148,7 +292,7 @@
     let user, parejaId;
     let date = new Date();
     let eventos = [];
-    let viajes = []; // <--- AGREGADO
+    let viajes = []; // --- IMPLEMENTACIÓN: Lista de viajes ---
     let selectedDayStr = "";
 
     const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
@@ -156,21 +300,24 @@
     onAuthStateChanged(auth, async (u) => {
       if (!u) window.location.href = "auth.html";
       user = u;
-      const uDoc = await getDoc(doc(db, "usuarios", user.uid));
-      parejaId = uDoc.data()?.parejaId;
-      escucharEventosYViajes(); // <--- MODIFICADO
+
+      const userDoc = await getDoc(doc(db, "usuarios", user.uid));
+      parejaId = userDoc.data()?.parejaId;
+      
+      escucharDatos();
     });
 
-    function escucharEventosYViajes() {
-      const ids = [user.uid]; if(parejaId) ids.push(parejaId);
+    function escucharDatos() {
+      const ids = [user.uid];
+      if (parejaId) ids.push(parejaId);
 
-      // Escuchar Eventos (Original)
+      // Escuchar eventos (Tu lógica original)
       onSnapshot(query(collection(db, "eventos_calendario"), where("creador", "in", ids)), (snap) => {
         eventos = snap.docs.map(d => ({ firestoreId: d.id, ...d.data() }));
         renderCalendar();
       });
 
-      // Escuchar Viajes (Nuevo para la maleta)
+      // --- IMPLEMENTACIÓN: Escuchar viajes ---
       onSnapshot(query(collection(db, "viajes"), where("creadorPor", "in", ids)), (snap) => {
         viajes = snap.docs.map(d => d.data());
         renderCalendar();
@@ -202,17 +349,17 @@
         dayDiv.textContent = i;
 
         const fechaIso = `${year}-${String(month+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
-        const actualTime = new Date(year, month, i).getTime();
+        const diaActualTS = new Date(year, month, i).getTime();
 
         if(i === new Date().getDate() && month === new Date().getMonth() && year === new Date().getFullYear()) {
           dayDiv.classList.add('today');
         }
 
-        // --- LÓGICA DE LA MALETA ---
+        // --- IMPLEMENTACIÓN: Dibujar Maleta si coincide con un viaje ---
         const hayViaje = viajes.some(v => {
           const inicio = new Date(v.fechaInicio + "T00:00:00").getTime();
           const fin = new Date(v.fechaFin + "T23:59:59").getTime();
-          return actualTime >= inicio && actualTime <= fin;
+          return diaActualTS >= inicio && diaActualTS <= fin;
         });
 
         if (hayViaje) {
@@ -222,12 +369,12 @@
           dayDiv.appendChild(tripIcon);
         }
 
-        // Eventos (Tus iconos de tarta/corazón)
-        const evs = eventos.filter(e => e.fecha === fechaIso);
-        if(evs.length > 0) {
+        // Eventos (Tu lógica original)
+        const diaEvs = eventos.filter(e => e.fecha === fechaIso);
+        if(diaEvs.length > 0) {
           const dot = document.createElement('span');
           dot.className = 'event-dot';
-          dot.textContent = evs[0].tipo;
+          dot.textContent = diaEvs[0].tipo;
           dayDiv.appendChild(dot);
         }
 
@@ -236,20 +383,25 @@
       }
     }
 
-    // TUS FUNCIONES ORIGINALES (SIN CAMBIOS)
     window.openEventModal = (fechaStr) => {
       selectedDayStr = fechaStr;
-      document.getElementById('modalTitle').textContent = fechaStr.split('-').reverse().join('/');
+      const displayDate = fechaStr.split('-').reverse().join('/');
+      document.getElementById('modalTitle').textContent = displayDate;
       const list = document.getElementById('eventList');
       list.innerHTML = '';
       
       const diaEvs = eventos.filter(e => e.fecha === fechaStr);
-      if(diaEvs.length === 0) list.innerHTML = '<p style="text-align:center; color:#999;">Sin eventos</p>';
+      if(diaEvs.length === 0) {
+        list.innerHTML = '<p style="text-align:center; color:#999;">Sin eventos</p>';
+      }
       
       diaEvs.forEach(e => {
         const item = document.createElement('div');
         item.className = 'event-list-item';
-        item.innerHTML = `<span>${e.tipo} ${e.titulo}</span> <span onclick="deleteEvent('${e.firestoreId}')" style="color:#ff4d79; font-size:18px;">✕</span>`;
+        item.innerHTML = `
+          <span>${e.tipo} ${e.titulo}</span>
+          <span onclick="deleteEvent('${e.firestoreId}')" style="color:#ff4d79; font-size:18px;">✕</span>
+        `;
         list.appendChild(item);
       });
 
@@ -261,7 +413,10 @@
       const tipo = document.getElementById('eventType').value;
       if(!titulo) return;
       await addDoc(collection(db, "eventos_calendario"), {
-        fecha: selectedDayStr, titulo, tipo, creador: user.uid
+        fecha: selectedDayStr,
+        titulo: titulo,
+        tipo: tipo,
+        creador: user.uid
       });
       document.getElementById('eventTitle').value = '';
     };
@@ -273,31 +428,52 @@
       }
     };
 
-    window.closeModals = () => document.getElementById('eventModal').classList.remove('show');
-    window.changeMonth = (delta) => { date.setMonth(date.getMonth() + delta); renderCalendar(); };
+    window.closeModals = () => {
+      document.getElementById('eventModal').classList.remove('show');
+    };
 
+    window.changeMonth = (delta) => {
+      date.setMonth(date.getMonth() + delta);
+      renderCalendar();
+    };
+
+    // Funciones del Selector de Ruedas
     window.openPicker = () => {
       const mWheel = document.getElementById('monthWheel');
       const yWheel = document.getElementById('yearWheel');
-      mWheel.innerHTML = ''; yWheel.innerHTML = '';
+      mWheel.innerHTML = '';
+      yWheel.innerHTML = '';
+
       monthNames.forEach((m, i) => {
         const item = document.createElement('div');
         item.className = 'wheel-item' + (i === date.getMonth() ? ' selected' : '');
         item.textContent = m;
-        item.onclick = () => { date.setMonth(i); openPicker(); renderCalendar(); };
+        item.onclick = () => {
+          date.setMonth(i);
+          openPicker();
+          renderCalendar();
+        };
         mWheel.appendChild(item);
       });
+
       for(let y = date.getFullYear() - 5; y <= date.getFullYear() + 5; y++) {
         const item = document.createElement('div');
         item.className = 'wheel-item' + (y === date.getFullYear() ? ' selected' : '');
         item.textContent = y;
-        item.onclick = () => { date.setFullYear(y); openPicker(); renderCalendar(); };
+        item.onclick = () => {
+          date.setFullYear(y);
+          openPicker();
+          renderCalendar();
+        };
         yWheel.appendChild(item);
       }
+
       document.getElementById('pickerModal').classList.add('show');
     };
 
-    window.closePicker = () => document.getElementById('pickerModal').classList.remove('show');
+    window.closePicker = () => {
+      document.getElementById('pickerModal').classList.remove('show');
+    };
 
   </script>
 </body>

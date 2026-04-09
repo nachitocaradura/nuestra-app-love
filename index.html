@@ -40,156 +40,137 @@
     }
     @keyframes floatUp {
       0% { transform: translateY(0) rotate(0deg); opacity: 0; }
-      10% { opacity: 0.7; }
+      10% { opacity: 0.8; }
       100% { transform: translateY(-110vh) rotate(360deg); opacity: 0; }
     }
-
-    /* --- BARRA SUPERIOR --- */
-    .top-system-bar {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 50px 25px 10px;
-      position: relative; z-index: 10;
-    }
-    .settings-trigger { font-size: 26px; color: var(--accent); cursor: pointer; }
-    .profile-trigger {
-      width: 42px; height: 42px; border-radius: 50%; border: 2px solid white;
-      box-shadow: 0 4px 10px var(--shadow); overflow: hidden; cursor: pointer; background: white;
-    }
-    .profile-trigger img { width: 100%; height: 100%; object-fit: cover; }
-
-    /* --- RELOJ Y BIENVENIDA --- */
-    .hero-section {
-      text-align: center;
-      margin-top: 10px;
-      position: relative;
-      z-index: 5;
-    }
-    #main-clock {
-      font-size: 60px;
-      font-weight: 900;
-      color: white;
-      text-shadow: 0 4px 10px var(--shadow);
-      margin-bottom: -5px;
-    }
-    .header h1 { font-size: 24px; color: var(--accent); font-weight: 900; }
-
-    /* --- GRID --- */
-    .grid {
-      display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
-      padding: 40px 25px; align-content: start; position: relative; z-index: 5;
-    }
-    .app-icon { text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 8px; }
-    .icon-box {
-      width: 72px; height: 72px; border-radius: 22px; background: white;
-      display: flex; align-items: center; justify-content: center; font-size: 32px;
-      box-shadow: 0 8px 20px var(--shadow);
-    }
-    .app-icon span { font-size: 12px; font-weight: 800; color: var(--accent); }
 
     /* --- SIDEBAR --- */
     .sidebar {
       position: fixed; top: 0; left: -280px; width: 280px; height: 100%;
-      background: var(--sidebar-bg); z-index: 100;
-      box-shadow: 10px 0 30px rgba(0,0,0,0.1);
-      transition: left 0.3s ease; padding: 60px 20px;
+      background: var(--sidebar-bg); z-index: 1000; transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 5px 0 25px rgba(0,0,0,0.1); display: flex; flex-direction: column;
     }
     .sidebar.open { left: 0; }
-    .sidebar-overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.3);
-      display: none; z-index: 99; backdrop-filter: blur(2px);
+    .sidebar-header { padding: 60px 25px 20px; background: var(--bg); transition: background 0.4s; position: relative; }
+    .sidebar-header h3 { color: var(--accent); font-weight: 900; font-size: 24px; }
+    .sidebar-menu { padding: 20px 10px; flex: 1; overflow-y: auto; }
+    
+    .sidebar-item {
+      display: flex; align-items: center; padding: 15px 20px; margin-bottom: 5px;
+      border-radius: 15px; color: var(--text-main); font-weight: 700; text-decoration: none; transition: 0.2s;
     }
-    .sidebar-overlay.show { display: block; }
-    .menu-header {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 15px; border-radius: 12px; background: #f8f8f8;
-      font-weight: 700; color: var(--text-main); cursor: pointer;
+    .sidebar-item:active { background: var(--bg); transform: scale(0.98); }
+    .sidebar-item i { margin-right: 15px; font-size: 20px; }
+
+    /* ACORDEÓN TEMAS */
+    .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; padding-left: 55px; }
+    .accordion-content.open { max-height: 150px; }
+    .theme-dot { width: 25px; height: 25px; border-radius: 50%; margin-right: 15px; border: 3px solid transparent; cursor: pointer; }
+    .theme-dot.pink { background: #ff4d79; }
+    .theme-dot.blue { background: #4d94ff; }
+    .theme-dot.active { border-color: #fff; box-shadow: 0 0 10px rgba(0,0,0,0.2); }
+
+    .overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.3); backdrop-filter: blur(2px);
+      z-index: 999; display: none;
     }
-    .menu-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; background: #fff; }
-    .menu-content.open { max-height: 150px; padding: 15px; }
-    .theme-bubble { display: flex; gap: 10px; }
-    .dot { width: 32px; height: 32px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; }
-    .dot.active { border-color: #444; }
-    .dot-pink { background: #ffb3c6; }
-    .dot-blue { background: #b3d9ff; }
+    .overlay.show { display: block; }
+
+    /* --- CONTENIDO PRINCIPAL --- */
+    .container { position: relative; z-index: 10; padding: 60px 25px 30px; display: flex; flex-direction: column; align-items: center; }
+    
+    .menu-btn { position: absolute; left: 25px; top: 50px; font-size: 28px; color: var(--accent); cursor: pointer; z-index: 11; }
+
+    .welcome-card { text-align: center; margin-bottom: 40px; }
+    .user-avatar { width: 100px; height: 100px; border-radius: 35px; border: 5px solid white; box-shadow: 0 8px 20px var(--shadow); margin-bottom: 15px; object-fit: cover; }
+    .welcome-card h1 { color: var(--accent); font-weight: 900; font-size: 28px; margin-bottom: 5px; }
+    .welcome-card p { color: var(--text-main); font-weight: 700; opacity: 0.8; }
+
+    .main-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; width: 100%; max-width: 400px;
+    }
+    .menu-item {
+      background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(10px); border-radius: 30px;
+      padding: 25px 15px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      box-shadow: 0 10px 25px var(--shadow); transition: 0.3s; cursor: pointer; border: 2px solid transparent;
+    }
+    .menu-item:active { transform: scale(0.92); background: white; border-color: var(--accent); }
+    .menu-icon { font-size: 40px; margin-bottom: 12px; }
+    .menu-text { font-weight: 900; color: var(--accent); font-size: 16px; }
+
   </style>
 </head>
 <body>
 
-  <div class="sidebar-overlay" id="overlay" onclick="toggleSidebar()"></div>
+  <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
   <div class="sidebar" id="sidebar">
-    <h3 style="color:#888; font-size:12px; margin-bottom:20px;">SISTEMA</h3>
-    <div class="menu-item">
-      <div class="menu-header" onclick="toggleAccordion('acc-personalizar')">
-        <span>Personalizar</span>
-        <span>▾</span>
-      </div>
-      <div class="menu-content" id="acc-personalizar">
-        <p style="font-size: 13px; color: #666; margin-bottom: 10px;">Color del tema:</p>
-        <div class="theme-bubble">
-          <div class="dot dot-pink" id="dot-pink" onclick="setTheme('pink')"></div>
-          <div class="dot dot-blue" id="dot-blue" onclick="setTheme('blue')"></div>
+    <div class="sidebar-header">
+      <h3 id="sidebarTitle">Menú</h3>
+    </div>
+    <div class="sidebar-menu">
+      <a href="perfil.html" class="sidebar-item">👤 Mi Perfil</a>
+      <div class="sidebar-item" onclick="toggleAccordion('themesAcc')">🎨 Cambiar Tema</div>
+      <div id="themesAcc" class="accordion-content">
+        <div style="display: flex; padding: 10px 0;">
+          <div class="theme-dot pink" id="dot-pink" onclick="setTheme('pink')"></div>
+          <div class="theme-dot blue" id="dot-blue" onclick="setTheme('blue')"></div>
         </div>
       </div>
+      <a href="#" class="sidebar-item" style="color: #ff4444; margin-top: 20px;">🚪 Cerrar Sesión</a>
     </div>
   </div>
 
-  <div class="top-system-bar">
-    <div class="settings-trigger" onclick="toggleSidebar()">☰</div>
-    <div class="profile-trigger" onclick="window.location.href='perfil.html'">
-      <img id="userPhoto" src="" alt="Perfil">
+  <div class="menu-btn" onclick="toggleMenu()">☰</div>
+
+  <div class="container">
+    <div class="welcome-card">
+      <img src="" id="userPhoto" class="user-avatar" style="display:none;">
+      <h1 id="welcomeText">¡Hola! 💕</h1>
+      <p>¿Qué vamos a hacer hoy?</p>
     </div>
-  </div>
 
-  <div class="hero-section">
-    <div id="main-clock">00:00</div>
-    <div class="header">
-      <h1 id="welcomeText">Cargando... 💕</h1>
+    <div class="main-grid">
+      <div class="menu-item" onclick="location.href='chat.html'">
+        <div class="menu-icon">💬</div>
+        <div class="menu-text">Chat</div>
+      </div>
+      
+      <div class="menu-item" onclick="location.href='calendario.html'">
+        <div class="menu-icon">📅</div>
+        <div class="menu-text">Calendario</div>
+      </div>
+
+      <div class="menu-item" onclick="location.href='ruleta.html'">
+        <div class="menu-icon">🎡</div>
+        <div class="menu-text">Ruleta</div>
+      </div>
+
+      <div class="menu-item" onclick="location.href='perfil.html'">
+        <div class="menu-icon">👤</div>
+        <div class="menu-text">Perfil</div>
+      </div>
+
+      <div class="menu-item" onclick="location.href='viajes.html'">
+        <div class="menu-icon">🧳</div>
+        <div class="menu-text">Viajes</div>
+      </div>
     </div>
-  </div>
-
-  <div class="grid">
-    <a href="ruleta.html" class="app-icon">
-      <div class="icon-box">🎡</div>
-      <span>Ruleta</span>
-    </a>
-    <a href="calendario.html" class="app-icon">
-      <div class="icon-box">📅</div>
-      <span>Calendario</span>
-    </a>
-    <a href="chat.html" class="app-icon">
-  <div class="icon-box">💬</div>
-  <span>Chat</span>
-</a>
-
   </div>
 
   <script>
-    // --- RELOJ EN TIEMPO REAL ---
-    function updateClock() {
-      const now = new Date();
-      const hours = String(now.getHours()).padStart(2, '0');
-      const minutes = String(now.getMinutes()).padStart(2, '0');
-      document.getElementById('main-clock').textContent = `${hours}:${minutes}`;
+    function createHeart() {
+      const heart = document.createElement('div');
+      heart.className = 'heart-float';
+      heart.innerHTML = ['❤️','💖','💕','💗','✨'][Math.floor(Math.random()*5)];
+      heart.style.left = Math.random() * 100 + 'vw';
+      heart.style.fontSize = (Math.random() * 20 + 20) + 'px';
+      heart.style.animationDuration = (Math.random() * 3 + 4) + 's';
+      document.body.appendChild(heart);
+      setTimeout(() => heart.remove(), 6000);
     }
-    setInterval(updateClock, 1000);
-    updateClock();
+    setInterval(createHeart, 800);
 
-    // --- LLUVIA DE EMOTES ---
-    function createEmote() {
-      const emotes = ['💕','💗','💖','🌸','✨','❤️'];
-      const e = document.createElement('div');
-      e.className = 'heart-float';
-      e.textContent = emotes[Math.floor(Math.random() * emotes.length)];
-      e.style.left = Math.random() * 100 + 'vw';
-      e.style.fontSize = (Math.random() * 20 + 15) + 'px';
-      e.style.animationDuration = (Math.random() * 3 + 4) + 's';
-      document.body.appendChild(e);
-      setTimeout(() => e.remove(), 6000);
-    }
-    setInterval(createEmote, 800);
-
-    // --- SIDEBAR Y TEMAS ---
-    function toggleSidebar() {
+    function toggleMenu() {
       document.getElementById('sidebar').classList.toggle('open');
       document.getElementById('overlay').classList.toggle('show');
     }
@@ -226,9 +207,14 @@
       } else {
         const nombre = user.displayName ? user.displayName.split(' ')[0] : "Amor";
         document.getElementById('welcomeText').textContent = "¡Hola, " + nombre + "! 💕";
-        if(user.photoURL) document.getElementById('userPhoto').src = user.photoURL;
+        if(user.photoURL) {
+          const img = document.getElementById('userPhoto');
+          img.src = user.photoURL;
+          img.style.display = 'block';
+        }
       }
     });
   </script>
+
 </body>
 </html>

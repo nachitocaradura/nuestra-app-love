@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>🧳 Nuestros Viajes</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #ffd6e0; --mid: #ffb3c6; --dark: #ff85a1; --accent: #ff4d79; --shadow: rgba(255, 77, 121, 0.25);
+    }
+    [data-theme="blue"] {
+      --bg: #d6eaff; --mid: #b3d9ff; --dark: #85bfff; --accent: #4d94ff; --shadow: rgba(77, 148, 255, 0.25);
+    }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--bg);
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      transition: background 0.4s ease;
+      padding-bottom: 40px;
+    }
+
+    .header {
+      padding: 50px 20px 20px;
+      background: white;
+      text-align: center;
+      box-shadow: 0 4px 15px var(--shadow);
+      position: relative;
+    }
+
+    .back-btn {
+      position: absolute; left: 20px; bottom: 22px;
+      text-decoration: none; font-size: 24px; color: var(--accent); font-weight: 900;
+    }
+
+    h2 { color: var(--accent); font-weight: 900; font-size: 22px; }
+
+    .viajes-grid {
+      padding: 20px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 15px;
+    }
+
+    .viaje-card {
+      background: white;
+      padding: 20px;
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+      border-left: 5px solid var(--accent);
+      animation: fadeIn 0.4s ease;
+    }
+
+    .viaje-icon { font-size: 30px; }
+    .viaje-info h3 { color: #444; font-size: 18px; margin-bottom: 2px; }
+    .viaje-info p { color: #888; font-size: 13px; }
+
+    .btn-float {
+      position: fixed; bottom: 30px; right: 30px;
+      background: var(--accent); color: white;
+      width: 60px; height: 60px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 30px; border: none; box-shadow: 0 5px 15px var(--shadow);
+      cursor: pointer; z-index: 10;
+    }
+
+    /* Modal Estilo Calendario */
+    .modal {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+      display: none; align-items: center; justify-content: center; z-index: 100;
+      backdrop-filter: blur(4px);
+    }
+    .modal.show { display: flex; }
+    .modal-content {
+      background: white; width: 85%; max-width: 350px;
+      padding: 25px; border-radius: 30px; text-align: center;
+    }
+    input {
+      width: 100%; padding: 12px; margin: 15px 0;
+      border: 2px solid var(--bg); border-radius: 15px;
+      font-family: inherit; outline: none; text-align: center;
+    }
+    .btn-save {
+      background: var(--accent); color: white; border: none;
+      padding: 12px 25px; border-radius: 15px; font-weight: 900; cursor: pointer;
+    }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body>
+  <script src="global.js"></script>
+
+  <div class="header">
+    <a href="index.html" class="back-btn">‹</a>
+    <h2>🧳 Nuestros Viajes</h2>
+  </div>
+
+  <div class="viajes-grid" id="viajesContainer">
+    </div>
+
+  <button class="btn-float" onclick="openModal()">+</button>
+
+  <div class="modal" id="viajeModal">
+    <div class="modal-content">
+      <h3 style="color:var(--accent)">Nuevo Viaje ✈️</h3>
+      <input type="text" id="viajeNombre" placeholder="¿A dónde vamos?" maxlength="30">
+      <button class="btn-save" onclick="guardarViaje()">Crear viaje</button>
+      <p onclick="closeModal()" style="margin-top:15px; font-size:12px; color:#aaa; cursor:pointer;">Cancelar</p>
+    </div>
+  </div>
+
+  <script type="module">
+    import { db, auth } from './firebase.js';
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
+    import { collection, addDoc, query, where, onSnapshot, doc, getDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+
+    let user = null, parejaId = null;
+    const container = document.getElementById('viajesContainer');
+
+    onAuthStateChanged(auth, async (u) => {
+      if (!u) { window.location.href = 'auth.html'; return; }
+      user = u;
+      const userDoc = await getDoc(doc(db, "usuarios", u.uid));
+      if (userDoc.exists()) {
+        parejaId = userDoc.data().parejaId;
+        cargarViajes();
+      }
+    });
+
+    function cargarViajes() {
+      // Buscamos viajes donde el creador sea yo o mi pareja
+      const q = query(collection(db, "viajes"), where("creadorPor", "in", [user.uid, parejaId || ""]));
+      
+      onSnapshot(q, (snap) => {
+        container.innerHTML = '';
+        if (snap.empty) {
+          container.innerHTML = '<p style="text-align:center; color:#888; margin-top:50px;">Aún no hay viajes planeados... 🌍</p>';
+        }
+        snap.forEach(d => {
+          const v = d.data();
+          const card = document.createElement('div');
+          card.className = 'viaje-card';
+          card.innerHTML = `
+            <div class="viaje-icon">📍</div>
+            <div class="viaje-info">
+              <h3>${v.nombre}</h3>
+              <p>Destino soñado</p>
+            </div>
+          `;
+          container.appendChild(card);
+        });
+      });
+    }
+
+    window.openModal = () => document.getElementById('viajeModal').classList.add('show');
+    window.closeModal = () => {
+      document.getElementById('viajeModal').classList.remove('show');
+      document.getElementById('viajeNombre').value = '';
+    }
+
+    window.guardarViaje = async () => {
+      const nombre = document.getElementById('viajeNombre').value.trim();
+      if (!nombre) return;
+
+      await addDoc(collection(db, "viajes"), {
+        nombre: nombre,
+        creadorPor: user.uid,
+        timestamp: serverTimestamp()
+      });
+
+      closeModal();
+    };
+  </script>
+</body>
+</html>

@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>💕 Nuestra App</title>
   
   <link rel="manifest" href="manifest.json?v=4">
@@ -29,8 +29,22 @@
       background: var(--bg);
       min-height: 100dvh;
       transition: background 0.4s ease;
-      overflow: hidden;
+      overflow-y: auto; /* Permite scroll vertical */
+      overflow-x: hidden;
       position: relative;
+    }
+
+    /* --- RELOJ --- */
+    .clock-container {
+      width: 100%;
+      text-align: center;
+      padding-top: 50px;
+    }
+    #clock {
+      font-size: 50px;
+      font-weight: 900;
+      color: var(--accent);
+      text-shadow: 0 4px 10px var(--shadow);
     }
 
     /* --- ANIMACIÓN DE EMOTES --- */
@@ -58,14 +72,14 @@
     .sidebar-item {
       display: flex; align-items: center; padding: 15px 20px; margin-bottom: 5px;
       border-radius: 15px; color: var(--text-main); font-weight: 700; text-decoration: none; transition: 0.2s;
+      cursor: pointer;
     }
     .sidebar-item:active { background: var(--bg); transform: scale(0.98); }
-    .sidebar-item i { margin-right: 15px; font-size: 20px; }
 
-    /* ACORDEÓN TEMAS */
+    /* ACORDEÓN TEMAS (DENTRO DEL MENÚ) */
     .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; padding-left: 55px; }
     .accordion-content.open { max-height: 150px; }
-    .theme-dot { width: 25px; height: 25px; border-radius: 50%; margin-right: 15px; border: 3px solid transparent; cursor: pointer; }
+    .theme-dot { width: 30px; height: 30px; border-radius: 50%; margin-right: 15px; border: 3px solid transparent; cursor: pointer; }
     .theme-dot.pink { background: #ff4d79; }
     .theme-dot.blue { background: #4d94ff; }
     .theme-dot.active { border-color: #fff; box-shadow: 0 0 10px rgba(0,0,0,0.2); }
@@ -77,12 +91,18 @@
     .overlay.show { display: block; }
 
     /* --- CONTENIDO PRINCIPAL --- */
-    .container { position: relative; z-index: 10; padding: 60px 25px 30px; display: flex; flex-direction: column; align-items: center; }
+    .container { position: relative; z-index: 10; padding: 20px 25px 60px; display: flex; flex-direction: column; align-items: center; }
     
-    .menu-btn { position: absolute; left: 25px; top: 50px; font-size: 28px; color: var(--accent); cursor: pointer; z-index: 11; }
+    .menu-btn { position: absolute; left: 25px; top: 55px; font-size: 28px; color: var(--accent); cursor: pointer; z-index: 11; }
 
-    .welcome-card { text-align: center; margin-bottom: 40px; }
-    .user-avatar { width: 100px; height: 100px; border-radius: 35px; border: 5px solid white; box-shadow: 0 8px 20px var(--shadow); margin-bottom: 15px; object-fit: cover; }
+    .welcome-card { text-align: center; margin-bottom: 30px; }
+    .user-avatar { 
+      width: 100px; height: 100px; border-radius: 35px; border: 5px solid white; 
+      box-shadow: 0 8px 20px var(--shadow); margin-bottom: 15px; object-fit: cover; 
+      cursor: pointer; transition: transform 0.2s;
+    }
+    .user-avatar:active { transform: scale(0.9); }
+
     .welcome-card h1 { color: var(--accent); font-weight: 900; font-size: 28px; margin-bottom: 5px; }
     .welcome-card p { color: var(--text-main); font-weight: 700; opacity: 0.8; }
 
@@ -103,28 +123,35 @@
 <body>
 
   <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+  
   <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <h3 id="sidebarTitle">Menú</h3>
     </div>
     <div class="sidebar-menu">
       <a href="perfil.html" class="sidebar-item">👤 Mi Perfil</a>
+      
       <div class="sidebar-item" onclick="toggleAccordion('themesAcc')">🎨 Cambiar Tema</div>
       <div id="themesAcc" class="accordion-content">
-        <div style="display: flex; padding: 10px 0;">
+        <div style="display: flex; padding: 15px 0;">
           <div class="theme-dot pink" id="dot-pink" onclick="setTheme('pink')"></div>
           <div class="theme-dot blue" id="dot-blue" onclick="setTheme('blue')"></div>
         </div>
       </div>
-      <a href="#" class="sidebar-item" style="color: #ff4444; margin-top: 20px;">🚪 Cerrar Sesión</a>
+      
+      <a href="auth.html" class="sidebar-item" style="color: #ff4444; margin-top: 20px;">🚪 Cerrar Sesión</a>
     </div>
   </div>
 
   <div class="menu-btn" onclick="toggleMenu()">☰</div>
 
+  <div class="clock-container">
+    <div id="clock">00:00</div>
+  </div>
+
   <div class="container">
     <div class="welcome-card">
-      <img src="" id="userPhoto" class="user-avatar" style="display:none;">
+      <img src="" id="userPhoto" class="user-avatar" style="display:none;" onclick="location.href='perfil.html'">
       <h1 id="welcomeText">¡Hola! 💕</h1>
       <p>¿Qué vamos a hacer hoy?</p>
     </div>
@@ -145,19 +172,30 @@
         <div class="menu-text">Ruleta</div>
       </div>
 
-      <div class="menu-item" onclick="location.href='perfil.html'">
-        <div class="menu-icon">👤</div>
-        <div class="menu-text">Perfil</div>
-      </div>
-
       <div class="menu-item" onclick="location.href='viajes.html'">
         <div class="menu-icon">🧳</div>
         <div class="menu-text">Viajes</div>
+      </div>
+
+      <div class="menu-item" onclick="location.href='perfil.html'">
+        <div class="menu-icon">👤</div>
+        <div class="menu-text">Perfil</div>
       </div>
     </div>
   </div>
 
   <script>
+    // Reloj
+    function updateClock() {
+      const now = new Date();
+      const h = String(now.getHours()).padStart(2, '0');
+      const m = String(now.getMinutes()).padStart(2, '0');
+      document.getElementById('clock').textContent = `${h}:${m}`;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // Corazones
     function createHeart() {
       const heart = document.createElement('div');
       heart.className = 'heart-float';
@@ -170,6 +208,7 @@
     }
     setInterval(createHeart, 800);
 
+    // Sidebar y Acordeón
     function toggleMenu() {
       document.getElementById('sidebar').classList.toggle('open');
       document.getElementById('overlay').classList.toggle('show');
@@ -177,6 +216,8 @@
     function toggleAccordion(id) {
       document.getElementById(id).classList.toggle('open');
     }
+
+    // Temas
     function setTheme(theme) {
       if(theme === 'blue') {
         document.documentElement.setAttribute('data-theme', 'blue');
@@ -189,8 +230,12 @@
     }
     function updateDots() {
       const t = localStorage.getItem('theme');
-      document.getElementById('dot-pink').classList.toggle('active', t !== 'blue');
-      document.getElementById('dot-blue').classList.toggle('active', t === 'blue');
+      const dotPink = document.getElementById('dot-pink');
+      const dotBlue = document.getElementById('dot-blue');
+      if(dotPink && dotBlue) {
+        dotPink.classList.toggle('active', t !== 'blue');
+        dotBlue.classList.toggle('active', t === 'blue');
+      }
     }
 
     if(localStorage.getItem('theme') === 'blue') setTheme('blue');
@@ -210,7 +255,7 @@
         if(user.photoURL) {
           const img = document.getElementById('userPhoto');
           img.src = user.photoURL;
-          img.style.display = 'block';
+          img.style.display = 'inline-block';
         }
       }
     });

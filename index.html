@@ -113,18 +113,18 @@
       background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(10px); border-radius: 30px;
       padding: 25px 15px; display: flex; flex-direction: column; align-items: center; justify-content: center;
       box-shadow: 0 10px 25px var(--shadow); transition: 0.3s; cursor: pointer; border: 2px solid transparent;
-      position: relative; /* Para el badge */
+      position: relative; /* Necesario para posicionar el badge */
     }
     .menu-item:active { transform: scale(0.92); background: white; border-color: var(--accent); }
     .menu-icon { font-size: 40px; margin-bottom: 12px; }
     .menu-text { font-weight: 900; color: var(--accent); font-size: 16px; }
 
-    /* ESTILO DEL BADGE */
+    /* NUEVO: Estilo del badge de mensajes */
     .chat-badge {
-      position: absolute; top: 10px; right: 10px; background: #ff4d4d; color: white;
-      font-size: 12px; font-weight: 900; width: 22px; height: 22px; border-radius: 50%;
+      position: absolute; top: 12px; right: 12px; background: #ff4d4d; color: white;
+      font-size: 11px; font-weight: 900; min-width: 20px; height: 20px; border-radius: 10px;
       display: none; align-items: center; justify-content: center; border: 2px solid white;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      padding: 0 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     }
 
   </style>
@@ -139,6 +139,7 @@
     </div>
     <div class="sidebar-menu">
       <a href="perfil.html" class="sidebar-item">👤 Mi Perfil</a>
+      
       <div class="sidebar-item" onclick="toggleAccordion('themesAcc')">🎨 Cambiar Tema</div>
       <div id="themesAcc" class="accordion-content">
         <div style="display: flex; padding: 15px 0;">
@@ -146,6 +147,7 @@
           <div class="theme-dot blue" id="dot-blue" onclick="setTheme('blue')"></div>
         </div>
       </div>
+      
       <a href="auth.html" class="sidebar-item" style="color: #ff4444; margin-top: 20px;">🚪 Cerrar Sesión</a>
     </div>
   </div>
@@ -193,6 +195,7 @@
   </div>
 
   <script>
+    // Reloj
     function updateClock() {
       const now = new Date();
       const h = String(now.getHours()).padStart(2, '0');
@@ -202,6 +205,7 @@
     setInterval(updateClock, 1000);
     updateClock();
 
+    // Corazones
     function createHeart() {
       const heart = document.createElement('div');
       heart.className = 'heart-float';
@@ -214,6 +218,7 @@
     }
     setInterval(createHeart, 800);
 
+    // Sidebar y Acordeón
     function toggleMenu() {
       document.getElementById('sidebar').classList.toggle('open');
       document.getElementById('overlay').classList.toggle('show');
@@ -222,6 +227,7 @@
       document.getElementById(id).classList.toggle('open');
     }
 
+    // Temas
     function setTheme(theme) {
       if(theme === 'blue') {
         document.documentElement.setAttribute('data-theme', 'blue');
@@ -241,6 +247,7 @@
         dotBlue.classList.toggle('active', t === 'blue');
       }
     }
+
     if(localStorage.getItem('theme') === 'blue') setTheme('blue');
     updateDots();
   </script>
@@ -262,31 +269,23 @@
           img.style.display = 'inline-block';
         }
 
-        // --- SOLO ESTO SE AÑADE ---
+        // LÓGICA DE NOTIFICACIONES (Badge)
         try {
-          const userRef = doc(db, "usuarios", user.uid);
-          const userSnap = await getDoc(userRef);
-          if (userSnap.exists()) {
-            const userData = userSnap.data();
-            if (userData.parejaId) {
-              const q = query(
-                collection(db, "mensajes"), 
-                where("senderId", "==", userData.parejaId),
-                where("receiverId", "==", user.uid),
-                where("leido", "==", false)
-              );
-              onSnapshot(q, (snapshot) => {
-                const badge = document.getElementById('chatBadge');
-                if (snapshot.size > 0) {
-                  badge.textContent = snapshot.size;
-                  badge.style.display = 'flex';
-                } else {
-                  badge.style.display = 'none';
-                }
-              });
-            }
+          const userDoc = await getDoc(doc(db, "usuarios", user.uid));
+          if (userDoc.exists() && userDoc.data().parejaId) {
+            const parejaId = userDoc.data().parejaId;
+            const q = query(collection(db, "mensajes"), where("senderId", "==", parejaId), where("receiverId", "==", user.uid), where("leido", "==", false));
+            onSnapshot(q, (snap) => {
+              const badge = document.getElementById('chatBadge');
+              if (snap.size > 0) {
+                badge.textContent = snap.size;
+                badge.style.display = 'flex';
+              } else {
+                badge.style.display = 'none';
+              }
+            });
           }
-        } catch (e) { console.error("Error cargando notificaciones", e); }
+        } catch(e) { console.error(e); }
       }
     });
   </script>

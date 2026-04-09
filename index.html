@@ -17,13 +17,10 @@
       --bg: #ffd6e0; --mid: #ffb3c6; --dark: #ff85a1; --accent: #ff4d79; --shadow: rgba(255, 77, 121, 0.2);
       --sidebar-bg: #fff; --text-main: #444;
     }
-
     [data-theme="blue"] {
       --bg: #d6eaff; --mid: #b3d9ff; --dark: #85bfff; --accent: #4d94ff; --shadow: rgba(77, 148, 255, 0.2);
     }
-
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
     body {
       font-family: 'Nunito', sans-serif;
       background: var(--bg);
@@ -33,48 +30,26 @@
       overflow-x: hidden;
       position: relative;
     }
-
-    /* --- RELOJ --- */
-    .clock-container {
-      width: 100%;
-      text-align: center;
-      padding-top: 50px;
-    }
-    #clock {
-      font-size: 50px;
-      font-weight: 900;
-      color: var(--accent);
-      text-shadow: 0 4px 10px var(--shadow);
-    }
-
-    /* --- ANIMACIÓN DE EMOTES --- */
-    .heart-float {
-      position: absolute; bottom: -50px; pointer-events: none; z-index: 1; opacity: 0;
-      animation: floatUp 6s linear infinite;
-    }
+    .clock-container { width: 100%; text-align: center; padding-top: 50px; }
+    #clock { font-size: 50px; font-weight: 900; color: var(--accent); text-shadow: 0 4px 10px var(--shadow); }
+    
+    .heart-float { position: absolute; bottom: -50px; pointer-events: none; z-index: 1; opacity: 0; animation: floatUp 6s linear infinite; }
     @keyframes floatUp {
       0% { transform: translateY(0) rotate(0deg); opacity: 0; }
       10% { opacity: 0.8; }
       100% { transform: translateY(-110vh) rotate(360deg); opacity: 0; }
     }
 
-    /* --- SIDEBAR --- */
     .sidebar {
       position: fixed; top: 0; left: -280px; width: 280px; height: 100%;
       background: var(--sidebar-bg); z-index: 1000; transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       box-shadow: 5px 0 25px rgba(0,0,0,0.1); display: flex; flex-direction: column;
     }
     .sidebar.open { left: 0; }
-    .sidebar-header { padding: 60px 25px 20px; background: var(--bg); transition: background 0.4s; position: relative; }
+    .sidebar-header { padding: 60px 25px 20px; background: var(--bg); position: relative; }
     .sidebar-header h3 { color: var(--accent); font-weight: 900; font-size: 24px; }
     .sidebar-menu { padding: 20px 10px; flex: 1; overflow-y: auto; }
-    
-    .sidebar-item {
-      display: flex; align-items: center; padding: 15px 20px; margin-bottom: 5px;
-      border-radius: 15px; color: var(--text-main); font-weight: 700; text-decoration: none; transition: 0.2s;
-      cursor: pointer;
-    }
-    .sidebar-item:active { background: var(--bg); transform: scale(0.98); }
+    .sidebar-item { display: flex; align-items: center; padding: 15px 20px; border-radius: 15px; color: var(--text-main); font-weight: 700; text-decoration: none; cursor: pointer; }
 
     .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; padding-left: 55px; }
     .accordion-content.open { max-height: 150px; }
@@ -83,58 +58,50 @@
     .theme-dot.blue { background: #4d94ff; }
     .theme-dot.active { border-color: #fff; box-shadow: 0 0 10px rgba(0,0,0,0.2); }
 
-    .overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.3); backdrop-filter: blur(2px);
-      z-index: 999; display: none;
-    }
+    .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.3); backdrop-filter: blur(2px); z-index: 999; display: none; }
     .overlay.show { display: block; }
 
-    /* --- CONTENIDO PRINCIPAL --- */
     .container { position: relative; z-index: 10; padding: 20px 25px 60px; display: flex; flex-direction: column; align-items: center; }
-    
     .menu-btn { position: absolute; left: 25px; top: 55px; font-size: 28px; color: var(--accent); cursor: pointer; z-index: 11; }
 
     .welcome-card { text-align: center; margin-bottom: 30px; }
-    .user-avatar { 
-      width: 100px; height: 100px; border-radius: 35px; border: 5px solid white; 
-      box-shadow: 0 8px 20px var(--shadow); margin-bottom: 15px; object-fit: cover; 
-      cursor: pointer; transition: transform 0.2s;
-    }
-    .user-avatar:active { transform: scale(0.9); }
+    .user-avatar { width: 100px; height: 100px; border-radius: 35px; border: 5px solid white; box-shadow: 0 8px 20px var(--shadow); margin-bottom: 15px; object-fit: cover; cursor: pointer; }
 
-    .welcome-card h1 { color: var(--accent); font-weight: 900; font-size: 28px; margin-bottom: 5px; }
-    .welcome-card p { color: var(--text-main); font-weight: 700; opacity: 0.8; }
-
-    .main-grid {
-      display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; width: 100%; max-width: 400px;
-    }
+    .main-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; width: 100%; max-width: 400px; }
     .menu-item {
       background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(10px); border-radius: 30px;
       padding: 25px 15px; display: flex; flex-direction: column; align-items: center; justify-content: center;
-      box-shadow: 0 10px 25px var(--shadow); transition: 0.3s; cursor: pointer; border: 2px solid transparent;
-      position: relative;
+      box-shadow: 0 10px 25px var(--shadow); cursor: pointer; position: relative;
     }
-    .menu-item:active { transform: scale(0.92); background: white; border-color: var(--accent); }
     .menu-icon { font-size: 40px; margin-bottom: 12px; }
     .menu-text { font-weight: 900; color: var(--accent); font-size: 16px; }
 
-    /* Estilo del Badge */
+    /* ESTILO FORZADO DEL CÍRCULO */
     .chat-badge {
-      position: absolute; top: 8px; right: 12px; background: #ff4d4d; color: white;
-      min-width: 20px; height: 20px; border-radius: 10px; font-size: 11px;
-      font-weight: 900; display: flex; align-items: center; justify-content: center;
-      border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      background: #ff4d4d;
+      color: white;
+      min-width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: flex; /* Cambiado a flex para que se vea SIEMPRE */
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 900;
+      border: 2px solid white;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      z-index: 20;
     }
   </style>
 </head>
 <body>
 
   <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
-  
   <div class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-      <h3 id="sidebarTitle">Menú</h3>
-    </div>
+    <div class="sidebar-header"><h3>Menú</h3></div>
     <div class="sidebar-menu">
       <a href="perfil.html" class="sidebar-item">👤 Mi Perfil</a>
       <div class="sidebar-item" onclick="toggleAccordion('themesAcc')">🎨 Cambiar Tema</div>
@@ -149,10 +116,7 @@
   </div>
 
   <div class="menu-btn" onclick="toggleMenu()">☰</div>
-
-  <div class="clock-container">
-    <div id="clock">00:00</div>
-  </div>
+  <div class="clock-container"><div id="clock">00:00</div></div>
 
   <div class="container">
     <div class="welcome-card">
@@ -167,25 +131,17 @@
         <div class="menu-text">Chat</div>
         <div id="chatBadge" class="chat-badge">0</div>
       </div>
-      
       <div class="menu-item" onclick="location.href='calendario.html'">
-        <div class="menu-icon">📅</div>
-        <div class="menu-text">Calendario</div>
+        <div class="menu-icon">📅</div><div class="menu-text">Calendario</div>
       </div>
-
       <div class="menu-item" onclick="location.href='ruleta.html'">
-        <div class="menu-icon">🎡</div>
-        <div class="menu-text">Ruleta</div>
+        <div class="menu-icon">🎡</div><div class="menu-text">Ruleta</div>
       </div>
-
       <div class="menu-item" onclick="location.href='viajes.html'">
-        <div class="menu-icon">🧳</div>
-        <div class="menu-text">Viajes</div>
+        <div class="menu-icon">🧳</div><div class="menu-text">Viajes</div>
       </div>
-
       <div class="menu-item" onclick="location.href='perfil.html'">
-        <div class="menu-icon">👤</div>
-        <div class="menu-text">Perfil</div>
+        <div class="menu-icon">👤</div><div class="menu-text">Perfil</div>
       </div>
     </div>
   </div>
@@ -193,12 +149,9 @@
   <script>
     function updateClock() {
       const now = new Date();
-      const h = String(now.getHours()).padStart(2, '0');
-      const m = String(now.getMinutes()).padStart(2, '0');
-      document.getElementById('clock').textContent = `${h}:${m}`;
+      document.getElementById('clock').textContent = String(now.getHours()).padStart(2,'0') + ":" + String(now.getMinutes()).padStart(2,'0');
     }
-    setInterval(updateClock, 1000);
-    updateClock();
+    setInterval(updateClock, 1000); updateClock();
 
     function createHeart() {
       const heart = document.createElement('div');
@@ -206,44 +159,30 @@
       heart.innerHTML = ['❤️','💖','💕','💗','✨'][Math.floor(Math.random()*5)];
       heart.style.left = Math.random() * 100 + 'vw';
       heart.style.fontSize = (Math.random() * 20 + 20) + 'px';
-      heart.style.animationDuration = (Math.random() * 3 + 4) + 's';
       document.body.appendChild(heart);
       setTimeout(() => heart.remove(), 6000);
     }
     setInterval(createHeart, 800);
 
-    function toggleMenu() {
-      document.getElementById('sidebar').classList.toggle('open');
-      document.getElementById('overlay').classList.toggle('show');
-    }
-    function toggleAccordion(id) {
-      document.getElementById(id).classList.toggle('open');
-    }
-
+    function toggleMenu() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('overlay').classList.toggle('show'); }
+    function toggleAccordion(id) { document.getElementById(id).classList.toggle('open'); }
     function setTheme(theme) {
-      if(theme === 'blue') {
-        document.documentElement.setAttribute('data-theme', 'blue');
-        localStorage.setItem('theme', 'blue');
-      } else {
-        document.documentElement.removeAttribute('data-theme');
-        localStorage.setItem('theme', 'pink');
-      }
+      if(theme === 'blue') { document.documentElement.setAttribute('data-theme', 'blue'); localStorage.setItem('theme', 'blue'); }
+      else { document.documentElement.removeAttribute('data-theme'); localStorage.setItem('theme', 'pink'); }
       updateDots();
     }
     function updateDots() {
       const t = localStorage.getItem('theme');
-      const dotPink = document.getElementById('dot-pink');
-      const dotBlue = document.getElementById('dot-blue');
-      if(dotPink && dotBlue) {
-        dotPink.classList.toggle('active', t !== 'blue');
-        dotBlue.classList.toggle('active', t === 'blue');
+      if(document.getElementById('dot-pink')) {
+        document.getElementById('dot-pink').classList.toggle('active', t !== 'blue');
+        document.getElementById('dot-blue').classList.toggle('active', t === 'blue');
       }
     }
-    if(localStorage.getItem('theme') === 'blue') setTheme('blue');
-    updateDots();
+    if(localStorage.getItem('theme') === 'blue') setTheme('blue'); else updateDots();
   </script>
 
   <script type="module">
+    // USAMOS UN BLOQUE TRY-CATCH PARA QUE NO SE ROMPA NADA
     import { auth, db } from './firebase.js';
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
     import { collection, query, where, onSnapshot, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
@@ -251,33 +190,43 @@
     onAuthStateChanged(auth, async (user) => {
       if (!user) {
         window.location.href = "auth.html";
-      } else {
-        const nombre = user.displayName ? user.displayName.split(' ')[0] : "Amor";
-        document.getElementById('welcomeText').textContent = "¡Hola, " + nombre + "! 💕";
-        if(user.photoURL) {
-          const img = document.getElementById('userPhoto');
-          img.src = user.photoURL;
-          img.style.display = 'inline-block';
-        }
+        return;
+      }
 
-        // Si existe db y parejaId, actualizamos el número si llega algo
-        try {
-          const uSnap = await getDoc(doc(db, "usuarios", user.uid));
-          if (uSnap.exists() && uSnap.data().parejaId) {
-            const pId = uSnap.data().parejaId;
+      // 1. Mostrar nombre y foto (lo que ya funcionaba)
+      const nombre = user.displayName ? user.displayName.split(' ')[0] : "Amor";
+      document.getElementById('welcomeText').textContent = "¡Hola, " + nombre + "! 💕";
+      if(user.photoURL) {
+        const img = document.getElementById('userPhoto');
+        img.src = user.photoURL;
+        img.style.display = 'inline-block';
+      }
+
+      // 2. Intentar cargar el contador de mensajes
+      try {
+        if (db) {
+          const userSnap = await getDoc(doc(db, "usuarios", user.uid));
+          if (userSnap.exists() && userSnap.data().parejaId) {
+            const parejaId = userSnap.data().parejaId;
             const q = query(collection(db, "mensajes"), 
-              where("senderId", "==", pId), 
-              where("receiverId", "==", user.uid), 
-              where("leido", "==", false)
-            );
-            onSnapshot(q, (s) => {
-              document.getElementById('chatBadge').textContent = s.size > 0 ? s.size : "0";
+                            where("senderId", "==", parejaId), 
+                            where("receiverId", "==", user.uid), 
+                            where("leido", "==", false));
+            
+            onSnapshot(q, (snapshot) => {
+              const badge = document.getElementById('chatBadge');
+              if(badge) {
+                badge.textContent = snapshot.size;
+                // Si quieres que el círculo desaparezca cuando no hay mensajes, cambia 'flex' por 'none' abajo:
+                badge.style.display = snapshot.size > 0 ? 'flex' : 'flex'; 
+              }
             });
           }
-        } catch(e) { console.log("Firebase no listo"); }
+        }
+      } catch (error) {
+        console.log("Error en el contador, pero la app sigue funcionando.");
       }
     });
   </script>
-
 </body>
 </html>

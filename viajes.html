@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>🧳 Nuestros Viajes</title>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
   <style>
@@ -25,41 +25,50 @@
       padding-bottom: 40px;
     }
 
-    header {
-      padding: 60px 25px 20px;
-      text-align: center;
-    }
+    header { padding: 60px 25px 20px; text-align: center; }
     header h1 { color: var(--accent); font-weight: 900; font-size: 32px; }
 
-    .viajes-container {
-      flex: 1; padding: 0 20px; display: flex; flex-direction: column; gap: 15px;
+    /* BOTÓN VOLVER ESTILO CHAT */
+    .back-btn {
+      position: absolute; left: 18px; top: 50px; text-decoration: none; font-size: 24px; 
+      background: rgba(255,255,255,0.6); border-radius: 12px; width: 40px; height: 40px;
+      color: var(--accent); font-weight: 900; box-shadow: 0 2px 8px var(--shadow); 
+      display: flex; align-items: center; justify-content: center; z-index: 10;
     }
 
-    /* TARJETA DE VIAJE */
+    .viajes-container { flex: 1; padding: 0 20px; display: flex; flex-direction: column; gap: 15px; }
+
     .viaje-card {
       background: rgba(255, 255, 255, 0.6);
       backdrop-filter: blur(10px);
-      padding: 20px;
+      padding: 18px;
       border-radius: 25px;
       display: flex;
       align-items: center;
-      gap: 15px;
+      justify-content: space-between;
       box-shadow: 0 8px 20px var(--shadow);
-      transition: transform 0.2s, background 0.2s;
-      user-select: none; /* Evita seleccionar texto al mantener pulsado */
     }
-    .viaje-card:active { transform: scale(0.98); background: rgba(255, 255, 255, 0.8); }
 
-    .viaje-icon { font-size: 30px; }
-    .viaje-info h3 { color: var(--accent); font-weight: 900; font-size: 18px; margin-bottom: 2px; }
-    .viaje-info p { color: #666; font-size: 14px; font-weight: 700; }
+    .viaje-main { display: flex; align-items: center; gap: 12px; }
+    .viaje-icon { font-size: 28px; }
+    .viaje-info h3 { color: var(--accent); font-weight: 900; font-size: 17px; }
+    .viaje-info p { color: #666; font-size: 13px; font-weight: 700; }
 
-    /* BOTÓN FLOTANTE */
+    /* BOTONES DE ACCIÓN */
+    .viaje-actions { display: flex; gap: 8px; }
+    .action-btn {
+      width: 35px; height: 35px; border-radius: 10px; border: none;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; cursor: pointer; transition: 0.2s;
+    }
+    .btn-edit { background: white; color: var(--accent); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .btn-del { background: #ffe5e5; color: #ff4444; }
+
     .btn-add {
       position: fixed; bottom: 30px; right: 30px;
       width: 65px; height: 65px; border-radius: 50%;
       background: var(--accent); border: none; color: white;
-      font-size: 30px; box-shadow: 0 10px 20px var(--shadow);
+      font-size: 35px; box-shadow: 0 10px 20px var(--shadow);
       cursor: pointer; z-index: 100;
     }
 
@@ -71,44 +80,38 @@
     }
     .modal.show { display: flex; }
     .modal-content {
-      background: white; padding: 30px; border-radius: 30px; width: 100%; max-width: 400px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+      background: white; padding: 25px; border-radius: 30px; width: 100%; max-width: 380px;
     }
-    .modal-content h2 { color: var(--accent); margin-bottom: 20px; text-align: center; }
+    .modal-content h2 { color: var(--accent); margin-bottom: 15px; text-align: center; font-size: 22px; }
     
-    label { display: block; margin-bottom: 5px; font-weight: 800; color: var(--accent); font-size: 14px; margin-top: 10px;}
+    label { display: block; margin-top: 12px; font-weight: 800; color: var(--accent); font-size: 13px; margin-bottom: 4px; }
     input {
-      width: 100%; padding: 15px; border-radius: 15px; border: 2px solid var(--bg);
-      background: #f9f9f9; font-family: inherit; font-size: 16px; outline: none; margin-bottom: 10px;
+      width: 100%; padding: 14px; border-radius: 15px; border: 2px solid var(--bg);
+      background: #f9f9f9; font-family: inherit; font-size: 16px; outline: none;
     }
     
     .modal-btns { display: flex; gap: 10px; margin-top: 25px; }
-    .btn {
-      flex: 1; padding: 15px; border-radius: 15px; border: none; font-weight: 900; cursor: pointer;
-    }
+    .btn { flex: 1; padding: 14px; border-radius: 15px; border: none; font-weight: 900; cursor: pointer; font-size: 15px; }
     .btn-save { background: var(--accent); color: white; }
     .btn-cancel { background: #eee; color: #666; }
-    .btn-delete { background: #ff4444; color: white; }
-
-    .back-btn { position: absolute; top: 55px; left: 25px; font-size: 24px; color: var(--accent); text-decoration: none; font-weight: 900; }
+    .btn-delete-confirm { background: #ff4444; color: white; }
   </style>
 </head>
 <body>
 
-  <a href="index.html" class="back-btn">✕</a>
+  <a href="index.html" class="back-btn">‹</a>
 
   <header>
     <h1>Nuestros Viajes</h1>
   </header>
 
-  <div class="viajes-container" id="viajesContainer">
-    </div>
+  <div class="viajes-container" id="viajesContainer"></div>
 
   <button class="btn-add" onclick="openModal()">+</button>
 
   <div class="modal" id="viajeModal">
     <div class="modal-content">
-      <h2>Nuevo Viaje 🌍</h2>
+      <h2 id="modalTitle">Nuevo Viaje 🌍</h2>
       
       <label>¿A dónde vamos?</label>
       <input type="text" id="viajeNombre" placeholder="Ej: París, Disney..." />
@@ -134,24 +137,21 @@
   <div class="modal" id="deleteModal">
     <div class="modal-content">
       <h2 style="color: #ff4444;">¿Eliminar viaje?</h2>
-      <p id="deleteText" style="text-align: center; font-weight: 700; color: #666;"></p>
+      <p id="deleteText" style="text-align: center; font-weight: 700; color: #666; margin-bottom: 10px;"></p>
       <div class="modal-btns">
         <button class="btn btn-cancel" onclick="closeDeleteModal()">No, volver</button>
-        <button class="btn btn-delete" id="btnConfirmDelete">Sí, borrar</button>
+        <button class="btn btn-delete-confirm" id="btnConfirmDelete">Sí, borrar</button>
       </div>
     </div>
   </div>
 
-  <script src="global.js"></script>
   <script type="module">
     import { db, auth } from './firebase.js';
-    import { collection, addDoc, query, where, onSnapshot, getDoc, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+    import { collection, addDoc, query, where, onSnapshot, getDoc, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
 
     let user, parejaId;
-    const container = document.getElementById('viajesContainer');
-    let longPressTimer;
-    let selectedViajeId = null;
+    let selectedViajeId = null; // Para saber si editamos o borramos
 
     onAuthStateChanged(auth, async (u) => {
       if (!u) { window.location.href = "auth.html"; }
@@ -166,10 +166,10 @@
     function cargarViajes() {
       const ids = [user.uid];
       if (parejaId) ids.push(parejaId);
-      
       const q = query(collection(db, "viajes"), where("creadorPor", "in", ids));
       
       onSnapshot(q, (snap) => {
+        const container = document.getElementById('viajesContainer');
         container.innerHTML = '';
         if (snap.empty) {
           container.innerHTML = '<p style="text-align:center; color:#888; margin-top:50px; font-weight:700;">Aún no hay viajes planeados... 🌍</p>';
@@ -180,91 +180,101 @@
           const card = document.createElement('div');
           card.className = 'viaje-card';
           
-          // Formatear fechas para mostrar
           const fInicio = v.fechaInicio ? formatearFecha(v.fechaInicio) : '?';
           const fFin = v.fechaFin ? formatearFecha(v.fechaFin) : '?';
 
           card.innerHTML = `
-            <div class="viaje-icon">📍</div>
-            <div class="viaje-info">
-              <h3>${v.nombre}</h3>
-              <p>🗓️ ${fInicio} - ${fFin}</p>
+            <div class="viaje-main">
+              <div class="viaje-icon">📍</div>
+              <div class="viaje-info">
+                <h3>${v.nombre}</h3>
+                <p>🗓️ ${fInicio} - ${fFin}</p>
+              </div>
+            </div>
+            <div class="viaje-actions">
+              <button class="action-btn btn-edit" onclick="prepararEdicion('${d.id}', '${v.nombre}', '${v.fechaInicio}', '${v.fechaFin}')">✏️</button>
+              <button class="action-btn btn-del" onclick="prepararBorrado('${d.id}', '${v.nombre}')">🗑️</button>
             </div>
           `;
-
-          // --- EVENTOS DE PULSACIÓN LARGA ---
-          card.addEventListener('touchstart', (e) => startPress(d.id, v.nombre));
-          card.addEventListener('touchend', cancelPress);
-          card.addEventListener('mousedown', (e) => startPress(d.id, v.nombre));
-          card.addEventListener('mouseup', cancelPress);
-          card.addEventListener('mouseleave', cancelPress);
-
           container.appendChild(card);
         });
       });
     }
 
-    // Funciones para el Long Press (1 segundo)
-    function startPress(id, nombre) {
-      selectedViajeId = id;
-      longPressTimer = setTimeout(() => {
-        document.getElementById('deleteText').textContent = `¿Estás seguro de que quieres borrar el viaje a "${nombre}"?`;
-        document.getElementById('deleteModal').classList.add('show');
-      }, 1000); // 1 segundo
-    }
-
-    function cancelPress() {
-      clearTimeout(longPressTimer);
-    }
-
     function formatearFecha(f) {
-      const fecha = new Date(f);
+      const fecha = new Date(f + "T00:00:00"); // Forzar hora local
       return fecha.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
     }
 
-    window.openModal = () => document.getElementById('viajeModal').classList.add('show');
+    // --- FUNCIONES DE MODALES ---
+    window.openModal = () => {
+      selectedViajeId = null;
+      document.getElementById('modalTitle').textContent = "Nuevo Viaje 🌍";
+      document.getElementById('viajeModal').classList.add('show');
+    };
+
     window.closeModal = () => {
       document.getElementById('viajeModal').classList.remove('show');
       document.getElementById('viajeNombre').value = '';
       document.getElementById('fechaInicio').value = '';
       document.getElementById('fechaFin').value = '';
-    }
+    };
+
+    window.prepararEdicion = (id, nombre, inicio, fin) => {
+      selectedViajeId = id;
+      document.getElementById('modalTitle').textContent = "Editar Viaje ✏️";
+      document.getElementById('viajeNombre').value = nombre;
+      document.getElementById('fechaInicio').value = inicio;
+      document.getElementById('fechaFin').value = fin;
+      document.getElementById('viajeModal').classList.add('show');
+    };
+
+    window.prepararBorrado = (id, nombre) => {
+      selectedViajeId = id;
+      document.getElementById('deleteText').textContent = `¿Borrrar el viaje a "${nombre}"?`;
+      document.getElementById('deleteModal').classList.add('show');
+    };
 
     window.closeDeleteModal = () => {
       document.getElementById('deleteModal').classList.remove('show');
       selectedViajeId = null;
-    }
+    };
 
+    // --- GUARDAR (NUEVO O EDITAR) ---
     window.guardarViaje = async () => {
       const nombre = document.getElementById('viajeNombre').value.trim();
       const fInicio = document.getElementById('fechaInicio').value;
       const fFin = document.getElementById('fechaFin').value;
 
-      if (!nombre || !fInicio || !fFin) {
-        alert("Por favor, rellena todos los campos");
-        return;
-      }
+      if (!nombre || !fInicio || !fFin) return alert("Rellena todos los campos");
 
-      await addDoc(collection(db, "viajes"), {
-        nombre: nombre,
+      const data = {
+        nombre,
         fechaInicio: fInicio,
         fechaFin: fFin,
         creadorPor: user.uid,
-        creadoEn: Date.now()
-      });
+        actualizadoEn: Date.now()
+      };
+
+      if (selectedViajeId) {
+        // Editar existente
+        await updateDoc(doc(db, "viajes", selectedViajeId), data);
+      } else {
+        // Crear nuevo
+        data.creadoEn = Date.now();
+        await addDoc(collection(db, "viajes"), data);
+      }
 
       closeModal();
-    }
+    };
 
-    // Acción de borrar definitiva
+    // --- BORRAR ---
     document.getElementById('btnConfirmDelete').onclick = async () => {
       if (selectedViajeId) {
         await deleteDoc(doc(db, "viajes", selectedViajeId));
         closeDeleteModal();
       }
     };
-
   </script>
-
 </body>
 </html>

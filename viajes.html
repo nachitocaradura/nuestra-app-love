@@ -79,6 +79,10 @@
     .inputs-gasto.active { display: flex; flex-wrap: wrap; }
     .inputs-gasto input { flex: 1; min-width: 100px; padding: 8px; font-size: 12px; }
 
+    /* ESTILO PARA GASTOS DINÁMICOS */
+    .dynamic-gasto-row { display: flex; gap: 5px; margin-bottom: 8px; align-items: center; }
+    .btn-add-extra { background: var(--bg); color: var(--accent); border: none; padding: 8px; border-radius: 10px; font-weight: 900; font-size: 12px; width: 100%; margin-top: 10px; cursor: pointer; }
+
     .btn-save { background: var(--accent); color: white; width: 100%; padding: 15px; border-radius: 15px; border: none; font-weight: 900; margin-top: 20px; }
   </style>
 </head>
@@ -137,9 +141,11 @@
           <p style="font-size: 11px; font-weight: 900; color: var(--accent); margin-top: 15px; margin-bottom: 5px;">EXTRAS</p>
 
           <div class="gasto-group">
-            <div class="gasto-item"><span>🍔 Comida / Ocio</span> <label class="switch"><input type="checkbox" id="chkExtra" onchange="toggleGasto('inputsExtra')"><span class="slider"></span></label></div>
+            <div class="gasto-item"><span>🍔 Otros Gastos</span> <label class="switch"><input type="checkbox" id="chkExtra" onchange="toggleGasto('inputsExtra')"><span class="slider"></span></label></div>
             <div class="inputs-gasto" id="inputsExtra">
-              <input type="number" id="costeExtra" placeholder="Total estimado (€)">
+              <div id="dynamicExtrasContainer" style="width: 100%;">
+                </div>
+              <button class="btn-add-extra" onclick="addExtraField()">➕ Añadir concepto</button>
             </div>
           </div>
         </div>
@@ -187,6 +193,18 @@
     window.toggleGasto = (id) => {
         const el = document.getElementById(id);
         el.classList.toggle('active');
+    };
+
+    window.addExtraField = (nombre = '', valor = '') => {
+      const container = document.getElementById('dynamicExtrasContainer');
+      const div = document.createElement('div');
+      div.className = 'dynamic-gasto-row';
+      div.innerHTML = `
+        <input type="text" placeholder="Nombre (ej: Concierto)" value="${nombre}" class="extra-name">
+        <input type="number" placeholder="€" value="${valor}" class="extra-value" style="max-width: 80px;">
+        <button onclick="this.parentElement.remove()" style="background:none; border:none; color:#ff4444; font-size:18px;">×</button>
+      `;
+      container.appendChild(div);
     };
 
     function cargarViajes() {
@@ -237,8 +255,17 @@
         const noches = Math.max(1, Math.ceil((d2 - d1) / (1000*60*60*24)));
         total += (Number(document.getElementById('costeNoche').value) || 0) * noches;
       }
+
+      // Cálculo de extras dinámicos
+      const extrasData = [];
       if(document.getElementById('chkExtra').checked) {
-        total += (Number(document.getElementById('costeExtra').value) || 0);
+        const names = document.querySelectorAll('.extra-name');
+        const values = document.querySelectorAll('.extra-value');
+        names.forEach((n, i) => {
+          const val = Number(values[i].value) || 0;
+          total += val;
+          extrasData.push({ concepto: n.value, valor: val });
+        });
       }
 
       const data = { 
@@ -249,7 +276,7 @@
           transporte: document.getElementById('chkTransporte').checked ? {ida: document.getElementById('costeIda').value, vuelta: document.getElementById('costeVuelta').value} : null,
           vehiculo: document.getElementById('chkVehiculo').checked ? document.getElementById('costeGasolina').value : null,
           alojamiento: document.getElementById('chkAlojamiento').checked ? document.getElementById('costeNoche').value : null,
-          extra: document.getElementById('chkExtra').checked ? document.getElementById('costeExtra').value : null
+          extrasDinamicos: document.getElementById('chkExtra').checked ? extrasData : null
         }
       };
 
@@ -283,10 +310,10 @@
         toggleGasto('inputsAlojamiento');
         document.getElementById('costeNoche').value = det.alojamiento;
       }
-      if(det.extra) {
+      if(det.extrasDinamicos) {
         document.getElementById('chkExtra').checked = true;
         toggleGasto('inputsExtra');
-        document.getElementById('costeExtra').value = det.extra;
+        det.extrasDinamicos.forEach(e => addExtraField(e.concepto, e.valor));
       }
       document.getElementById('viajeModal').classList.add('show');
     };
@@ -304,6 +331,7 @@
         document.getElementById('fechaFin').value = '';
         document.getElementById('gastosContent').classList.remove('active');
         document.getElementById('gastosArrow').textContent = '▼';
+        document.getElementById('dynamicExtrasContainer').innerHTML = '';
         ['chkTransporte','chkVehiculo','chkAlojamiento','chkExtra'].forEach(id => document.getElementById(id).checked = false);
         ['inputsTransporte','inputsVehiculo','inputsAlojamiento','inputsExtra'].forEach(id => document.getElementById(id).classList.remove('active'));
     };

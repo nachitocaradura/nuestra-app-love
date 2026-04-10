@@ -182,7 +182,6 @@
   </script>
 
   <script type="module">
-    // USAMOS UN BLOQUE TRY-CATCH PARA QUE NO SE ROMPA NADA
     import { auth, db } from './firebase.js';
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
     import { collection, query, where, onSnapshot, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
@@ -193,7 +192,6 @@
         return;
       }
 
-      // 1. Mostrar nombre y foto (lo que ya funcionaba)
       const nombre = user.displayName ? user.displayName.split(' ')[0] : "Amor";
       document.getElementById('welcomeText').textContent = "¡Hola, " + nombre + "! 💕";
       if(user.photoURL) {
@@ -202,12 +200,12 @@
         img.style.display = 'inline-block';
       }
 
-      // 2. Intentar cargar el contador de mensajes
       try {
         if (db) {
           const userSnap = await getDoc(doc(db, "usuarios", user.uid));
           if (userSnap.exists() && userSnap.data().parejaId) {
             const parejaId = userSnap.data().parejaId;
+            // CORRECCIÓN: Buscamos mensajes enviados POR la pareja HACIA mí que estén SIN LEER
             const q = query(collection(db, "mensajes"), 
                             where("senderId", "==", parejaId), 
                             where("receiverId", "==", user.uid), 
@@ -217,14 +215,12 @@
               const badge = document.getElementById('chatBadge');
               if(badge) {
                 badge.textContent = snapshot.size;
-                // Si quieres que el círculo desaparezca cuando no hay mensajes, cambia 'flex' por 'none' abajo:
-                badge.style.display = snapshot.size > 0 ? 'flex' : 'flex'; 
               }
             });
           }
         }
       } catch (error) {
-        console.log("Error en el contador, pero la app sigue funcionando.");
+        console.log("Error en el contador.");
       }
     });
   </script>

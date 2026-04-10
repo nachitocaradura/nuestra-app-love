@@ -85,8 +85,7 @@
   <script type="module">
     import { db, auth } from './firebase.js';
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
-    import { collection, addDoc, query, where, orderBy, onSnapshot, doc, getDoc, setDoc, serverTimestamp, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
-    // IMPORTACIÓN PARA NOTIFICACIONES FCM
+    import { collection, addDoc, query, where, orderBy, onSnapshot, doc, getDoc, setDoc, updateDoc, serverTimestamp, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
     import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-messaging.js";
 
     let user = null, parejaId = null, typingTimeout = null;
@@ -94,7 +93,6 @@
     const msgInput = document.getElementById('msgInput');
     const messaging = getMessaging();
 
-    // REGISTRAR SW DE FORMA AGRESIVA
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('sw.js').then(reg => {
@@ -103,16 +101,12 @@
       });
     }
 
-    // FUNCIÓN PARA ACTIVAR FCM Y OBTENER TOKEN
     async function activarNotificacionesFCM(userId) {
       try {
         const token = await getToken(messaging, { 
           vapidKey: 'BCAD1wd4akkmElcAqzk2sOVuMPGV5ntxBeo7rF4q3K7Ey_4hIMhLVVvriRcRGUo46L51Tk73F49-IpISwRs0nOk' 
         });
-        
         if (token) {
-          console.log("Token FCM obtenido:", token);
-          // Guardamos el token en Firestore para saber dónde enviar las notificaciones
           await setDoc(doc(db, "usuarios", userId), { fcmToken: token }, { merge: true });
         }
       } catch (err) {
@@ -123,29 +117,11 @@
     onAuthStateChanged(auth, async (u) => {
       if (!u) { window.location.href = 'auth.html'; return; }
       user = u;
-      
-      // Activar notificaciones para el usuario actual
       activarNotificacionesFCM(u.uid);
-
       const userDoc = await getDoc(doc(db, "usuarios", u.uid));
       if (userDoc.exists() && userDoc.data().parejaId) {
         parejaId = userDoc.data().parejaId;
         document.getElementById('statusDot').style.background = '#4CAF50';
-        
-        const despertarSW = () => {
-          if (navigator.serviceWorker.controller) {
-            navigator.serviceWorker.controller.postMessage({
-              type: 'SET_CHAT_DATA',
-              userId: user.uid,
-              parejaId: parejaId
-            });
-          }
-        };
-
-        despertarSW();
-        setTimeout(despertarSW, 2000);
-        setTimeout(despertarSW, 5000);
-
         cargarMensajes();
         escucharEscribiendo();
       }
@@ -160,6 +136,12 @@
         container.innerHTML = '';
         snap.forEach(d => {
           const m = d.data();
+          
+          // LÓGICA DE MARCAR COMO LEÍDO: Si el mensaje es para mí y no está leído, lo marco.
+          if (m.receiverId === user.uid && m.leido === false) {
+             updateDoc(doc(db, "mensajes", d.id), { leido: true });
+          }
+
           const isMe = m.senderId === user.uid;
           const div = document.createElement('div');
           div.className = `message-row ${isMe ? 'me' : 'them'}`;
@@ -178,6 +160,8 @@
         chatId: user.uid + parejaId,
         text: text,
         senderId: user.uid,
+        receiverId: parejaId, // <-- CORRECCIÓN: Quién recibe el mensaje
+        leido: false,         // <-- CORRECCIÓN: Estado inicial
         senderPhoto: user.photoURL,
         senderName: user.displayName || "Tu amor",
         timestamp: serverTimestamp()

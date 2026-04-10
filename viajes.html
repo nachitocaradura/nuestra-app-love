@@ -54,9 +54,22 @@
     label { display: block; margin-top: 12px; font-weight: 800; color: var(--accent); font-size: 13px; }
     input { width: 100%; padding: 12px; border-radius: 12px; border: 2px solid var(--bg); background: #f9f9f9; font-family: inherit; margin-top: 5px; outline: none; }
     
-    /* SECCIÓN GASTOS */
-    .gastos-section { margin-top: 20px; border-top: 2px dashed var(--bg); padding-top: 15px; }
-    .gasto-group { background: #fff5f7; padding: 10px; border-radius: 15px; margin-bottom: 10px; }
+    /* SECCIÓN GASTOS COLAPSABLE */
+    .gastos-section { margin-top: 20px; border-top: 2px dashed var(--bg); padding-top: 10px; }
+    
+    .gastos-toggle {
+      width: 100%; background: var(--bg); border: none; padding: 12px; border-radius: 15px;
+      color: var(--accent); font-weight: 900; font-size: 14px; cursor: pointer;
+      display: flex; justify-content: space-between; align-items: center; transition: 0.3s;
+    }
+    
+    .gastos-content { display: none; margin-top: 15px; }
+    .gastos-content.active { display: block; }
+
+    .gasto-group { background: #fff5f7; padding: 10px; border-radius: 15px; margin-bottom: 10px; transition: 0.3s; }
+    /* Ajuste para fondo azul */
+    [data-theme="blue"] .gasto-group { background: #f0f7ff; }
+
     .gasto-item { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-size: 14px; font-weight: 700; color: #555; }
     .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
     .switch input { opacity: 0; width: 0; height: 0; }
@@ -89,40 +102,45 @@
       </div>
 
       <div class="gastos-section">
-        <h4 style="color: var(--dark); font-size: 14px; margin-bottom: 10px;">💰 Presupuesto del Viaje</h4>
-        
-        <p style="font-size: 11px; font-weight: 900; color: var(--accent); margin-bottom: 5px;">TRANSPORTE</p>
-        
-        <div class="gasto-group">
-          <div class="gasto-item"><span>✈️ Avión / 🚆 Tren</span> <label class="switch"><input type="checkbox" id="chkTransporte" onchange="toggleGasto('inputsTransporte')"><span class="slider"></span></label></div>
-          <div class="inputs-gasto" id="inputsTransporte">
-            <input type="number" id="costeIda" placeholder="Ida (€)">
-            <input type="number" id="costeVuelta" placeholder="Vuelta (€)">
+        <button class="gastos-toggle" onclick="togglePresupuesto()">
+          <span>💰 Presupuesto del Viaje</span>
+          <span id="gastosArrow">▼</span>
+        </button>
+
+        <div class="gastos-content" id="gastosContent">
+          <p style="font-size: 11px; font-weight: 900; color: var(--accent); margin-bottom: 5px;">TRANSPORTE</p>
+          
+          <div class="gasto-group">
+            <div class="gasto-item"><span>✈️ Avión / 🚆 Tren</span> <label class="switch"><input type="checkbox" id="chkTransporte" onchange="toggleGasto('inputsTransporte')"><span class="slider"></span></label></div>
+            <div class="inputs-gasto" id="inputsTransporte">
+              <input type="number" id="costeIda" placeholder="Ida (€)">
+              <input type="number" id="costeVuelta" placeholder="Vuelta (€)">
+            </div>
           </div>
-        </div>
 
-        <div class="gasto-group">
-          <div class="gasto-item"><span>🚗 Vehículo personal</span> <label class="switch"><input type="checkbox" id="chkVehiculo" onchange="toggleGasto('inputsVehiculo')"><span class="slider"></span></label></div>
-          <div class="inputs-gasto" id="inputsVehiculo">
-            <input type="number" id="costeGasolina" placeholder="Gasolina aprox (€)">
+          <div class="gasto-group">
+            <div class="gasto-item"><span>🚗 Vehículo personal</span> <label class="switch"><input type="checkbox" id="chkVehiculo" onchange="toggleGasto('inputsVehiculo')"><span class="slider"></span></label></div>
+            <div class="inputs-gasto" id="inputsVehiculo">
+              <input type="number" id="costeGasolina" placeholder="Gasolina aprox (€)">
+            </div>
           </div>
-        </div>
 
-        <p style="font-size: 11px; font-weight: 900; color: var(--accent); margin-top: 15px; margin-bottom: 5px;">ESTANCIA</p>
+          <p style="font-size: 11px; font-weight: 900; color: var(--accent); margin-top: 15px; margin-bottom: 5px;">ESTANCIA</p>
 
-        <div class="gasto-group">
-          <div class="gasto-item"><span>🏨 Hotel / Airbnb</span> <label class="switch"><input type="checkbox" id="chkAlojamiento" onchange="toggleGasto('inputsAlojamiento')"><span class="slider"></span></label></div>
-          <div class="inputs-gasto" id="inputsAlojamiento">
-            <input type="number" id="costeNoche" placeholder="Precio por noche (€)">
+          <div class="gasto-group">
+            <div class="gasto-item"><span>🏨 Hotel / Airbnb</span> <label class="switch"><input type="checkbox" id="chkAlojamiento" onchange="toggleGasto('inputsAlojamiento')"><span class="slider"></span></label></div>
+            <div class="inputs-gasto" id="inputsAlojamiento">
+              <input type="number" id="costeNoche" placeholder="Precio por noche (€)">
+            </div>
           </div>
-        </div>
 
-        <p style="font-size: 11px; font-weight: 900; color: var(--accent); margin-top: 15px; margin-bottom: 5px;">EXTRAS</p>
+          <p style="font-size: 11px; font-weight: 900; color: var(--accent); margin-top: 15px; margin-bottom: 5px;">EXTRAS</p>
 
-        <div class="gasto-group">
-          <div class="gasto-item"><span>🍔 Comida / Ocio</span> <label class="switch"><input type="checkbox" id="chkExtra" onchange="toggleGasto('inputsExtra')"><span class="slider"></span></label></div>
-          <div class="inputs-gasto" id="inputsExtra">
-            <input type="number" id="costeExtra" placeholder="Total estimado (€)">
+          <div class="gasto-group">
+            <div class="gasto-item"><span>🍔 Comida / Ocio</span> <label class="switch"><input type="checkbox" id="chkExtra" onchange="toggleGasto('inputsExtra')"><span class="slider"></span></label></div>
+            <div class="inputs-gasto" id="inputsExtra">
+              <input type="number" id="costeExtra" placeholder="Total estimado (€)">
+            </div>
           </div>
         </div>
       </div>
@@ -143,6 +161,7 @@
     </div>
   </div>
 
+  <script src="global.js"></script>
   <script type="module">
     import { db, auth } from './firebase.js';
     import { collection, addDoc, query, where, onSnapshot, getDoc, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
@@ -157,6 +176,13 @@
       parejaId = uDoc.data()?.parejaId;
       cargarViajes();
     });
+
+    window.togglePresupuesto = () => {
+        const content = document.getElementById('gastosContent');
+        const arrow = document.getElementById('gastosArrow');
+        content.classList.toggle('active');
+        arrow.textContent = content.classList.contains('active') ? '▲' : '▼';
+    };
 
     window.toggleGasto = (id) => {
         const el = document.getElementById(id);
@@ -200,21 +226,17 @@
       if(!nombre || !f1 || !f2) return alert("Rellena las fechas");
 
       let total = 0;
-      // Cálculo Transporte (Avión/Tren)
       if(document.getElementById('chkTransporte').checked) {
         total += (Number(document.getElementById('costeIda').value) || 0) + (Number(document.getElementById('costeVuelta').value) || 0);
       }
-      // Cálculo Gasolina
       if(document.getElementById('chkVehiculo').checked) {
         total += (Number(document.getElementById('costeGasolina').value) || 0);
       }
-      // Cálculo Alojamiento (Multiplicado por noches)
       if(document.getElementById('chkAlojamiento').checked) {
         const d1 = new Date(f1); const d2 = new Date(f2);
         const noches = Math.max(1, Math.ceil((d2 - d1) / (1000*60*60*24)));
         total += (Number(document.getElementById('costeNoche').value) || 0) * noches;
       }
-      // Cálculo Extras
       if(document.getElementById('chkExtra').checked) {
         total += (Number(document.getElementById('costeExtra').value) || 0);
       }
@@ -277,10 +299,11 @@
     
     window.closeModal = () => {
         document.getElementById('viajeModal').classList.remove('show');
-        // Resetear formulario para la próxima vez
         document.getElementById('viajeNombre').value = '';
         document.getElementById('fechaInicio').value = '';
         document.getElementById('fechaFin').value = '';
+        document.getElementById('gastosContent').classList.remove('active');
+        document.getElementById('gastosArrow').textContent = '▼';
         ['chkTransporte','chkVehiculo','chkAlojamiento','chkExtra'].forEach(id => document.getElementById(id).checked = false);
         ['inputsTransporte','inputsVehiculo','inputsAlojamiento','inputsExtra'].forEach(id => document.getElementById(id).classList.remove('active'));
     };

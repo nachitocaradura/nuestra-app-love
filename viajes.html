@@ -7,140 +7,138 @@
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
     :root {
       --bg: #ffd6e0; --mid: #ffb3c6; --dark: #ff85a1; --accent: #ff4d79; --shadow: rgba(255, 77, 121, 0.25);
     }
     [data-theme="blue"] {
       --bg: #d6eaff; --mid: #b3d9ff; --dark: #85bfff; --accent: #4d94ff; --shadow: rgba(77, 148, 255, 0.25);
     }
-
-    body {
-      font-family: 'Nunito', sans-serif;
-      background: var(--bg);
-      min-height: 100dvh;
-      display: flex;
-      flex-direction: column;
-      transition: background 0.4s ease;
-      padding-bottom: 40px;
-    }
-
+    body { font-family: 'Nunito', sans-serif; background: var(--bg); min-height: 100dvh; transition: background 0.4s ease; padding-bottom: 40px; }
     header { padding: 60px 25px 20px; text-align: center; }
     header h1 { color: var(--accent); font-weight: 900; font-size: 32px; }
 
-    /* BOTÓN VOLVER ESTILO CHAT */
+    /* FLECHA IDENTICA AL CHAT */
     .back-btn {
-      position: absolute; left: 18px; top: 50px; text-decoration: none; font-size: 24px; 
-      background: rgba(255,255,255,0.6); border-radius: 12px; width: 40px; height: 40px;
+      position: absolute; left: 18px; top: 55px; text-decoration: none; font-size: 20px; 
+      background: rgba(255,255,255,0.6); border-radius: 12px; padding: 6px 10px; 
       color: var(--accent); font-weight: 900; box-shadow: 0 2px 8px var(--shadow); 
       display: flex; align-items: center; justify-content: center; z-index: 10;
     }
 
-    .viajes-container { flex: 1; padding: 0 20px; display: flex; flex-direction: column; gap: 15px; }
+    .viajes-container { padding: 0 20px; display: flex; flex-direction: column; gap: 15px; }
 
     .viaje-card {
-      background: rgba(255, 255, 255, 0.6);
-      backdrop-filter: blur(10px);
-      padding: 18px;
-      border-radius: 25px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      box-shadow: 0 8px 20px var(--shadow);
+      background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(10px);
+      padding: 18px; border-radius: 25px; display: flex; align-items: center;
+      justify-content: space-between; box-shadow: 0 8px 20px var(--shadow);
     }
-
-    .viaje-main { display: flex; align-items: center; gap: 12px; }
-    .viaje-icon { font-size: 28px; }
     .viaje-info h3 { color: var(--accent); font-weight: 900; font-size: 17px; }
     .viaje-info p { color: #666; font-size: 13px; font-weight: 700; }
+    .presupuesto-tag { font-size: 12px; color: var(--dark); margin-top: 4px; display: block; }
 
-    /* BOTONES DE ACCIÓN */
     .viaje-actions { display: flex; gap: 8px; }
-    .action-btn {
-      width: 35px; height: 35px; border-radius: 10px; border: none;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 16px; cursor: pointer; transition: 0.2s;
-    }
-    .btn-edit { background: white; color: var(--accent); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .action-btn { width: 35px; height: 35px; border-radius: 10px; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+    .btn-edit { background: white; color: var(--accent); }
     .btn-del { background: #ffe5e5; color: #ff4444; }
 
     .btn-add {
-      position: fixed; bottom: 30px; right: 30px;
-      width: 65px; height: 65px; border-radius: 50%;
-      background: var(--accent); border: none; color: white;
-      font-size: 35px; box-shadow: 0 10px 20px var(--shadow);
-      cursor: pointer; z-index: 100;
+      position: fixed; bottom: 30px; right: 30px; width: 65px; height: 65px; border-radius: 50%;
+      background: var(--accent); border: none; color: white; font-size: 35px; box-shadow: 0 10px 20px var(--shadow); z-index: 100;
     }
 
-    /* MODALES */
-    .modal {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.4);
-      backdrop-filter: blur(5px); display: none; align-items: center;
-      justify-content: center; z-index: 1000; padding: 20px;
-    }
+    /* MODAL CON SCROLL */
+    .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
     .modal.show { display: flex; }
-    .modal-content {
-      background: white; padding: 25px; border-radius: 30px; width: 100%; max-width: 380px;
-    }
-    .modal-content h2 { color: var(--accent); margin-bottom: 15px; text-align: center; font-size: 22px; }
+    .modal-content { background: white; padding: 25px; border-radius: 30px; width: 100%; max-width: 400px; max-height: 90dvh; overflow-y: auto; }
     
-    label { display: block; margin-top: 12px; font-weight: 800; color: var(--accent); font-size: 13px; margin-bottom: 4px; }
-    input {
-      width: 100%; padding: 14px; border-radius: 15px; border: 2px solid var(--bg);
-      background: #f9f9f9; font-family: inherit; font-size: 16px; outline: none;
-    }
+    label { display: block; margin-top: 12px; font-weight: 800; color: var(--accent); font-size: 13px; }
+    input { width: 100%; padding: 12px; border-radius: 12px; border: 2px solid var(--bg); background: #f9f9f9; font-family: inherit; margin-top: 5px; outline: none; }
     
-    .modal-btns { display: flex; gap: 10px; margin-top: 25px; }
-    .btn { flex: 1; padding: 14px; border-radius: 15px; border: none; font-weight: 900; cursor: pointer; font-size: 15px; }
-    .btn-save { background: var(--accent); color: white; }
-    .btn-cancel { background: #eee; color: #666; }
-    .btn-delete-confirm { background: #ff4444; color: white; }
+    /* SECCIÓN GASTOS */
+    .gastos-section { margin-top: 20px; border-top: 2px dashed var(--bg); padding-top: 15px; }
+    .gasto-group { background: #fff5f7; padding: 10px; border-radius: 15px; margin-bottom: 10px; }
+    .gasto-item { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-size: 14px; font-weight: 700; color: #555; }
+    .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; inset: 0; background-color: #ccc; transition: .4s; border-radius: 20px; }
+    input:checked + .slider { background-color: var(--accent); }
+    .inputs-gasto { display: none; gap: 5px; margin-top: 5px; }
+    .inputs-gasto.active { display: flex; flex-wrap: wrap; }
+    .inputs-gasto input { flex: 1; min-width: 100px; padding: 8px; font-size: 12px; }
+
+    .btn-save { background: var(--accent); color: white; width: 100%; padding: 15px; border-radius: 15px; border: none; font-weight: 900; margin-top: 20px; }
   </style>
 </head>
 <body>
 
   <a href="index.html" class="back-btn">‹</a>
-
-  <header>
-    <h1>Nuestros Viajes</h1>
-  </header>
-
+  <header><h1>Nuestros Viajes</h1></header>
   <div class="viajes-container" id="viajesContainer"></div>
-
   <button class="btn-add" onclick="openModal()">+</button>
 
   <div class="modal" id="viajeModal">
     <div class="modal-content">
-      <h2 id="modalTitle">Nuevo Viaje 🌍</h2>
+      <h2 id="modalTitle" style="text-align: center; color: var(--accent);">Nuevo Viaje 🌍</h2>
       
       <label>¿A dónde vamos?</label>
-      <input type="text" id="viajeNombre" placeholder="Ej: París, Disney..." />
+      <input type="text" id="viajeNombre" placeholder="Ej: Madrid..." />
       
       <div style="display: flex; gap: 10px;">
-        <div style="flex: 1;">
-          <label>Inicio</label>
-          <input type="date" id="fechaInicio" />
+        <div style="flex: 1;"><label>Inicio</label><input type="date" id="fechaInicio" /></div>
+        <div style="flex: 1;"><label>Fin</label><input type="date" id="fechaFin" /></div>
+      </div>
+
+      <div class="gastos-section">
+        <h4 style="color: var(--dark); font-size: 14px; margin-bottom: 10px;">💰 Presupuesto del Viaje</h4>
+        
+        <p style="font-size: 11px; font-weight: 900; color: var(--accent); margin-bottom: 5px;">TRANSPORTE</p>
+        
+        <div class="gasto-group">
+          <div class="gasto-item"><span>✈️ Avión / 🚆 Tren</span> <label class="switch"><input type="checkbox" id="chkTransporte" onchange="toggleGasto('inputsTransporte')"><span class="slider"></span></label></div>
+          <div class="inputs-gasto" id="inputsTransporte">
+            <input type="number" id="costeIda" placeholder="Ida (€)">
+            <input type="number" id="costeVuelta" placeholder="Vuelta (€)">
+          </div>
         </div>
-        <div style="flex: 1;">
-          <label>Fin</label>
-          <input type="date" id="fechaFin" />
+
+        <div class="gasto-group">
+          <div class="gasto-item"><span>🚗 Vehículo personal</span> <label class="switch"><input type="checkbox" id="chkVehiculo" onchange="toggleGasto('inputsVehiculo')"><span class="slider"></span></label></div>
+          <div class="inputs-gasto" id="inputsVehiculo">
+            <input type="number" id="costeGasolina" placeholder="Gasolina aprox (€)">
+          </div>
+        </div>
+
+        <p style="font-size: 11px; font-weight: 900; color: var(--accent); margin-top: 15px; margin-bottom: 5px;">ESTANCIA</p>
+
+        <div class="gasto-group">
+          <div class="gasto-item"><span>🏨 Hotel / Airbnb</span> <label class="switch"><input type="checkbox" id="chkAlojamiento" onchange="toggleGasto('inputsAlojamiento')"><span class="slider"></span></label></div>
+          <div class="inputs-gasto" id="inputsAlojamiento">
+            <input type="number" id="costeNoche" placeholder="Precio por noche (€)">
+          </div>
+        </div>
+
+        <p style="font-size: 11px; font-weight: 900; color: var(--accent); margin-top: 15px; margin-bottom: 5px;">EXTRAS</p>
+
+        <div class="gasto-group">
+          <div class="gasto-item"><span>🍔 Comida / Ocio</span> <label class="switch"><input type="checkbox" id="chkExtra" onchange="toggleGasto('inputsExtra')"><span class="slider"></span></label></div>
+          <div class="inputs-gasto" id="inputsExtra">
+            <input type="number" id="costeExtra" placeholder="Total estimado (€)">
+          </div>
         </div>
       </div>
 
-      <div class="modal-btns">
-        <button class="btn btn-cancel" onclick="closeModal()">Cancelar</button>
-        <button class="btn btn-save" onclick="guardarViaje()">Guardar</button>
-      </div>
+      <button class="btn-save" onclick="guardarViaje()">Guardar Viaje</button>
+      <button class="btn-save" style="background: #eee; color: #666; margin-top: 10px;" onclick="closeModal()">Cancelar</button>
     </div>
   </div>
 
   <div class="modal" id="deleteModal">
     <div class="modal-content">
-      <h2 style="color: #ff4444;">¿Eliminar viaje?</h2>
-      <p id="deleteText" style="text-align: center; font-weight: 700; color: #666; margin-bottom: 10px;"></p>
-      <div class="modal-btns">
-        <button class="btn btn-cancel" onclick="closeDeleteModal()">No, volver</button>
-        <button class="btn btn-delete-confirm" id="btnConfirmDelete">Sí, borrar</button>
+      <h2 style="color: #ff4444; text-align:center;">¿Eliminar viaje?</h2>
+      <p id="deleteText" style="text-align: center; font-weight: 700; color: #666; margin: 15px 0;"></p>
+      <div style="display: flex; gap: 10px;">
+        <button class="btn-save" style="background: #eee; color: #666;" onclick="closeDeleteModal()">No</button>
+        <button class="btn-save" style="background: #ff4444;" id="btnConfirmDelete">Sí, borrar</button>
       </div>
     </div>
   </div>
@@ -150,49 +148,43 @@
     import { collection, addDoc, query, where, onSnapshot, getDoc, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
 
-    let user, parejaId;
-    let selectedViajeId = null; // Para saber si editamos o borramos
+    let user, parejaId, selectedViajeId = null;
 
     onAuthStateChanged(auth, async (u) => {
-      if (!u) { window.location.href = "auth.html"; }
-      else {
-        user = u;
-        const userDoc = await getDoc(doc(db, "usuarios", user.uid));
-        parejaId = userDoc.data()?.parejaId;
-        cargarViajes();
-      }
+      if (!u) window.location.href = "auth.html";
+      user = u;
+      const uDoc = await getDoc(doc(db, "usuarios", u.uid));
+      parejaId = uDoc.data()?.parejaId;
+      cargarViajes();
     });
 
+    window.toggleGasto = (id) => {
+        const el = document.getElementById(id);
+        el.classList.toggle('active');
+    };
+
     function cargarViajes() {
-      const ids = [user.uid];
-      if (parejaId) ids.push(parejaId);
-      const q = query(collection(db, "viajes"), where("creadorPor", "in", ids));
-      
-      onSnapshot(q, (snap) => {
+      const ids = [user.uid]; if (parejaId) ids.push(parejaId);
+      onSnapshot(query(collection(db, "viajes"), where("creadorPor", "in", ids)), (snap) => {
         const container = document.getElementById('viajesContainer');
         container.innerHTML = '';
-        if (snap.empty) {
-          container.innerHTML = '<p style="text-align:center; color:#888; margin-top:50px; font-weight:700;">Aún no hay viajes planeados... 🌍</p>';
-          return;
-        }
         snap.forEach(d => {
           const v = d.data();
           const card = document.createElement('div');
           card.className = 'viaje-card';
+          const fIn = new Date(v.fechaInicio + "T00:00:00");
+          const fOut = new Date(v.fechaFin + "T00:00:00");
           
-          const fInicio = v.fechaInicio ? formatearFecha(v.fechaInicio) : '?';
-          const fFin = v.fechaFin ? formatearFecha(v.fechaFin) : '?';
+          let presupuestoHtml = (v.totalPresupuesto && v.totalPresupuesto > 0) ? `<span class="presupuesto-tag">💰 Presupuesto: <b>${v.totalPresupuesto}€</b></span>` : '';
 
           card.innerHTML = `
-            <div class="viaje-main">
-              <div class="viaje-icon">📍</div>
-              <div class="viaje-info">
-                <h3>${v.nombre}</h3>
-                <p>🗓️ ${fInicio} - ${fFin}</p>
-              </div>
+            <div class="viaje-info">
+              <h3>📍 ${v.nombre}</h3>
+              <p>🗓️ ${fIn.toLocaleDateString('es-ES', {day:'2-digit', month:'short'})} - ${fOut.toLocaleDateString('es-ES', {day:'2-digit', month:'short'})}</p>
+              ${presupuestoHtml}
             </div>
             <div class="viaje-actions">
-              <button class="action-btn btn-edit" onclick="prepararEdicion('${d.id}', '${v.nombre}', '${v.fechaInicio}', '${v.fechaFin}')">✏️</button>
+              <button class="action-btn btn-edit" onclick="prepararEdicion('${d.id}')">✏️</button>
               <button class="action-btn btn-del" onclick="prepararBorrado('${d.id}', '${v.nombre}')">🗑️</button>
             </div>
           `;
@@ -201,80 +193,101 @@
       });
     }
 
-    function formatearFecha(f) {
-      const fecha = new Date(f + "T00:00:00"); // Forzar hora local
-      return fecha.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' });
-    }
-
-    // --- FUNCIONES DE MODALES ---
-    window.openModal = () => {
-      selectedViajeId = null;
-      document.getElementById('modalTitle').textContent = "Nuevo Viaje 🌍";
-      document.getElementById('viajeModal').classList.add('show');
-    };
-
-    window.closeModal = () => {
-      document.getElementById('viajeModal').classList.remove('show');
-      document.getElementById('viajeNombre').value = '';
-      document.getElementById('fechaInicio').value = '';
-      document.getElementById('fechaFin').value = '';
-    };
-
-    window.prepararEdicion = (id, nombre, inicio, fin) => {
-      selectedViajeId = id;
-      document.getElementById('modalTitle').textContent = "Editar Viaje ✏️";
-      document.getElementById('viajeNombre').value = nombre;
-      document.getElementById('fechaInicio').value = inicio;
-      document.getElementById('fechaFin').value = fin;
-      document.getElementById('viajeModal').classList.add('show');
-    };
-
-    window.prepararBorrado = (id, nombre) => {
-      selectedViajeId = id;
-      document.getElementById('deleteText').textContent = `¿Borrrar el viaje a "${nombre}"?`;
-      document.getElementById('deleteModal').classList.add('show');
-    };
-
-    window.closeDeleteModal = () => {
-      document.getElementById('deleteModal').classList.remove('show');
-      selectedViajeId = null;
-    };
-
-    // --- GUARDAR (NUEVO O EDITAR) ---
     window.guardarViaje = async () => {
-      const nombre = document.getElementById('viajeNombre').value.trim();
-      const fInicio = document.getElementById('fechaInicio').value;
-      const fFin = document.getElementById('fechaFin').value;
+      const nombre = document.getElementById('viajeNombre').value;
+      const f1 = document.getElementById('fechaInicio').value;
+      const f2 = document.getElementById('fechaFin').value;
+      if(!nombre || !f1 || !f2) return alert("Rellena las fechas");
 
-      if (!nombre || !fInicio || !fFin) return alert("Rellena todos los campos");
-
-      const data = {
-        nombre,
-        fechaInicio: fInicio,
-        fechaFin: fFin,
-        creadorPor: user.uid,
-        actualizadoEn: Date.now()
-      };
-
-      if (selectedViajeId) {
-        // Editar existente
-        await updateDoc(doc(db, "viajes", selectedViajeId), data);
-      } else {
-        // Crear nuevo
-        data.creadoEn = Date.now();
-        await addDoc(collection(db, "viajes"), data);
+      let total = 0;
+      // Cálculo Transporte (Avión/Tren)
+      if(document.getElementById('chkTransporte').checked) {
+        total += (Number(document.getElementById('costeIda').value) || 0) + (Number(document.getElementById('costeVuelta').value) || 0);
+      }
+      // Cálculo Gasolina
+      if(document.getElementById('chkVehiculo').checked) {
+        total += (Number(document.getElementById('costeGasolina').value) || 0);
+      }
+      // Cálculo Alojamiento (Multiplicado por noches)
+      if(document.getElementById('chkAlojamiento').checked) {
+        const d1 = new Date(f1); const d2 = new Date(f2);
+        const noches = Math.max(1, Math.ceil((d2 - d1) / (1000*60*60*24)));
+        total += (Number(document.getElementById('costeNoche').value) || 0) * noches;
+      }
+      // Cálculo Extras
+      if(document.getElementById('chkExtra').checked) {
+        total += (Number(document.getElementById('costeExtra').value) || 0);
       }
 
+      const data = { 
+        nombre, fechaInicio: f1, fechaFin: f2, 
+        totalPresupuesto: Math.round(total), 
+        creadorPor: user.uid,
+        gastosDetalle: {
+          transporte: document.getElementById('chkTransporte').checked ? {ida: document.getElementById('costeIda').value, vuelta: document.getElementById('costeVuelta').value} : null,
+          vehiculo: document.getElementById('chkVehiculo').checked ? document.getElementById('costeGasolina').value : null,
+          alojamiento: document.getElementById('chkAlojamiento').checked ? document.getElementById('costeNoche').value : null,
+          extra: document.getElementById('chkExtra').checked ? document.getElementById('costeExtra').value : null
+        }
+      };
+
+      selectedViajeId ? await updateDoc(doc(db, "viajes", selectedViajeId), data) : await addDoc(collection(db, "viajes"), data);
       closeModal();
     };
 
-    // --- BORRAR ---
-    document.getElementById('btnConfirmDelete').onclick = async () => {
-      if (selectedViajeId) {
-        await deleteDoc(doc(db, "viajes", selectedViajeId));
-        closeDeleteModal();
+    window.prepararEdicion = async (id) => {
+      selectedViajeId = id;
+      const docv = await getDoc(doc(db, "viajes", id));
+      const v = docv.data();
+      document.getElementById('modalTitle').textContent = "Editar Viaje ✏️";
+      document.getElementById('viajeNombre').value = v.nombre;
+      document.getElementById('fechaInicio').value = v.fechaInicio;
+      document.getElementById('fechaFin').value = v.fechaFin;
+      
+      const det = v.gastosDetalle || {};
+      if(det.transporte) {
+        document.getElementById('chkTransporte').checked = true;
+        toggleGasto('inputsTransporte');
+        document.getElementById('costeIda').value = det.transporte.ida;
+        document.getElementById('costeVuelta').value = det.transporte.vuelta;
       }
+      if(det.vehiculo) {
+        document.getElementById('chkVehiculo').checked = true;
+        toggleGasto('inputsVehiculo');
+        document.getElementById('costeGasolina').value = det.vehiculo;
+      }
+      if(det.alojamiento) {
+        document.getElementById('chkAlojamiento').checked = true;
+        toggleGasto('inputsAlojamiento');
+        document.getElementById('costeNoche').value = det.alojamiento;
+      }
+      if(det.extra) {
+        document.getElementById('chkExtra').checked = true;
+        toggleGasto('inputsExtra');
+        document.getElementById('costeExtra').value = det.extra;
+      }
+      document.getElementById('viajeModal').classList.add('show');
     };
+
+    window.openModal = () => {
+        selectedViajeId = null;
+        document.getElementById('modalTitle').textContent = "Nuevo Viaje 🌍";
+        document.getElementById('viajeModal').classList.add('show');
+    };
+    
+    window.closeModal = () => {
+        document.getElementById('viajeModal').classList.remove('show');
+        // Resetear formulario para la próxima vez
+        document.getElementById('viajeNombre').value = '';
+        document.getElementById('fechaInicio').value = '';
+        document.getElementById('fechaFin').value = '';
+        ['chkTransporte','chkVehiculo','chkAlojamiento','chkExtra'].forEach(id => document.getElementById(id).checked = false);
+        ['inputsTransporte','inputsVehiculo','inputsAlojamiento','inputsExtra'].forEach(id => document.getElementById(id).classList.remove('active'));
+    };
+    
+    window.prepararBorrado = (id, n) => { selectedViajeId = id; document.getElementById('deleteText').textContent = n; document.getElementById('deleteModal').classList.add('show'); };
+    window.closeDeleteModal = () => document.getElementById('deleteModal').classList.remove('show');
+    document.getElementById('btnConfirmDelete').onclick = async () => { await deleteDoc(doc(db, "viajes", selectedViajeId)); closeDeleteModal(); };
   </script>
 </body>
 </html>

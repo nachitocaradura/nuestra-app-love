@@ -14,13 +14,13 @@
       --pink-accent: #ff4d79;
       --white: #fff;
       --shadow: rgba(255, 77, 121, 0.25);
-      [data-theme="blue"] {
-  --pink-bg: #d6eaff;
-  --pink-mid: #b3d9ff;
-  --pink-dark: #85bfff;
-  --pink-accent: #4d94ff;
-  --shadow: rgba(77, 148, 255, 0.25);
-}
+    }
+    [data-theme="blue"] {
+      --pink-bg: #d6eaff;
+      --pink-mid: #b3d9ff;
+      --pink-dark: #85bfff;
+      --pink-accent: #4d94ff;
+      --shadow: rgba(77, 148, 255, 0.25);
     }
     body {
       font-family: 'Nunito', sans-serif;
@@ -29,171 +29,218 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 20px;
+      transition: background 0.4s ease;
     }
 
-    /* Card de Perfil */
-    .profile-card {
-      background: rgba(255, 255, 255, 0.6);
-      backdrop-filter: blur(10px);
+    .back-btn {
+      position: absolute;
+      left: 18px;
+      top: 55px;
+      text-decoration: none;
+      font-size: 20px;
+      background: rgba(255,255,255,0.6);
+      border-radius: 12px;
+      padding: 6px 10px;
+      color: var(--pink-accent);
+      font-weight: 900;
+      box-shadow: 0 2px 8px var(--shadow);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 10;
+    }
+
+    header {
       width: 100%;
-      max-width: 400px;
-      border-radius: 30px;
-      padding: 30px 20px;
-      box-shadow: 0 10px 30px var(--shadow);
+      padding: 60px 20px 20px;
       text-align: center;
-      margin-top: 20px;
-      position: relative;
-      z-index: 1;
     }
 
-    .avatar {
-      width: 90px; height: 90px;
+    header h1 {
+      color: var(--pink-accent);
+      font-weight: 900;
+      font-size: 28px;
+    }
+
+    .profile-container {
+      width: 90%;
+      max-width: 450px;
+      background: var(--white);
+      border-radius: 35px;
+      padding: 30px 20px;
+      box-shadow: 0 15px 35px var(--shadow);
+      margin-bottom: 30px;
+      text-align: center;
+    }
+
+    .user-img {
+      width: 100px;
+      height: 100px;
       border-radius: 50%;
-      border: 4px solid var(--white);
-      box-shadow: 0 4px 10px var(--shadow);
+      border: 4px solid var(--pink-bg);
       margin-bottom: 15px;
       object-fit: cover;
     }
 
-    h2 { color: var(--pink-accent); font-weight: 900; margin-bottom: 5px; }
-    .email { color: var(--pink-dark); font-size: 14px; margin-bottom: 20px; font-weight: 700; }
-
-    /* Sección de ID */
-    .id-box {
-      background: var(--white);
+    .info-card {
+      background: #fdf2f5;
       padding: 15px;
       border-radius: 20px;
-      margin-bottom: 25px;
-      border: 2px solid #ffeef2;
+      margin-top: 15px;
+      text-align: left;
     }
-    .id-label { font-size: 11px; font-weight: 900; color: var(--pink-mid); text-transform: uppercase; letter-spacing: 1px; }
-    .id-value { 
-      font-family: monospace; font-size: 13px; color: var(--pink-accent); 
-      word-break: break-all; margin: 8px 0; display: block;
-      background: #fff5f7; padding: 8px; border-radius: 8px;
-    }
-    .btn-copy {
-      background: var(--pink-bg); border: none; padding: 8px 15px;
-      border-radius: 12px; color: var(--pink-accent); font-size: 12px;
-      font-weight: 900; cursor: pointer; transition: transform 0.2s;
-    }
-    .btn-copy:active { transform: scale(0.95); }
+    [data-theme="blue"] .info-card { background: #f0f7ff; }
 
-    /* Buscador de Pareja */
-    .partner-section {
-      border-top: 2px dashed var(--pink-mid);
-      padding-top: 25px;
+    .info-card h3 {
+      font-size: 14px;
+      color: var(--pink-dark);
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .info-card p {
+      font-weight: 700;
+      color: #444;
+      word-break: break-all;
+    }
+
+    .status-msg {
       margin-top: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 8px;
+      border-radius: 10px;
     }
-    h3 { color: var(--pink-dark); font-size: 18px; font-weight: 900; margin-bottom: 10px; }
-    
+    .status-msg.error { color: #ff4d4d; background: #fff0f0; }
+    .status-msg.success { color: #2ecc71; background: #eafaf1; }
+
     .input-group {
-      display: flex; flex-direction: column; gap: 12px; margin-top: 15px;
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
+
     input {
-      padding: 14px; border-radius: 15px; border: 2px solid var(--pink-mid);
-      font-family: 'Nunito', sans-serif; outline: none; text-align: center;
-      font-size: 14px; color: var(--pink-accent); font-weight: 700;
+      padding: 12px 15px;
+      border-radius: 15px;
+      border: 2px solid var(--pink-bg);
+      font-family: inherit;
+      outline: none;
+      font-weight: 700;
+      color: #444;
     }
-    input::placeholder { color: var(--pink-mid); }
 
     .btn-link {
-      background: linear-gradient(135deg, var(--pink-accent), var(--pink-dark));
-      color: white; border: none; padding: 14px; border-radius: 15px;
-      font-weight: 900; cursor: pointer; font-size: 16px;
-      box-shadow: 0 4px 12px var(--shadow); transition: transform 0.2s;
+      background: var(--pink-accent);
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 15px;
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 5px 15px var(--shadow);
+      transition: 0.3s;
     }
-    .btn-link:active { transform: scale(0.97); }
 
-    .back-link {
-      margin-top: 30px; text-decoration: none; color: var(--pink-dark);
-      font-weight: 900; font-size: 15px; display: flex; align-items: center; gap: 5px;
+    .btn-link:active { transform: scale(0.95); }
+
+    .logout-btn {
+      margin-top: 20px;
+      background: none;
+      border: none;
+      color: #888;
+      font-weight: 700;
+      text-decoration: underline;
+      cursor: pointer;
     }
-
-    .status-msg { margin-top: 15px; font-size: 14px; font-weight: 800; padding: 10px; border-radius: 12px; }
-    .success { background: #e8f8f0; color: #2ecc71; border: 1px solid #2ecc71; }
   </style>
 </head>
 <body>
 
-  <div class="profile-card">
-    <div id="loadingOverlay" style="position:absolute; inset:0; background:white; border-radius:30px; display:flex; align-items:center; justify-content:center; z-index:10;">
-       <span style="color: var(--pink-accent); font-weight: 900;">Cargando perfil...</span>
+  <a href="index.html" class="back-btn">‹</a>
+
+  <header>
+    <h1>Mi Perfil</h1>
+  </header>
+
+  <div class="profile-container">
+    <img id="userImg" src="https://via.placeholder.com/100" class="user-img" alt="Foto de perfil">
+    <h2 id="userName" style="color: var(--pink-accent); font-weight: 900;">Cargando...</h2>
+    
+    <div class="info-card">
+      <h3>Mi ID Personal</h3>
+      <p id="myId">Cargando...</p>
+      <button onclick="copyId()" style="font-size: 10px; margin-top: 5px; background: none; border: none; color: var(--pink-accent); font-weight: 900; cursor: pointer;">📋 COPIAR ID</button>
     </div>
 
-    <img id="userImg" class="avatar" src="" alt="Foto" style="display:none;">
-    <h2 id="userName">---</h2>
-    <p class="email" id="userEmail">---</p>
-
-    <div class="id-box">
-      <span class="id-label">Tu ID secreto:</span>
-      <span class="id-value" id="myId">Generando...</span>
-      <button class="btn-copy" onclick="copyId()">Copiar ID 📋</button>
+    <div class="info-card">
+      <h3>Mi Fecha de Nacimiento 🎂</h3>
+      <input type="date" id="birthDate" style="width: 100%; padding: 12px; border-radius: 15px; border: 2px solid var(--pink-bg); margin-top: 10px; font-family: inherit;">
+      <button class="btn-link" onclick="saveBirthDate()" style="margin-top: 10px; width: 100%; font-size: 12px;">Guardar Cumpleaños</button>
     </div>
 
-    <div class="partner-section">
-      <h3>Conectar Pareja 💖</h3>
-      <div id="partnerStatus"></div>
+    <div class="info-card">
+      <h3>Estado de Pareja</h3>
+      <div id="partnerStatus" class="status-msg error">No vinculado</div>
       
-      <div class="input-group" id="linkControls">
-        <input type="text" id="partnerInput" placeholder="Pega aquí el ID de tu pareja">
-        <button class="btn-link" onclick="linkPartner()">Vincular Cuentas ✨</button>
+      <div id="linkControls" class="input-group">
+        <input type="text" id="partnerInput" placeholder="Pega el ID de tu pareja...">
+        <button class="btn-link" onclick="linkPartner()">Vincular Cuentas 💕</button>
       </div>
     </div>
+
+    <button class="logout-btn" onclick="auth.signOut()">Cerrar Sesión</button>
   </div>
 
-  <a href="index.html" class="back-link">‹ Volver al menú</a>
-
+  <script src="global.js"></script>
   <script type="module">
     import { db, auth } from './firebase.js';
-    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
-    import { doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+    import { doc, getDoc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
     let currentUser = null;
 
-    onAuthStateChanged(auth, async (user) => {
+    auth.onAuthStateChanged(async (user) => {
       if (!user) {
         window.location.href = "auth.html";
         return;
       }
       currentUser = user;
-      
-      // Rellenar Interfaz
       document.getElementById('userName').textContent = user.displayName || "Usuario";
-      document.getElementById('userEmail').textContent = user.email;
-      document.getElementById('userImg').src = user.photoURL || "https://via.placeholder.com/80";
-      document.getElementById('userImg').style.display = "inline-block";
+      document.getElementById('userImg').src = user.photoURL || "https://via.placeholder.com/100";
       document.getElementById('myId').textContent = user.uid;
 
-      // Ocultar el aviso de cargando
-      document.getElementById('loadingOverlay').style.display = "none";
-
-      // Lógica de base de datos
-      try {
-        const userRef = doc(db, "usuarios", user.uid);
-        const userDoc = await getDoc(userRef);
-
-        if (!userDoc.exists()) {
-          // Si no existe en Firestore, lo creamos
-          await setDoc(userRef, {
-            nombre: user.displayName,
-            email: user.email,
-            foto: user.photoURL,
-            uid: user.uid,
-            parejaId: null
-          });
-        } else if (userDoc.data().parejaId) {
-          // Si ya tiene pareja, mostramos quién es
-          checkPartnerStatus(userDoc.data().parejaId);
+      // Escuchar cambios en el documento del usuario
+      onSnapshot(doc(db, "usuarios", user.uid), (docSnap) => {
+        if (docSnap.exists()) {
+          const userData = docSnap.data();
+          if (userData.parejaId) {
+            checkPartner(userData.parejaId);
+          }
+          // Cargar fecha de nacimiento si existe
+          if (userData.birthDate) {
+            document.getElementById('birthDate').value = userData.birthDate;
+          }
         }
-      } catch (error) {
-        console.error("Error al cargar datos:", error);
-      }
+      });
     });
 
-    async function checkPartnerStatus(partnerId) {
-      const partnerDoc = await getDoc(doc(db, "usuarios", partnerId));
+    // Función para guardar el cumpleaños
+    window.saveBirthDate = async () => {
+      const bDate = document.getElementById('birthDate').value;
+      if (!bDate) {
+        alert("Selecciona una fecha");
+        return;
+      }
+      try {
+        await updateDoc(doc(db, "usuarios", currentUser.uid), { birthDate: bDate });
+        alert("¡Cumpleaños guardado! 🎂");
+      } catch (e) {
+        alert("Error: " + e.message);
+      }
+    };
+
+    async function checkPartner(pId) {
+      const partnerDoc = await getDoc(doc(db, "usuarios", pId));
       if (partnerDoc.exists()) {
         document.getElementById('partnerStatus').className = "status-msg success";
         document.getElementById('partnerStatus').textContent = `✨ Vinculado con ${partnerDoc.data().nombre}`;
@@ -235,6 +282,5 @@
       });
     };
   </script>
-  <script src="global.js"></script>
 </body>
 </html>

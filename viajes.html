@@ -61,6 +61,7 @@
       width: 100%; background: var(--bg); border: none; padding: 12px; border-radius: 15px;
       color: var(--accent); font-weight: 900; font-size: 14px; cursor: pointer;
       display: flex; justify-content: space-between; align-items: center; transition: 0.3s;
+      margin-bottom: 5px;
     }
     
     .gastos-content { display: none; margin-top: 15px; }
@@ -84,11 +85,21 @@
     .btn-add-extra { background: var(--bg); color: var(--accent); border: none; padding: 8px; border-radius: 10px; font-weight: 900; font-size: 12px; width: 100%; margin-top: 10px; cursor: pointer; }
 
     .btn-save { background: var(--accent); color: white; width: 100%; padding: 15px; border-radius: 15px; border: none; font-weight: 900; margin-top: 20px; }
+
+    /* NUEVOS ESTILOS CHECKLIST */
+    .checklist-container { margin-top: 10px; border-radius: 15px; background: #fafafa; padding: 10px; }
+    .checklist-item { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+    .checklist-item input[type="checkbox"] { width: 18px; height: 18px; margin-top: 0; }
+    .checklist-item input[type="text"] { margin-top: 0; padding: 5px; font-size: 12px; }
+    .partner-list { opacity: 0.6; border-left: 3px solid var(--mid); padding-left: 10px; margin-top: 10px; }
+    .partner-list p { font-size: 11px; font-weight: 900; color: var(--dark); margin-bottom: 5px; }
+    .main-checklist-btn { position: absolute; right: 18px; top: 55px; background: white; padding: 8px; border-radius: 12px; box-shadow: 0 2px 8px var(--shadow); cursor: pointer; font-size: 18px; }
   </style>
 </head>
 <body>
 
   <a href="index.html" class="back-btn">‹</a>
+  <div class="main-checklist-btn" onclick="openMainChecklist()">📋</div>
   <header><h1>Nuestros Viajes</h1></header>
   <div class="viajes-container" id="viajesContainer"></div>
   <button class="btn-add" onclick="openModal()">+</button>
@@ -113,46 +124,56 @@
 
         <div class="gastos-content" id="gastosContent">
           <p style="font-size: 11px; font-weight: 900; color: var(--accent); margin-bottom: 5px;">TRANSPORTE</p>
-          
           <div class="gasto-group">
             <div class="gasto-item"><span>✈️ Avión / 🚆 Tren</span> <label class="switch"><input type="checkbox" id="chkTransporte" onchange="toggleGasto('inputsTransporte')"><span class="slider"></span></label></div>
-            <div class="inputs-gasto" id="inputsTransporte">
-              <input type="number" id="costeIda" placeholder="Ida (€)">
-              <input type="number" id="costeVuelta" placeholder="Vuelta (€)">
-            </div>
+            <div class="inputs-gasto" id="inputsTransporte"><input type="number" id="costeIda" placeholder="Ida (€)"><input type="number" id="costeVuelta" placeholder="Vuelta (€)"></div>
           </div>
-
           <div class="gasto-group">
             <div class="gasto-item"><span>🚗 Vehículo personal</span> <label class="switch"><input type="checkbox" id="chkVehiculo" onchange="toggleGasto('inputsVehiculo')"><span class="slider"></span></label></div>
-            <div class="inputs-gasto" id="inputsVehiculo">
-              <input type="number" id="costeGasolina" placeholder="Gasolina aprox (€)">
-            </div>
+            <div class="inputs-gasto" id="inputsVehiculo"><input type="number" id="costeGasolina" placeholder="Gasolina aprox (€)"></div>
           </div>
-
           <p style="font-size: 11px; font-weight: 900; color: var(--accent); margin-top: 15px; margin-bottom: 5px;">ESTANCIA</p>
-
           <div class="gasto-group">
             <div class="gasto-item"><span>🏨 Hotel / Airbnb</span> <label class="switch"><input type="checkbox" id="chkAlojamiento" onchange="toggleGasto('inputsAlojamiento')"><span class="slider"></span></label></div>
-            <div class="inputs-gasto" id="inputsAlojamiento">
-              <input type="number" id="costeNoche" placeholder="Precio por noche (€)">
-            </div>
+            <div class="inputs-gasto" id="inputsAlojamiento"><input type="number" id="costeNoche" placeholder="Precio por noche (€)"></div>
           </div>
-
           <p style="font-size: 11px; font-weight: 900; color: var(--accent); margin-top: 15px; margin-bottom: 5px;">EXTRAS</p>
-
           <div class="gasto-group">
             <div class="gasto-item"><span>🍔 Otros Gastos</span> <label class="switch"><input type="checkbox" id="chkExtra" onchange="toggleGasto('inputsExtra')"><span class="slider"></span></label></div>
-            <div class="inputs-gasto" id="inputsExtra">
-              <div id="dynamicExtrasContainer" style="width: 100%;">
-                </div>
-              <button class="btn-add-extra" onclick="addExtraField()">➕ Añadir concepto</button>
-            </div>
+            <div class="inputs-gasto" id="inputsExtra"><div id="dynamicExtrasContainer" style="width: 100%;"></div><button class="btn-add-extra" onclick="addExtraField()">➕ Añadir concepto</button></div>
+          </div>
+        </div>
+
+        <button class="gastos-toggle" onclick="toggleChecklistUI()" style="margin-top: 10px;">
+          <span>✅ Checklist del Viaje</span>
+          <span id="checkArrow">▼</span>
+        </button>
+        <div class="gastos-content" id="checklistContent">
+          <div id="myChecklist" class="checklist-container">
+            <p style="font-size: 11px; font-weight: 900; color: var(--accent);">MI LISTA</p>
+            <div id="itemsContainer"></div>
+            <button class="btn-add-extra" onclick="addChecklistItem()">➕ Añadir a mi maleta</button>
+          </div>
+          <div id="partnerChecklist" class="checklist-container partner-list">
+            <p>MALETA DE MI PAREJA</p>
+            <div id="partnerItemsContainer"></div>
           </div>
         </div>
       </div>
 
       <button class="btn-save" onclick="guardarViaje()">Guardar Viaje</button>
       <button class="btn-save" style="background: #eee; color: #666; margin-top: 10px;" onclick="closeModal()">Cancelar</button>
+    </div>
+  </div>
+
+  <div class="modal" id="mainChecklistModal">
+    <div class="modal-content">
+      <h2 style="text-align: center; color: var(--accent);">Checklist Principal 📋</h2>
+      <p style="font-size: 12px; color: #666; text-align: center; margin-bottom: 15px;">Cosas que siempre debemos llevar (móvil, llaves...)</p>
+      <div id="mainItemsContainer"></div>
+      <button class="btn-add-extra" onclick="addMainItem()">➕ Añadir item común</button>
+      <button class="btn-save" onclick="saveMainChecklist()">Guardar Lista Principal</button>
+      <button class="btn-save" style="background: #eee; color: #666; margin-top: 10px;" onclick="closeMainChecklist()">Cerrar</button>
     </div>
   </div>
 
@@ -170,7 +191,7 @@
   <script src="global.js"></script>
   <script type="module">
     import { db, auth } from './firebase.js';
-    import { collection, addDoc, query, where, onSnapshot, getDoc, doc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+    import { collection, addDoc, query, where, onSnapshot, getDoc, doc, deleteDoc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
 
     let user, parejaId, selectedViajeId = null;
@@ -183,6 +204,54 @@
       cargarViajes();
     });
 
+    // LÓGICA DE INTERFAZ NUEVA
+    window.toggleChecklistUI = () => {
+        const content = document.getElementById('checklistContent');
+        const arrow = document.getElementById('checkArrow');
+        content.classList.toggle('active');
+        arrow.textContent = content.classList.contains('active') ? '▲' : '▼';
+    };
+
+    window.addChecklistItem = (texto = '', checked = false) => {
+      const div = document.createElement('div');
+      div.className = 'checklist-item';
+      div.innerHTML = `
+        <input type="checkbox" class="check-status" ${checked ? 'checked' : ''}>
+        <input type="text" placeholder="Item..." value="${texto}" class="check-text">
+        <button onclick="this.parentElement.remove()" style="border:none; background:none; color:red;">×</button>
+      `;
+      document.getElementById('itemsContainer').appendChild(div);
+    };
+
+    window.addMainItem = (texto = '') => {
+      const div = document.createElement('div');
+      div.className = 'checklist-item';
+      div.innerHTML = `
+        <input type="text" placeholder="Item principal..." value="${texto}" class="main-check-text">
+        <button onclick="this.parentElement.remove()" style="border:none; background:none; color:red;">×</button>
+      `;
+      document.getElementById('mainItemsContainer').appendChild(div);
+    };
+
+    window.openMainChecklist = async () => {
+      document.getElementById('mainItemsContainer').innerHTML = '';
+      const docRef = doc(db, "configuracion", "checklist_principal_" + user.uid);
+      const snap = await getDoc(docRef);
+      if(snap.exists()) {
+        snap.data().items.forEach(it => addMainItem(it));
+      }
+      document.getElementById('mainChecklistModal').classList.add('show');
+    };
+
+    window.saveMainChecklist = async () => {
+      const items = Array.from(document.querySelectorAll('.main-check-text')).map(i => i.value).filter(v => v);
+      await setDoc(doc(db, "configuracion", "checklist_principal_" + user.uid), { items });
+      closeMainChecklist();
+    };
+
+    window.closeMainChecklist = () => document.getElementById('mainChecklistModal').classList.remove('show');
+
+    // MANTENER LÓGICA ORIGINAL DE VIAJES
     window.togglePresupuesto = () => {
         const content = document.getElementById('gastosContent');
         const arrow = document.getElementById('gastosArrow');
@@ -218,9 +287,7 @@
           card.className = 'viaje-card';
           const fIn = new Date(v.fechaInicio + "T00:00:00");
           const fOut = new Date(v.fechaFin + "T00:00:00");
-          
           let presupuestoHtml = (v.totalPresupuesto && v.totalPresupuesto > 0) ? `<span class="presupuesto-tag">💰 Presupuesto: <b>${v.totalPresupuesto}€</b></span>` : '';
-
           card.innerHTML = `
             <div class="viaje-info">
               <h3>📍 ${v.nombre}</h3>
@@ -244,19 +311,14 @@
       if(!nombre || !f1 || !f2) return alert("Rellena las fechas");
 
       let total = 0;
-      if(document.getElementById('chkTransporte').checked) {
-        total += (Number(document.getElementById('costeIda').value) || 0) + (Number(document.getElementById('costeVuelta').value) || 0);
-      }
-      if(document.getElementById('chkVehiculo').checked) {
-        total += (Number(document.getElementById('costeGasolina').value) || 0);
-      }
+      if(document.getElementById('chkTransporte').checked) total += (Number(document.getElementById('costeIda').value) || 0) + (Number(document.getElementById('costeVuelta').value) || 0);
+      if(document.getElementById('chkVehiculo').checked) total += (Number(document.getElementById('costeGasolina').value) || 0);
       if(document.getElementById('chkAlojamiento').checked) {
         const d1 = new Date(f1); const d2 = new Date(f2);
         const noches = Math.max(1, Math.ceil((d2 - d1) / (1000*60*60*24)));
         total += (Number(document.getElementById('costeNoche').value) || 0) * noches;
       }
 
-      // Cálculo de extras dinámicos
       const extrasData = [];
       if(document.getElementById('chkExtra').checked) {
         const names = document.querySelectorAll('.extra-name');
@@ -268,10 +330,14 @@
         });
       }
 
+      // Guardar Checklist del usuario actual
+      const myChecklistData = Array.from(document.querySelectorAll('#itemsContainer .checklist-item')).map(div => ({
+        t: div.querySelector('.check-text').value,
+        c: div.querySelector('.check-status').checked
+      })).filter(it => it.t);
+
       const data = { 
-        nombre, fechaInicio: f1, fechaFin: f2, 
-        totalPresupuesto: Math.round(total), 
-        creadorPor: user.uid,
+        nombre, fechaInicio: f1, fechaFin: f2, totalPresupuesto: Math.round(total), creadorPor: user.uid,
         gastosDetalle: {
           transporte: document.getElementById('chkTransporte').checked ? {ida: document.getElementById('costeIda').value, vuelta: document.getElementById('costeVuelta').value} : null,
           vehiculo: document.getElementById('chkVehiculo').checked ? document.getElementById('costeGasolina').value : null,
@@ -280,7 +346,21 @@
         }
       };
 
-      selectedViajeId ? await updateDoc(doc(db, "viajes", selectedViajeId), data) : await addDoc(collection(db, "viajes"), data);
+      // Manejar checklists por usuario para que no se sobreescriban
+      if (!data.checklists) data.checklists = {};
+      data.checklists[user.uid] = myChecklistData;
+
+      if(selectedViajeId) {
+        // Al editar, recuperamos la lista de la pareja para no borrarla
+        const docExistente = await getDoc(doc(db, "viajes", selectedViajeId));
+        const dataExistente = docExistente.data();
+        if(dataExistente.checklists) {
+            data.checklists = {...dataExistente.checklists, ...data.checklists};
+        }
+        await updateDoc(doc(db, "viajes", selectedViajeId), data);
+      } else {
+        await addDoc(collection(db, "viajes"), data);
+      }
       closeModal();
     };
 
@@ -294,44 +374,52 @@
       document.getElementById('fechaFin').value = v.fechaFin;
       
       const det = v.gastosDetalle || {};
-      if(det.transporte) {
-        document.getElementById('chkTransporte').checked = true;
-        toggleGasto('inputsTransporte');
-        document.getElementById('costeIda').value = det.transporte.ida;
-        document.getElementById('costeVuelta').value = det.transporte.vuelta;
+      if(det.transporte) { document.getElementById('chkTransporte').checked = true; toggleGasto('inputsTransporte'); document.getElementById('costeIda').value = det.transporte.ida; document.getElementById('costeVuelta').value = det.transporte.vuelta; }
+      if(det.vehiculo) { document.getElementById('chkVehiculo').checked = true; toggleGasto('inputsVehiculo'); document.getElementById('costeGasolina').value = det.vehiculo; }
+      if(det.alojamiento) { document.getElementById('chkAlojamiento').checked = true; toggleGasto('inputsAlojamiento'); document.getElementById('costeNoche').value = det.alojamiento; }
+      if(det.extrasDinamicos) { document.getElementById('chkExtra').checked = true; toggleGasto('inputsExtra'); det.extrasDinamicos.forEach(e => addExtraField(e.concepto, e.valor)); }
+
+      // Cargar mis items + principales
+      document.getElementById('itemsContainer').innerHTML = '';
+      const mainSnap = await getDoc(doc(db, "configuracion", "checklist_principal_" + user.uid));
+      if(mainSnap.exists()) mainSnap.data().items.forEach(it => addChecklistItem(it + " (Principal)"));
+      
+      if(v.checklists && v.checklists[user.uid]) {
+        v.checklists[user.uid].forEach(it => {
+            if(!it.t.includes("(Principal)")) addChecklistItem(it.t, it.c);
+        });
       }
-      if(det.vehiculo) {
-        document.getElementById('chkVehiculo').checked = true;
-        toggleGasto('inputsVehiculo');
-        document.getElementById('costeGasolina').value = det.vehiculo;
+
+      // Cargar items pareja (lectura)
+      document.getElementById('partnerItemsContainer').innerHTML = '';
+      if(parejaId && v.checklists && v.checklists[parejaId]) {
+        v.checklists[parejaId].forEach(it => {
+          const d = document.createElement('div');
+          d.className = 'checklist-item';
+          d.innerHTML = `<input type="checkbox" disabled ${it.c ? 'checked' : ''}> <span style="font-size:12px; font-weight:700;">${it.t}</span>`;
+          document.getElementById('partnerItemsContainer').appendChild(d);
+        });
       }
-      if(det.alojamiento) {
-        document.getElementById('chkAlojamiento').checked = true;
-        toggleGasto('inputsAlojamiento');
-        document.getElementById('costeNoche').value = det.alojamiento;
-      }
-      if(det.extrasDinamicos) {
-        document.getElementById('chkExtra').checked = true;
-        toggleGasto('inputsExtra');
-        det.extrasDinamicos.forEach(e => addExtraField(e.concepto, e.valor));
-      }
+
       document.getElementById('viajeModal').classList.add('show');
     };
 
-    window.openModal = () => {
+    window.openModal = async () => {
         selectedViajeId = null;
         document.getElementById('modalTitle').textContent = "Nuevo Viaje 🌍";
+        document.getElementById('itemsContainer').innerHTML = '';
+        // Cargar automáticos de lista principal al crear nuevo
+        const mainSnap = await getDoc(doc(db, "configuracion", "checklist_principal_" + user.uid));
+        if(mainSnap.exists()) mainSnap.data().items.forEach(it => addChecklistItem(it + " (Principal)"));
         document.getElementById('viajeModal').classList.add('show');
     };
     
     window.closeModal = () => {
         document.getElementById('viajeModal').classList.remove('show');
-        document.getElementById('viajeNombre').value = '';
-        document.getElementById('fechaInicio').value = '';
-        document.getElementById('fechaFin').value = '';
-        document.getElementById('gastosContent').classList.remove('active');
-        document.getElementById('gastosArrow').textContent = '▼';
-        document.getElementById('dynamicExtrasContainer').innerHTML = '';
+        document.getElementById('viajeNombre').value = ''; document.getElementById('fechaInicio').value = ''; document.getElementById('fechaFin').value = '';
+        document.getElementById('gastosContent').classList.remove('active'); document.getElementById('gastosArrow').textContent = '▼';
+        document.getElementById('checklistContent').classList.remove('active'); document.getElementById('checkArrow').textContent = '▼';
+        document.getElementById('dynamicExtrasContainer').innerHTML = ''; document.getElementById('itemsContainer').innerHTML = '';
         ['chkTransporte','chkVehiculo','chkAlojamiento','chkExtra'].forEach(id => document.getElementById(id).checked = false);
         ['inputsTransporte','inputsVehiculo','inputsAlojamiento','inputsExtra'].forEach(id => document.getElementById(id).classList.remove('active'));
     };

@@ -88,6 +88,7 @@
       <div class="tabs">
         <button class="tab-btn active" onclick="switchTab('ingredientes')">Ingredientes</button>
         <button class="tab-btn" onclick="switchTab('pasos')">Preparación</button>
+        <button class="tab-btn" onclick="switchTab('programar')">Programar</button>
       </div>
 
       <div id="tab-ingredientes" class="tab-content active">
@@ -113,6 +114,12 @@
           <button class="action-btn" style="font-size: 10px;" onclick="añadirPaso('Rallar', '🧀')">🧀 Rallar</button>
           <button class="action-btn" style="font-size: 10px;" onclick="añadirPaso('Empanar', '🍞')">🍞 Empanar</button>
         </div>
+      </div>
+
+      <div id="tab-programar" class="tab-content" style="text-align: center; padding: 20px;">
+        <p style="color: var(--accent); font-weight: 900; margin-bottom: 10px;">¿Cuándo vamos a cocinar esto? 🍳</p>
+        <input type="date" id="fechaProgramada" style="width: 100%; padding: 12px; border-radius: 15px; border: 2px solid var(--bg); font-family: inherit; outline: none; text-align: center;">
+        <p style="font-size: 11px; color: #666; margin-top: 15px;">Al elegir una fecha, aparecerá en vuestro calendario compartido.</p>
       </div>
 
       <button class="action-btn" style="margin-top: 30px;" onclick="guardarReceta()">Guardar Receta ✨</button>
@@ -263,7 +270,16 @@
         });
       });
 
-      const data = { titulo, ingredientes, pasos, creador: user.uid };
+      const fechaCocinar = document.getElementById('fechaProgramada').value;
+
+      const data = { 
+        titulo, 
+        ingredientes, 
+        pasos, 
+        creador: user.uid,
+        fechaCocinar: fechaCocinar || null 
+      };
+
       recetaSeleccionadaId ? await updateDoc(doc(db, "recetas", recetaSeleccionadaId), data) : await addDoc(collection(db, "recetas"), data);
       cerrarModal();
     };
@@ -291,6 +307,7 @@
       document.getElementById('listaPasos').innerHTML = '';
       r.ingredientes.forEach(i => añadirIngrediente(i.nombre, i.cant, i.unit, i.checked, i.balanzaActive));
       r.pasos.forEach(p => añadirPaso(p.tipo, p.emoji, p));
+      document.getElementById('fechaProgramada').value = r.fechaCocinar || '';
       document.getElementById('modalReceta').classList.add('show');
     };
 
@@ -299,6 +316,7 @@
       document.getElementById('recetaTitulo').value = '';
       document.getElementById('listaIngredientes').innerHTML = '';
       document.getElementById('listaPasos').innerHTML = '';
+      document.getElementById('fechaProgramada').value = '';
       document.getElementById('modalReceta').classList.add('show');
     };
 

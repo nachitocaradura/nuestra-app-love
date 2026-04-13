@@ -32,273 +32,399 @@
       min-height: 100dvh;
       display: flex;
       flex-direction: column;
-      align-items: center; 
-      justify-content: center; 
-      overflow-x: hidden;
-      position: relative;
-      transition: background 0.3s ease;
+      align-items: center;
+      transition: background 0.4s ease;
     }
 
-    .top-bar { 
-      width: 100%; display: flex; align-items: center; padding: 14px 18px; 
-      position: absolute; top: 0; z-index: 2; 
-    }
-    
+    /* BOTÓN VOLVER */
     .back-btn {
-      text-decoration: none; font-size: 20px; background: rgba(255,255,255,0.6);
-      border-radius: 12px; padding: 6px 10px; color: var(--pink-accent); font-weight: 900;
-      box-shadow: 0 2px 8px var(--shadow); cursor: pointer; border: none;
+      position: absolute;
+      left: 18px;
+      top: 55px;
+      text-decoration: none;
+      font-size: 20px;
+      background: rgba(255,255,255,0.6);
+      border-radius: 12px;
+      padding: 6px 10px;
+      color: var(--pink-accent);
+      font-weight: 900;
+      box-shadow: 0 2px 8px var(--shadow);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 10;
     }
 
-    .calendar-card {
-      width: calc(100% - 32px); max-width: 420px;
-      background: rgba(255, 255, 255, 0.55); backdrop-filter: blur(10px);
-      border-radius: 30px; padding: 20px;
-      box-shadow: 0 10px 30px var(--shadow); position: relative; z-index: 1;
+    header {
+      width: 100%;
+      padding: 60px 20px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 500px;
     }
 
-    .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    
-    .current-month { 
-      font-size: 20px; font-weight: 900; color: var(--pink-accent); 
-      cursor: pointer; padding: 5px 10px; border-radius: 12px; 
+    header h1 {
+      color: var(--pink-accent);
+      font-weight: 900;
+      font-size: 26px;
+      cursor: pointer;
     }
 
-    .nav-btns { display: flex; gap: 8px; }
     .nav-btn {
-      background: white; border: none; width: 36px; height: 36px;
-      border-radius: 12px; color: var(--pink-accent); font-size: 18px;
-      font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      background: white;
+      border: none;
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      color: var(--pink-accent);
+      font-size: 20px;
+      font-weight: 900;
+      box-shadow: 0 4px 10px var(--shadow);
+      cursor: pointer;
     }
 
-    .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
-    .weekday { text-align: center; font-size: 12px; font-weight: 900; color: var(--pink-dark); padding-bottom: 10px; }
-    
+    .calendar-container {
+      width: 92%;
+      max-width: 500px;
+      background: white;
+      border-radius: 35px;
+      padding: 20px;
+      box-shadow: 0 15px 35px var(--shadow);
+    }
+
+    .weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .weekdays div {
+      color: var(--pink-dark);
+      font-weight: 900;
+      font-size: 13px;
+      text-transform: uppercase;
+    }
+
+    .days {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 10px;
+    }
+
     .day {
-      aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-      font-size: 15px; font-weight: 700; color: var(--pink-dark); border-radius: 14px; position: relative; cursor: pointer;
-    }
-    .day.today { background: var(--pink-accent); color: white; box-shadow: 0 4px 12px var(--shadow); font-weight: 900; }
-    .day.empty { opacity: 0; pointer-events: none; }
-
-    .event-icon { font-size: 12px; position: absolute; bottom: 2px; }
-    /* NUEVO: Icono de maleta arriba a la izquierda */
-    .trip-icon { font-size: 10px; position: absolute; top: 2px; left: 2px; }
-    .event-photo { width: 22px; height: 22px; border-radius: 50%; border: 2px solid white; position: absolute; top: -5px; right: -5px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); object-fit: cover; }
-
-    .modal-backdrop {
-      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3);
-      backdrop-filter: blur(6px); z-index: 200; align-items: center; justify-content: center;
-    }
-    .modal-backdrop.show { display: flex; }
-    .modal-sheet {
-      background: white; border-radius: 28px; padding: 24px;
-      width: 90%; max-width: 350px; position: relative;
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 15px;
+      font-weight: 800;
+      font-size: 16px;
+      color: #555;
+      position: relative;
+      cursor: pointer;
+      transition: 0.2s;
     }
 
-    .menu-option {
-      width: 100%; padding: 15px; margin: 8px 0; border: 2px solid var(--pink-bg);
-      border-radius: 15px; background: white; color: var(--pink-dark);
-      font-weight: 900; text-align: left; cursor: pointer; display: flex; justify-content: space-between; align-items: center;
-    }
-    .menu-option:active { background: var(--pink-bg); }
+    .day:hover { background: var(--pink-bg); }
 
-    .wheel-wrapper { width: 100%; overflow-x: auto; display: flex; gap: 15px; padding: 10px 0; scrollbar-width: none; }
-    .wheel-item { flex: 0 0 100px; text-align: center; font-size: 16px; font-weight: 900; color: var(--pink-mid); cursor: pointer; }
-    .wheel-item.selected { color: var(--pink-accent); transform: scale(1.1); }
+    .day.prev-date, .day.next-date { opacity: 0.3; }
+
+    .day.today {
+      background: var(--pink-accent);
+      color: white;
+      box-shadow: 0 5px 15px var(--shadow);
+    }
+
+    .event-dot {
+      position: absolute;
+      bottom: 6px;
+      width: 6px;
+      height: 6px;
+      background: var(--pink-accent);
+      border-radius: 50%;
+    }
+    .today .event-dot { background: white; }
+
+    /* Estilo para emojis de viaje y recetas */
+    .day-indicators {
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      display: flex;
+      gap: 1px;
+      font-size: 10px;
+      line-height: 1;
+    }
+
+    /* MODALES */
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      backdrop-filter: blur(5px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+    .modal.show { display: flex; }
+
+    .modal-content {
+      background: white;
+      padding: 25px;
+      border-radius: 30px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+    }
+
+    .modal-content h2 {
+      color: var(--pink-accent);
+      margin-bottom: 15px;
+      font-weight: 900;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border-radius: 15px;
+      border: 2px solid var(--pink-bg);
+      font-family: inherit;
+      outline: none;
+      background: #fdfdfd;
+    }
+
+    .btn-save {
+      background: var(--pink-accent);
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 15px;
+      width: 100%;
+      font-weight: 900;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+
+    .event-list {
+      margin-top: 15px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .event-item {
+      background: var(--pink-bg);
+      padding: 10px;
+      border-radius: 12px;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    [data-theme="blue"] .event-item { background: #e6f2ff; }
+
+    .event-item span { font-weight: 800; color: var(--pink-accent); }
+
+    /* PICKER DE MES/AÑO */
+    .wheel-container {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      margin: 20px 0;
+    }
+    .wheel {
+      height: 150px;
+      overflow-y: auto;
+      width: 100px;
+      text-align: center;
+      border-radius: 15px;
+      background: #f5f5f5;
+    }
+    .wheel-item {
+      padding: 10px;
+      font-weight: 900;
+      color: #999;
+      cursor: pointer;
+    }
+    .wheel-item.selected {
+      color: var(--pink-accent);
+      background: white;
+      border-radius: 10px;
+    }
   </style>
 </head>
 <body>
 
-  <script>
-    if(localStorage.getItem('theme') === 'blue') {
-      document.documentElement.setAttribute('data-theme', 'blue');
-    }
-  </script>
+  <a href="index.html" class="back-btn">‹</a>
 
-  <div class="top-bar">
-    <a class="back-btn" href="index.html">‹</a>
-    <span style="flex:1; text-align:center; font-weight:900; color:var(--pink-accent); font-size:18px;">📅 Calendario</span>
+  <header>
+    <button class="nav-btn" onclick="changeMonth(-1)">‹</button>
+    <h1 id="monthYear" onclick="openPicker()">Mes Año</h1>
+    <button class="nav-btn" onclick="changeMonth(1)">›</button>
+  </header>
+
+  <div class="calendar-container">
+    <div class="weekdays">
+      <div>Lun</div><div>Mar</div><div>Mié</div><div>Jue</div><div>Vie</div><div>Sáb</div><div>Dom</div>
+    </div>
+    <div class="days" id="calendarDays"></div>
   </div>
 
-  <div class="calendar-card">
-    <div class="calendar-header">
-      <div class="current-month" id="monthDisplay" onclick="openPicker()">Enero 2024</div>
-      <div class="nav-btns">
-        <button class="nav-btn" onclick="changeMonth(-1)">‹</button>
-        <button class="nav-btn" onclick="changeMonth(1)">›</button>
+  <div class="modal" id="eventModal">
+    <div class="modal-content">
+      <h2 id="selectedDateText">Fecha</h2>
+      <div id="existingEvents" class="event-list"></div>
+      <hr style="margin: 15px 0; border: 1px solid var(--pink-bg);">
+      <input type="text" id="eventTitle" placeholder="Nuevo evento..." />
+      <button class="btn-save" onclick="saveEvent()">Añadir Evento ✨</button>
+      <button class="btn-save" style="background:#eee; color:#666;" onclick="closeModals()">Cerrar</button>
+    </div>
+  </div>
+
+  <div class="modal" id="pickerModal">
+    <div class="modal-content">
+      <h2>Seleccionar Fecha</h2>
+      <div class="wheel-container">
+        <div class="wheel" id="monthWheel"></div>
+        <div class="wheel" id="yearWheel"></div>
       </div>
-    </div>
-    <div class="calendar-grid" id="calendarGrid">
-      <div class="weekday">LU</div><div class="weekday">MA</div><div class="weekday">MI</div>
-      <div class="weekday">JU</div><div class="weekday">VI</div><div class="weekday">SÁ</div><div class="weekday">DO</div>
+      <button class="btn-save" onclick="closePicker()">Listo</button>
     </div>
   </div>
 
-  <div class="modal-backdrop" id="eventModal">
-    <div class="modal-sheet" id="modalContent">
-      <h3 id="modalTitle" style="color: var(--pink-accent); margin-bottom: 15px; text-align: center;">Gestionar día</h3>
-      <div id="optionsList"></div>
-      <button class="nav-btn" style="width:100%; margin-top:15px; height:45px; border: 1px solid #ddd;" onclick="closeModals()">Cerrar</button>
-    </div>
-  </div>
-
-  <div class="modal-backdrop" id="pickerModal">
-    <div class="modal-sheet">
-      <h3 style="text-align:center; color:var(--pink-accent);">Seleccionar Fecha</h3>
-      <div class="wheel-wrapper" id="monthWheel"></div>
-      <div class="wheel-wrapper" id="yearWheel"></div>
-      <button class="nav-btn" style="width:100%; margin-top:15px; height:45px; background:var(--pink-accent); color:white;" onclick="closePicker()">Listo ✨</button>
-    </div>
-  </div>
-
+  <script src="global.js"></script>
   <script type="module">
     import { db, auth } from './firebase.js';
-    import { collection, addDoc, onSnapshot, query, getDoc, doc, deleteDoc, where } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+    import { collection, addDoc, query, where, onSnapshot, getDoc, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
-    let date = new Date();
-    let selectedDay = null;
-    let userData = null;
-    let parejaData = null;
-    let eventos = [];
-    let viajes = []; // NUEVO: Variable para viajes
+    const monthYearElement = document.getElementById('monthYear');
+    const daysElement = document.getElementById('calendarDays');
     const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+    
+    let date = new Date();
+    let user, parejaId, selectedDateStr;
+    let events = {};
+    let viajesDias = {};
+    let recetasDias = {};
 
-    auth.onAuthStateChanged(async (user) => {
-      if (user) {
-        const uDoc = await getDoc(doc(db, "usuarios", user.uid));
-        userData = uDoc.data();
-        if (userData.parejaId) {
-          const pDoc = await getDoc(doc(db, "usuarios", userData.parejaId));
-          parejaData = pDoc.data();
-        }
-        cargarDatos(); // Cambiado para cargar todo
-      }
+    auth.onAuthStateChanged(async (u) => {
+      if (!u) window.location.href = "auth.html";
+      user = u;
+      const uDoc = await getDoc(doc(db, "usuarios", u.uid));
+      parejaId = uDoc.data()?.parejaId;
+      initData();
     });
 
-    function cargarDatos() {
-      // Eventos originales
-      onSnapshot(collection(db, "eventos_calendario"), (snapshot) => {
-        eventos = snapshot.docs.map(d => ({ ...d.data(), firestoreId: d.id }));
-        renderCalendar();
-      });
+    function initData() {
+      const ids = [user.uid];
+      if (parejaId) ids.push(parejaId);
 
-      // NUEVO: Escuchar viajes
-      const ids = [auth.currentUser.uid];
-      if(userData?.parejaId) ids.push(userData.parejaId);
-      onSnapshot(query(collection(db, "viajes"), where("creadorPor", "in", ids)), (snap) => {
-        viajes = snap.docs.map(d => d.data());
-        renderCalendar();
-      });
-    }
-
-    window.renderCalendar = function() {
-      const grid = document.getElementById('calendarGrid');
-      document.getElementById('monthDisplay').textContent = `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
-      
-      const elements = document.querySelectorAll('.day');
-      elements.forEach(el => el.remove());
-
-      let firstDay = new Date(date.getFullYear(), date.getMonth(), 1).getDay();
-      firstDay = firstDay === 0 ? 6 : firstDay - 1;
-      const daysInMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
-
-      for (let i = 0; i < firstDay; i++) {
-        const div = document.createElement('div'); div.className = 'day empty'; grid.appendChild(div);
-      }
-
-      for (let i = 1; i <= daysInMonth; i++) {
-        const div = document.createElement('div');
-        div.className = 'day';
-        div.textContent = i;
-        
-        // Lógica de eventos original
-        const ev = eventos.find(e => e.dia === i && e.mes === date.getMonth());
-        if(ev) {
-          if(ev.tipo === 'cumple') {
-            div.innerHTML += `<span class="event-icon">🎂</span><img src="${ev.foto}" class="event-photo">`;
-          } else if(ev.tipo === 'ani') {
-            div.innerHTML += `<span class="event-icon">💍</span>`;
-          }
-        }
-
-        // NUEVO: Mostrar maleta si hay viaje en este día
-        const diaTS = new Date(date.getFullYear(), date.getMonth(), i).getTime();
-        const hayViaje = viajes.some(v => {
-          const inicio = new Date(v.fechaInicio + "T00:00:00").getTime();
-          const fin = new Date(v.fechaFin + "T23:59:59").getTime();
-          return diaTS >= inicio && diaTS <= fin;
+      // Listener Eventos
+      onSnapshot(query(collection(db, "eventos_calendario"), where("creadorId", "in", ids)), (snap) => {
+        events = {};
+        snap.forEach(d => {
+          const ev = d.data();
+          if (!events[ev.fecha]) events[ev.fecha] = [];
+          events[ev.fecha].push({ id: d.id, titulo: ev.titulo });
         });
-        if(hayViaje) {
-          div.innerHTML += `<span class="trip-icon">🧳</span>`;
-        }
+        renderCalendar();
+      });
 
-        const today = new Date();
-        if (i === today.getDate() && date.getMonth() === today.getMonth() && date.getFullYear() === today.getFullYear()) div.classList.add('today');
-        
-        div.onclick = () => openEventMenu(i);
-        grid.appendChild(div);
-      }
+      // Listener Viajes
+      onSnapshot(query(collection(db, "viajes"), where("creadorPor", "in", ids)), (snap) => {
+        viajesDias = {};
+        snap.forEach(d => {
+          const v = d.data();
+          let start = new Date(v.fechaInicio + "T00:00:00");
+          let end = new Date(v.fechaFin + "T00:00:00");
+          for(let dt = new Date(start); dt <= end; dt.setDate(dt.getDate() + 1)) {
+            viajesDias[dt.toISOString().split('T')[0]] = true;
+          }
+        });
+        renderCalendar();
+      });
+
+      // LÓGICA AGREGADA: Listener Recetas Programadas
+      onSnapshot(query(collection(db, "recetas"), where("creador", "in", ids)), (snap) => {
+        recetasDias = {};
+        snap.forEach(d => {
+          const r = d.data();
+          if(r.fechaCocinar) {
+            recetasDias[r.fechaCocinar] = true;
+          }
+        });
+        renderCalendar();
+      });
     }
 
-    window.openEventMenu = (day) => {
-      selectedDay = day;
-      const ev = eventos.find(e => e.dia === day && e.mes === date.getMonth());
-      const title = document.getElementById('modalTitle');
-      const list = document.getElementById('optionsList');
+    function renderCalendar() {
+      date.setDate(1);
+      const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+      const prevLastDay = new Date(date.getFullYear(), date.getMonth(), 0).getDate();
+      const firstDayIndex = (new Date(date.getFullYear(), date.getMonth(), 1).getDay() + 6) % 7;
+      const nextDays = 42 - (firstDayIndex + lastDay);
 
-      if(ev) {
-        title.textContent = "Evento guardado";
-        list.innerHTML = `
-          <div class="menu-option" onclick="eliminarEvento('${ev.firestoreId}')" style="color: #ff4d4d; border-color: var(--pink-mid);">
-            Eliminar este evento 🗑️
-          </div>
-        `;
-      } else {
-        title.textContent = "Añadir evento";
-        list.innerHTML = `
-          <div class="menu-option" onclick="showSubMenu('cumple')">Añadir cumpleaños 🎂</div>
-          <div class="menu-option" onclick="showSubMenu('ani')">Añadir aniversario 💍</div>
-          <div class="menu-option" onclick="location.href='viajes.html'">Añadir viaje 🧳</div>
-        `;
+      monthYearElement.textContent = `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
+      let days = "";
+
+      // Días mes anterior
+      for (let x = firstDayIndex; x > 0; x--) {
+        days += `<div class="day prev-date">${prevLastDay - x + 1}</div>`;
+      }
+
+      // Días mes actual
+      for (let i = 1; i <= lastDay; i++) {
+        const fullDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+        const isToday = i === new Date().getDate() && date.getMonth() === new Date().getMonth() && date.getFullYear() === new Date().getFullYear() ? "today" : "";
+        const hasEvent = events[fullDate] ? `<div class="event-dot"></div>` : "";
+        
+        // Indicadores (Viajes + Recetas)
+        let indicators = "";
+        if (viajesDias[fullDate] || recetasDias[fullDate]) {
+          indicators = `<div class="day-indicators">`;
+          if (recetasDias[fullDate]) indicators += `<span>🍳</span>`;
+          if (viajesDias[fullDate]) indicators += `<span>🧳</span>`;
+          indicators += `</div>`;
+        }
+
+        days += `<div class="day ${isToday}" onclick="openDay('${fullDate}')">${indicators}${i}${hasEvent}</div>`;
+      }
+
+      // Días mes siguiente
+      for (let j = 1; j <= nextDays; j++) {
+        days += `<div class="day next-date">${j}</div>`;
+      }
+      daysElement.innerHTML = days;
+    }
+
+    window.openDay = (fecha) => {
+      selectedDateStr = fecha;
+      document.getElementById('selectedDateText').textContent = fecha.split('-').reverse().join('/');
+      const list = document.getElementById('existingEvents');
+      list.innerHTML = '';
+      if (events[fecha]) {
+        events[fecha].forEach(ev => {
+          list.innerHTML += `<div class="event-item"><span>${ev.titulo}</span> <button onclick="deleteEvent('${ev.id}')" style="border:none; background:none; color:red; font-weight:900;">×</button></div>`;
+        });
       }
       document.getElementById('eventModal').classList.add('show');
     };
 
-    window.showSubMenu = (tipo) => {
-      const list = document.getElementById('optionsList');
-      if (tipo === 'cumple') {
-        document.getElementById('modalTitle').textContent = "¿De quién?";
-        list.innerHTML = `
-          <div class="menu-option" onclick="saveEvent('cumple', 'yo')">${userData?.nombre || 'Yo'} 👤</div>
-          <div class="menu-option" onclick="saveEvent('cumple', 'pareja')">${parejaData ? parejaData.nombre : 'Pareja'} ❤️</div>
-        `;
-      } else {
-        saveEvent('ani');
-      }
-    };
-
-    window.saveEvent = async (tipo, quien = null) => {
-      const data = {
-        dia: selectedDay,
-        mes: date.getMonth(),
-        tipo: tipo,
-        creadoPor: auth.currentUser.uid
-      };
-
-      if(tipo === 'cumple') {
-        const target = quien === 'yo' ? userData : parejaData;
-        data.foto = target?.foto || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
-        data.nombre = target?.nombre || 'Cumpleaños';
-      } else {
-        data.nombre = 'Aniversario';
-      }
-
-      await addDoc(collection(db, "eventos_calendario"), data);
+    window.saveEvent = async () => {
+      const title = document.getElementById('eventTitle').value;
+      if (!title) return;
+      await addDoc(collection(db, "eventos_calendario"), {
+        titulo: title,
+        fecha: selectedDateStr,
+        creadorId: user.uid
+      });
+      document.getElementById('eventTitle').value = '';
       closeModals();
     };
 
-    window.eliminarEvento = async (firestoreId) => {
+    window.deleteEvent = async (firestoreId) => {
       if(confirm("¿Quieres borrar este evento?")) {
         await deleteDoc(doc(db, "eventos_calendario", firestoreId));
         closeModals();
@@ -330,7 +456,6 @@
     };
 
     window.closePicker = () => document.getElementById('pickerModal').classList.remove('show');
-    renderCalendar();
   </script>
 </body>
 </html>

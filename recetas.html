@@ -27,7 +27,6 @@
 
     .container { padding: 0 20px; display: flex; flex-direction: column; gap: 15px; }
 
-    /* LISTADO DE RECETAS */
     .receta-card {
       background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(10px);
       padding: 20px; border-radius: 25px; display: flex; align-items: center;
@@ -36,7 +35,6 @@
     }
     .receta-card h3 { color: var(--accent); font-weight: 900; }
 
-    /* MODAL Y TABS */
     .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(5px); display: none; z-index: 1000; padding: 20px; overflow-y: auto; }
     .modal.show { display: block; }
     .modal-content { background: white; padding: 25px; border-radius: 30px; width: 100%; max-width: 500px; margin: 20px auto; min-height: 80dvh; }
@@ -48,30 +46,32 @@
     .tab-content { display: none; }
     .tab-content.active { display: block; }
 
-    /* INGREDIENTES */
-    .ingrediente-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; background: #f9f9f9; padding: 10px; border-radius: 15px; }
-    .ingrediente-row input[type="text"] { border: none; background: transparent; flex: 1; font-weight: 700; color: #555; }
-    .qty-input { width: 60px; padding: 5px; border-radius: 8px; border: 1px solid var(--mid); text-align: center; }
-    .unit-select { padding: 5px; border-radius: 8px; border: 1px solid var(--mid); font-size: 11px; }
+    /* INGREDIENTES MEJORADOS */
+    .ingrediente-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; background: #f9f9f9; padding: 10px; border-radius: 15px; flex-wrap: wrap; }
+    .ingrediente-row input[type="text"] { border: none; background: transparent; flex: 1; font-weight: 700; color: #555; outline: none; }
+    
+    .btn-balanza { background: white; border: 1px solid var(--mid); border-radius: 8px; cursor: pointer; padding: 4px; font-size: 16px; transition: 0.2s; }
+    .btn-balanza.active { background: var(--accent); color: white; }
+
+    .qty-box { display: none; align-items: center; gap: 5px; background: white; padding: 5px; border-radius: 10px; border: 1px solid var(--bg); width: 100%; margin-top: 5px; }
+    .qty-box.show { display: flex; }
+    .qty-input { width: 60px; padding: 5px; border-radius: 8px; border: 1px solid var(--mid); text-align: center; font-family: inherit; }
+    .unit-select { padding: 5px; border-radius: 8px; border: 1px solid var(--mid); font-size: 11px; font-family: inherit; }
     
     /* TARJETAS DE PREPARACIÓN */
-    .step-card {
-      background: #fff5f7; border: 2px solid var(--bg); border-radius: 20px;
-      padding: 15px; margin-bottom: 15px; position: relative;
-    }
+    .step-card { background: #fff5f7; border: 2px solid var(--bg); border-radius: 20px; padding: 15px; margin-bottom: 15px; }
     [data-theme="blue"] .step-card { background: #f0f7ff; }
     .step-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; color: var(--accent); font-weight: 900; }
-    .step-body { font-size: 13px; }
+    
     .step-config { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
     .config-item { background: white; padding: 5px 10px; border-radius: 10px; display: flex; align-items: center; gap: 5px; font-size: 12px; border: 1px solid var(--mid); }
 
-    .btn-add-main {
-      position: fixed; bottom: 30px; right: 30px; width: 65px; height: 65px; border-radius: 50%;
-      background: var(--accent); border: none; color: white; font-size: 35px; box-shadow: 0 10px 20px var(--shadow); z-index: 100;
-    }
+    /* MEZCLAR: Checklist de ingredientes */
+    .mezclar-list { background: rgba(255,255,255,0.5); padding: 10px; border-radius: 10px; margin: 8px 0; font-size: 12px; }
+    .mezclar-item { display: flex; align-items: center; gap: 5px; margin-bottom: 3px; font-weight: 700; color: #666; }
 
+    .btn-add-main { position: fixed; bottom: 30px; right: 30px; width: 65px; height: 65px; border-radius: 50%; background: var(--accent); border: none; color: white; font-size: 35px; box-shadow: 0 10px 20px var(--shadow); z-index: 100; }
     .action-btn { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 15px; font-weight: 900; cursor: pointer; width: 100%; margin-top: 10px; }
-    .btn-delete { background: #ffe5e5; color: #ff4444; border: none; padding: 5px 10px; border-radius: 10px; font-size: 12px; }
   </style>
 </head>
 <body>
@@ -79,8 +79,7 @@
   <a href="index.html" class="back-btn">‹</a>
   <header><h1>Nuestras Recetas</h1></header>
 
-  <div class="container" id="recetasList">
-    </div>
+  <div class="container" id="recetasList"></div>
 
   <button class="btn-add-main" onclick="abrirNuevaReceta()">+</button>
 
@@ -104,9 +103,11 @@
           <button class="action-btn" style="font-size: 11px;" onclick="añadirPaso('Mezclar', '🥣')">🥣 Mezclar</button>
           <button class="action-btn" style="font-size: 11px;" onclick="añadirPaso('Batir', '🌪️')">🌪️ Batir</button>
           <button class="action-btn" style="font-size: 11px;" onclick="añadirPaso('Hornear', '🔥')">🔥 Hornear</button>
+          <button class="action-btn" style="font-size: 11px;" onclick="añadirPaso('Marinar', '🧪')">🧪 Marinar</button>
+          <button class="action-btn" style="font-size: 11px;" onclick="añadirPaso('Micro', '📻')">📻 Microondas</button>
           <button class="action-btn" style="font-size: 11px;" onclick="añadirPaso('Nevera', '❄️')">❄️ Nevera</button>
           <button class="action-btn" style="font-size: 11px;" onclick="añadirPaso('Sartén', '🍳')">🍳 Sartén</button>
-          <button class="action-btn" style="font-size: 11px;" onclick="añadirPaso('Cortar', '🔪')">🔪 Cortar</button>
+          <button class="action-btn" style="font-size: 11px;" onclick="añadirPaso('Reposo', '⏰')">⏰ Reposar</button>
         </div>
       </div>
 
@@ -137,15 +138,23 @@
       document.getElementById('tab-' + tab).classList.add('active');
     };
 
-    window.añadirIngrediente = (nombre = '', cant = '', unit = 'uds', check = false) => {
+    window.toggleBalanza = (btn) => {
+      btn.classList.toggle('active');
+      const box = btn.parentElement.querySelector('.qty-box');
+      box.classList.toggle('show');
+    };
+
+    window.añadirIngrediente = (nombre = '', cant = '', unit = 'uds', check = false, balanzaActive = false) => {
       const container = document.getElementById('listaIngredientes');
       const div = document.createElement('div');
       div.className = 'ingrediente-row';
       div.innerHTML = `
         <input type="checkbox" ${check ? 'checked' : ''}>
-        <input type="text" placeholder="Ingrediente..." value="${nombre}">
-        <div class="config-item" style="border:none; padding:0;">
-          ⚖️ <input type="number" class="qty-input" placeholder="Cant" value="${cant}">
+        <input type="text" class="ingrediente-nombre" placeholder="Ingrediente..." value="${nombre}">
+        <button class="btn-balanza ${balanzaActive?'active':''}" onclick="toggleBalanza(this)">⚖️</button>
+        <button onclick="this.parentElement.remove()" style="border:none; background:none; color:red; margin-left:5px;">×</button>
+        <div class="qty-box ${balanzaActive?'show':''}">
+          <input type="number" class="qty-input" placeholder="Cant" value="${cant}">
           <select class="unit-select">
             <option value="uds" ${unit==='uds'?'selected':''}>uds</option>
             <option value="gr" ${unit==='gr'?'selected':''}>gr</option>
@@ -153,7 +162,6 @@
             <option value="cuch" ${unit==='cuch'?'selected':''}>cuch</option>
           </select>
         </div>
-        <button onclick="this.parentElement.remove()" style="border:none; background:none; color:red;">×</button>
       `;
       container.appendChild(div);
     };
@@ -163,20 +171,34 @@
       const div = document.createElement('div');
       div.className = 'step-card';
       
+      let extraHtml = '';
+      
+      // Lógica específica para "Mezclar"
+      if(tipo === 'Mezclar') {
+        const ingNames = Array.from(document.querySelectorAll('.ingrediente-nombre')).map(i => i.value).filter(v => v !== '');
+        let ingChecklist = ingNames.map(name => `
+          <label class="mezclar-item">
+            <input type="checkbox" class="mezclar-check" value="${name}" ${(detalles.mezclaUsada || []).includes(name) ? 'checked' : ''}> ${name}
+          </label>
+        `).join('');
+        extraHtml = `<div class="mezclar-list"><p style="font-size:10px; margin-bottom:5px; opacity:0.7;">¿Qué mezclamos?</p>${ingChecklist}</div>`;
+      }
+
+      // Configuraciones de tarjetas
       let configHtml = '';
-      if(tipo === 'Hornear' || tipo === 'Sartén') {
-        configHtml = `
-          <div class="step-config">
-            <div class="config-item">🌡️ <input type="number" placeholder="ºC" value="${detalles.temp || ''}" style="width:40px; border:none;">ºC</div>
-            <div class="config-item">⏱️ <input type="number" placeholder="min" value="${detalles.min || ''}" style="width:40px; border:none;">min</div>
-          </div>`;
-      } else if (tipo === 'Nevera' || tipo === 'Batir') {
+      if(['Hornear', 'Sartén', 'Micro'].includes(tipo)) {
+        configHtml = `<div class="step-config">
+          ${tipo !== 'Sartén' ? `<div class="config-item">${tipo==='Micro'?'⚡':'🌡️'} <input type="number" placeholder="${tipo==='Micro'?'W':'ºC'}" value="${detalles.temp || ''}" style="width:40px; border:none;">${tipo==='Micro'?'W':'ºC'}</div>` : ''}
+          <div class="config-item">⏱️ <input type="number" placeholder="min" value="${detalles.min || ''}" style="width:40px; border:none;">min</div>
+        </div>`;
+      } else if (['Nevera', 'Batir', 'Marinar', 'Reposo'].includes(tipo)) {
         configHtml = `<div class="step-config"><div class="config-item">⏱️ <input type="number" placeholder="min" value="${detalles.min || ''}" style="width:40px; border:none;">min</div></div>`;
       }
 
       div.innerHTML = `
         <div class="step-header"><span>${emoji}</span> ${tipo.toUpperCase()} <button onclick="this.parentElement.parentElement.remove()" style="margin-left:auto; border:none; background:none; color:red;">×</button></div>
-        <textarea placeholder="Instrucciones adicionales..." style="width:100%; border:none; background:transparent; font-family:inherit; resize:none;">${detalles.txt || ''}</textarea>
+        ${extraHtml}
+        <textarea placeholder="Anotaciones de preparación..." style="width:100%; border:none; background:transparent; font-family:inherit; resize:none; font-size:13px; outline:none;">${detalles.txt || ''}</textarea>
         ${configHtml}
       `;
       container.appendChild(div);
@@ -184,13 +206,14 @@
 
     window.guardarReceta = async () => {
       const titulo = document.getElementById('recetaTitulo').value;
-      if(!titulo) return alert("Ponle un nombre!");
+      if(!titulo) return alert("¡Ponle un nombre!");
 
       const ingredientes = [];
       document.querySelectorAll('.ingrediente-row').forEach(row => {
         ingredientes.push({
-          nombre: row.querySelector('input[type="text"]').value,
+          nombre: row.querySelector('.ingrediente-nombre').value,
           checked: row.querySelector('input[type="checkbox"]').checked,
+          balanzaActive: row.querySelector('.btn-balanza').classList.contains('active'),
           cant: row.querySelector('.qty-input').value,
           unit: row.querySelector('.unit-select').value
         });
@@ -198,13 +221,15 @@
 
       const pasos = [];
       document.querySelectorAll('.step-card').forEach(card => {
-        const inputs = card.querySelectorAll('input');
+        const inputs = card.querySelectorAll('.step-config input');
+        const checks = Array.from(card.querySelectorAll('.mezclar-check:checked')).map(c => c.value);
         pasos.push({
           tipo: card.querySelector('.step-header').textContent.split(' ')[1].trim(),
           emoji: card.querySelector('span').textContent,
           txt: card.querySelector('textarea').value,
-          temp: inputs[0]?.placeholder === 'ºC' ? inputs[0].value : null,
-          min: inputs[1]?.placeholder === 'min' ? inputs[1].value : (inputs[0]?.placeholder === 'min' ? inputs[0].value : null)
+          mezclaUsada: checks,
+          temp: (inputs.length > 1) ? inputs[0].value : (inputs[0]?.placeholder.includes('W') ? inputs[0].value : null),
+          min: (inputs.length > 1) ? inputs[1].value : (inputs[0]?.placeholder === 'min' ? inputs[0].value : null)
         });
       });
 
@@ -222,7 +247,7 @@
           const r = d.data();
           const card = document.createElement('div');
           card.className = 'receta-card';
-          card.innerHTML = `<h3>🍽️ ${r.titulo}</h3> <button class="btn-delete" onclick="borrarReceta(event, '${d.id}')">Borrar</button>`;
+          card.innerHTML = `<h3>🍽️ ${r.titulo}</h3> <button class="btn-delete" onclick="borrarReceta(event, '${d.id}')" style="background:#ffe5e5; color:#ff4444; border:none; padding:5px 10px; border-radius:10px; font-size:12px;">Borrar</button>`;
           card.onclick = () => editarReceta(d.id, r);
           list.appendChild(card);
         });
@@ -234,7 +259,7 @@
       document.getElementById('recetaTitulo').value = r.titulo;
       document.getElementById('listaIngredientes').innerHTML = '';
       document.getElementById('listaPasos').innerHTML = '';
-      r.ingredientes.forEach(i => añadirIngrediente(i.nombre, i.cant, i.unit, i.checked));
+      r.ingredientes.forEach(i => añadirIngrediente(i.nombre, i.cant, i.unit, i.checked, i.balanzaActive));
       r.pasos.forEach(p => añadirPaso(p.tipo, p.emoji, p));
       document.getElementById('modalReceta').classList.add('show');
     };
@@ -248,11 +273,7 @@
     };
 
     window.cerrarModal = () => document.getElementById('modalReceta').classList.remove('show');
-
-    window.borrarReceta = async (e, id) => {
-      e.stopPropagation();
-      if(confirm("¿Borrar receta?")) await deleteDoc(doc(db, "recetas", id));
-    };
+    window.borrarReceta = async (e, id) => { e.stopPropagation(); if(confirm("¿Borrar receta?")) await deleteDoc(doc(db, "recetas", id)); };
   </script>
 </body>
 </html>

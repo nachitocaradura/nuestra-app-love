@@ -46,7 +46,6 @@
     .tab-content { display: none; }
     .tab-content.active { display: block; }
 
-    /* INGREDIENTES MEJORADOS */
     .ingrediente-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; background: #f9f9f9; padding: 10px; border-radius: 15px; flex-wrap: wrap; }
     .ingrediente-row input[type="text"] { border: none; background: transparent; flex: 1; font-weight: 700; color: #555; outline: none; }
     
@@ -58,15 +57,14 @@
     .qty-input { width: 60px; padding: 5px; border-radius: 8px; border: 1px solid var(--mid); text-align: center; font-family: inherit; }
     .unit-select { padding: 5px; border-radius: 8px; border: 1px solid var(--mid); font-size: 11px; font-family: inherit; }
     
-    /* TARJETAS DE PREPARACIÓN */
     .step-card { background: #fff5f7; border: 2px solid var(--bg); border-radius: 20px; padding: 15px; margin-bottom: 15px; }
     [data-theme="blue"] .step-card { background: #f0f7ff; }
     .step-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; color: var(--accent); font-weight: 900; }
     
     .step-config { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
     .config-item { background: white; padding: 5px 10px; border-radius: 10px; display: flex; align-items: center; gap: 5px; font-size: 12px; border: 1px solid var(--mid); }
+    .config-item input, .config-item select { border: none; outline: none; background: transparent; font-family: inherit; font-size: 12px; font-weight: 700; color: var(--accent); }
 
-    /* MEZCLAR: Checklist de ingredientes */
     .mezclar-list { background: rgba(255,255,255,0.5); padding: 10px; border-radius: 10px; margin: 8px 0; font-size: 12px; }
     .mezclar-item { display: flex; align-items: center; gap: 5px; margin-bottom: 3px; font-weight: 700; color: #666; }
 
@@ -100,14 +98,20 @@
       <div id="tab-pasos" class="tab-content">
         <div id="listaPasos"></div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px;">
-          <button class="action-btn" style="font-size: 11px;" onclick="añadirPaso('Mezclar', '🥣')">🥣 Mezclar</button>
-          <button class="action-btn" style="font-size: 11px;" onclick="añadirPaso('Batir', '🌪️')">🌪️ Batir</button>
-          <button class="action-btn" style="font-size: 11px;" onclick="añadirPaso('Hornear', '🔥')">🔥 Hornear</button>
-          <button class="action-btn" style="font-size: 11px;" onclick="añadirPaso('Marinar', '🧪')">🧪 Marinar</button>
-          <button class="action-btn" style="font-size: 11px;" onclick="añadirPaso('Micro', '📻')">📻 Microondas</button>
-          <button class="action-btn" style="font-size: 11px;" onclick="añadirPaso('Nevera', '❄️')">❄️ Nevera</button>
-          <button class="action-btn" style="font-size: 11px;" onclick="añadirPaso('Sartén', '🍳')">🍳 Sartén</button>
-          <button class="action-btn" style="font-size: 11px;" onclick="añadirPaso('Reposo', '⏰')">⏰ Reposar</button>
+          <button class="action-btn" style="font-size: 10px;" onclick="añadirPaso('Mezclar', '🥣')">🥣 Mezclar</button>
+          <button class="action-btn" style="font-size: 10px;" onclick="añadirPaso('Batir', '🌪️')">🌪️ Batir</button>
+          <button class="action-btn" style="font-size: 10px;" onclick="añadirPaso('Hornear', '🔥')">🔥 Hornear</button>
+          <button class="action-btn" style="font-size: 10px;" onclick="añadirPaso('Sartén', '🍳')">🍳 Sartén</button>
+          <button class="action-btn" style="font-size: 10px;" onclick="añadirPaso('Hervir', '🫧')">🫧 Hervir</button>
+          <button class="action-btn" style="font-size: 10px;" onclick="añadirPaso('Cortar', '🔪')">🔪 Cortar</button>
+          <button class="action-btn" style="font-size: 10px;" onclick="añadirPaso('Triturar', '🔌')">🔌 Triturar</button>
+          <button class="action-btn" style="font-size: 10px;" onclick="añadirPaso('Micro', '📻')">📻 Microondas</button>
+          <button class="action-btn" style="font-size: 10px;" onclick="añadirPaso('Nevera', '❄️')">❄️ Nevera</button>
+          <button class="action-btn" style="font-size: 10px;" onclick="añadirPaso('Marinar', '🧪')">🧪 Marinar</button>
+          <button class="action-btn" style="font-size: 10px;" onclick="añadirPaso('Freír', '🍟')">🍟 Freír</button>
+          <button class="action-btn" style="font-size: 10px;" onclick="añadirPaso('Pelar', '🥔')">🥔 Pelar</button>
+          <button class="action-btn" style="font-size: 10px;" onclick="añadirPaso('Rallar', '🧀')">🧀 Rallar</button>
+          <button class="action-btn" style="font-size: 10px;" onclick="añadirPaso('Empanar', '🍞')">🍞 Empanar</button>
         </div>
       </div>
 
@@ -173,32 +177,55 @@
       
       let extraHtml = '';
       
-      // Lógica específica para "Mezclar"
-      if(tipo === 'Mezclar') {
+      // Lógica de Ingredientes para Mezclar, Batir, Sartén y Triturar
+      if(['Mezclar', 'Batir', 'Sartén', 'Triturar'].includes(tipo)) {
         const ingNames = Array.from(document.querySelectorAll('.ingrediente-nombre')).map(i => i.value).filter(v => v !== '');
         let ingChecklist = ingNames.map(name => `
           <label class="mezclar-item">
             <input type="checkbox" class="mezclar-check" value="${name}" ${(detalles.mezclaUsada || []).includes(name) ? 'checked' : ''}> ${name}
           </label>
         `).join('');
-        extraHtml = `<div class="mezclar-list"><p style="font-size:10px; margin-bottom:5px; opacity:0.7;">¿Qué mezclamos?</p>${ingChecklist}</div>`;
+        extraHtml = `<div class="mezclar-list"><p style="font-size:10px; margin-bottom:5px; opacity:0.7;">¿Qué usamos?</p>${ingChecklist}</div>`;
       }
 
-      // Configuraciones de tarjetas
+      // Lógica de Configuraciones
       let configHtml = '';
-      if(['Hornear', 'Sartén', 'Micro'].includes(tipo)) {
+      if(tipo === 'Sartén') {
         configHtml = `<div class="step-config">
-          ${tipo !== 'Sartén' ? `<div class="config-item">${tipo==='Micro'?'⚡':'🌡️'} <input type="number" placeholder="${tipo==='Micro'?'W':'ºC'}" value="${detalles.temp || ''}" style="width:40px; border:none;">${tipo==='Micro'?'W':'ºC'}</div>` : ''}
-          <div class="config-item">⏱️ <input type="number" placeholder="min" value="${detalles.min || ''}" style="width:40px; border:none;">min</div>
+          <div class="config-item">🔥 <select class="fire-select">
+            <option value="bajo" ${detalles.fuego==='bajo'?'selected':''}>Bajo</option>
+            <option value="medio" ${detalles.fuego==='medio'?'selected':''}>Medio</option>
+            <option value="alto" ${detalles.fuego==='alto'?'selected':''}>Alto</option>
+          </select></div>
+          <div class="config-item">⏱️ <input type="number" class="time-val" placeholder="Tiempo" value="${detalles.min || ''}" style="width:40px;">
+          <select class="time-unit"><option value="min" ${detalles.timeUnit==='min'?'selected':''}>min</option><option value="seg" ${detalles.timeUnit==='seg'?'selected':''}>seg</option><option value="h" ${detalles.timeUnit==='h'?'selected':''}>h</option></select></div>
         </div>`;
-      } else if (['Nevera', 'Batir', 'Marinar', 'Reposo'].includes(tipo)) {
-        configHtml = `<div class="step-config"><div class="config-item">⏱️ <input type="number" placeholder="min" value="${detalles.min || ''}" style="width:40px; border:none;">min</div></div>`;
+      } else if (tipo === 'Cortar') {
+        configHtml = `<div class="step-config"><div class="config-item">📐 <select class="cut-select">
+          <option value="cuadraditos" ${detalles.corte==='cuadraditos'?'selected':''}>Cuadraditos</option>
+          <option value="juliana" ${detalles.corte==='juliana'?'selected':''}>Juliana</option>
+          <option value="grandes" ${detalles.corte==='grandes'?'selected':''}>Grandes</option>
+          <option value="bocado" ${detalles.corte==='bocado'?'selected':''}>Bocado</option>
+          <option value="tiras" ${detalles.corte==='tiras'?'selected':''}>Tiras</option>
+        </select></div></div>`;
+      } else if (tipo === 'Triturar') {
+        configHtml = `<div class="step-config"><div class="config-item">🌪️ <select class="grind-select">
+          <option value="grueso" ${detalles.tritura==='grueso'?'selected':''}>Grueso</option>
+          <option value="fino" ${detalles.tritura==='fino'?'selected':''}>Fino/Puré</option>
+          <option value="liquido" ${detalles.tritura==='liquido'?'selected':''}>Líquido</option>
+        </select></div></div>`;
+      } else if (['Hornear', 'Hervir', 'Micro', 'Nevera', 'Marinar'].includes(tipo)) {
+        configHtml = `<div class="step-config">
+          ${tipo==='Hornear'||tipo==='Hervir'||tipo==='Micro' ? `<div class="config-item">${tipo==='Micro'?'⚡':'🌡️'} <input type="number" class="temp-val" placeholder="${tipo==='Micro'?'W':'ºC'}" value="${detalles.temp || ''}" style="width:40px;">${tipo==='Micro'?'W':'ºC'}</div>` : ''}
+          <div class="config-item">⏱️ <input type="number" class="time-val" placeholder="Tiempo" value="${detalles.min || ''}" style="width:40px;">
+          <select class="time-unit"><option value="min" ${detalles.timeUnit==='min'?'selected':''}>min</option><option value="seg" ${detalles.timeUnit==='seg'?'selected':''}>seg</option><option value="h" ${detalles.timeUnit==='h'?'selected':''}>h</option></select></div>
+        </div>`;
       }
 
       div.innerHTML = `
         <div class="step-header"><span>${emoji}</span> ${tipo.toUpperCase()} <button onclick="this.parentElement.parentElement.remove()" style="margin-left:auto; border:none; background:none; color:red;">×</button></div>
         ${extraHtml}
-        <textarea placeholder="Anotaciones de preparación..." style="width:100%; border:none; background:transparent; font-family:inherit; resize:none; font-size:13px; outline:none;">${detalles.txt || ''}</textarea>
+        <textarea placeholder="Anotaciones..." style="width:100%; border:none; background:transparent; font-family:inherit; resize:none; font-size:13px; outline:none;">${detalles.txt || ''}</textarea>
         ${configHtml}
       `;
       container.appendChild(div);
@@ -221,15 +248,18 @@
 
       const pasos = [];
       document.querySelectorAll('.step-card').forEach(card => {
-        const inputs = card.querySelectorAll('.step-config input');
-        const checks = Array.from(card.querySelectorAll('.mezclar-check:checked')).map(c => c.value);
+        const tipo = card.querySelector('.step-header').textContent.split(' ')[1].trim();
         pasos.push({
-          tipo: card.querySelector('.step-header').textContent.split(' ')[1].trim(),
+          tipo: tipo,
           emoji: card.querySelector('span').textContent,
           txt: card.querySelector('textarea').value,
-          mezclaUsada: checks,
-          temp: (inputs.length > 1) ? inputs[0].value : (inputs[0]?.placeholder.includes('W') ? inputs[0].value : null),
-          min: (inputs.length > 1) ? inputs[1].value : (inputs[0]?.placeholder === 'min' ? inputs[0].value : null)
+          mezclaUsada: Array.from(card.querySelectorAll('.mezclar-check:checked')).map(c => c.value),
+          fuego: card.querySelector('.fire-select')?.value || null,
+          corte: card.querySelector('.cut-select')?.value || null,
+          tritura: card.querySelector('.grind-select')?.value || null,
+          temp: card.querySelector('.temp-val')?.value || null,
+          min: card.querySelector('.time-val')?.value || null,
+          timeUnit: card.querySelector('.time-unit')?.value || 'min'
         });
       });
 

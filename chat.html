@@ -54,6 +54,16 @@
     input { flex: 1; padding: 12px 18px; border-radius: 25px; border: 2px solid var(--bg); outline: none; font-size: 16px; }
     .send-btn { width: 45px; height: 45px; border-radius: 50%; background: var(--accent); border: none; color: white; font-size: 20px; display: flex; align-items: center; justify-content: center; }
     #statusDot { position: absolute; top: 58px; right: 28%; width:8px; height:8px; border-radius:50%; background:#ccc; }
+
+    /* NUEVOS ESTILOS PARA HORA Y FECHA */
+    .message-content { display: flex; flex-direction: column; gap: 2px; }
+    .msg-time { font-size: 10px; opacity: 0.7; margin-top: 2px; align-self: flex-end; font-weight: 700; }
+    .me .msg-time { color: rgba(255, 255, 255, 0.9); }
+    .them .msg-time { color: var(--dark); }
+    .date-separator {
+      text-align: center; margin: 20px 0; font-size: 11px; font-weight: 900; 
+      color: var(--dark); text-transform: uppercase; letter-spacing: 1px; position: relative;
+    }
   </style>
 </head>
 <body>
@@ -134,10 +144,27 @@
       
       onSnapshot(q, (snap) => {
         container.innerHTML = '';
+        let lastDate = null;
+
         snap.forEach(d => {
           const m = d.data();
           
-          // LÓGICA DE MARCAR COMO LEÍDO: Si el mensaje es para mí y no está leído, lo marco.
+          // Lógica para separadores de día y hora
+          let timeString = "";
+          if (m.timestamp) {
+            const dateObj = m.timestamp.toDate();
+            const dateString = dateObj.toLocaleDateString([], { day: 'numeric', month: 'long' });
+            timeString = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            if (dateString !== lastDate) {
+              const dateDiv = document.createElement('div');
+              dateDiv.className = 'date-separator';
+              dateDiv.textContent = dateString;
+              container.appendChild(dateDiv);
+              lastDate = dateString;
+            }
+          }
+
           if (m.receiverId === user.uid && m.leido === false) {
              updateDoc(doc(db, "mensajes", d.id), { leido: true });
           }
@@ -145,7 +172,13 @@
           const isMe = m.senderId === user.uid;
           const div = document.createElement('div');
           div.className = `message-row ${isMe ? 'me' : 'them'}`;
-          div.innerHTML = `<img src="${m.senderPhoto || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'}" class="mini-avatar"><div class="bubble">${m.text}</div>`;
+          div.innerHTML = `
+            <img src="${m.senderPhoto || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'}" class="mini-avatar">
+            <div class="message-content">
+              <div class="bubble">${m.text}</div>
+              <span class="msg-time">${timeString}</span>
+            </div>
+          `;
           container.appendChild(div);
         });
         container.scrollTo(0, container.scrollHeight);
@@ -160,8 +193,8 @@
         chatId: user.uid + parejaId,
         text: text,
         senderId: user.uid,
-        receiverId: parejaId, // <-- CORRECCIÓN: Quién recibe el mensaje
-        leido: false,         // <-- CORRECCIÓN: Estado inicial
+        receiverId: parejaId, 
+        leido: false,         
         senderPhoto: user.photoURL,
         senderName: user.displayName || "Tu amor",
         timestamp: serverTimestamp()

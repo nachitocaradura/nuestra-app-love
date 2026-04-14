@@ -128,6 +128,7 @@
       outline: none;
       font-weight: 700;
       color: #444;
+      width: 100%;
     }
 
     .btn-link {
@@ -140,6 +141,7 @@
       cursor: pointer;
       box-shadow: 0 5px 15px var(--shadow);
       transition: 0.3s;
+      width: 100%;
     }
 
     .btn-link:active { transform: scale(0.95); }
@@ -175,8 +177,8 @@
 
     <div class="info-card">
       <h3>Mi Fecha de Nacimiento 🎂</h3>
-      <input type="date" id="birthDate" style="width: 100%; padding: 12px; border-radius: 15px; border: 2px solid var(--pink-bg); margin-top: 10px; font-family: inherit;">
-      <button class="btn-link" onclick="saveBirthDate()" style="margin-top: 10px; width: 100%; font-size: 12px;">Guardar Cumpleaños</button>
+      <input type="date" id="birthDate">
+      <button class="btn-link" onclick="saveProfileData()" style="margin-top: 10px; font-size: 12px;">Guardar Cambios</button>
     </div>
 
     <div class="info-card">
@@ -209,31 +211,30 @@
       document.getElementById('userImg').src = user.photoURL || "https://via.placeholder.com/100";
       document.getElementById('myId').textContent = user.uid;
 
-      // Escuchar cambios en el documento del usuario
+      // Escuchar cambios y cargar fecha inicial
       onSnapshot(doc(db, "usuarios", user.uid), (docSnap) => {
         if (docSnap.exists()) {
           const userData = docSnap.data();
-          if (userData.parejaId) {
-            checkPartner(userData.parejaId);
-          }
-          // Cargar fecha de nacimiento si existe
-          if (userData.birthDate) {
-            document.getElementById('birthDate').value = userData.birthDate;
-          }
+          if (userData.parejaId) checkPartner(userData.parejaId);
+          if (userData.birthDate) document.getElementById('birthDate').value = userData.birthDate;
         }
       });
     });
 
-    // Función para guardar el cumpleaños
-    window.saveBirthDate = async () => {
+    // Nueva función que guarda la fecha Y asegura que la foto esté en el documento para el calendario
+    window.saveProfileData = async () => {
       const bDate = document.getElementById('birthDate').value;
       if (!bDate) {
         alert("Selecciona una fecha");
         return;
       }
       try {
-        await updateDoc(doc(db, "usuarios", currentUser.uid), { birthDate: bDate });
-        alert("¡Cumpleaños guardado! 🎂");
+        await updateDoc(doc(db, "usuarios", currentUser.uid), { 
+          birthDate: bDate,
+          photoURL: currentUser.photoURL, // Esto es clave para que tu pareja vea tu foto en el calendario
+          nombre: currentUser.displayName
+        });
+        alert("¡Perfil actualizado! 🎂");
       } catch (e) {
         alert("Error: " + e.message);
       }
@@ -251,7 +252,7 @@
     window.linkPartner = async () => {
       const pId = document.getElementById('partnerInput').value.trim();
       if (!pId || pId === currentUser.uid) {
-        alert("Introduce un ID válido que no sea el tuyo");
+        alert("Introduce un ID válido");
         return;
       }
 
@@ -260,25 +261,24 @@
         const partnerSnap = await getDoc(partnerRef);
 
         if (!partnerSnap.exists()) {
-          alert("No se encontró ningún usuario con ese ID. Asegúrate de que tu pareja ya haya entrado a su perfil.");
+          alert("No se encontró al usuario.");
           return;
         }
 
-        // Actualizamos los dos documentos para que estén unidos
         await updateDoc(doc(db, "usuarios", currentUser.uid), { parejaId: pId });
         await updateDoc(partnerRef, { parejaId: currentUser.uid });
 
         alert("¡Cuentas vinculadas con éxito! 💕");
         location.reload();
       } catch (e) {
-        alert("Error al vincular: " + e.message);
+        alert("Error: " + e.message);
       }
     };
 
     window.copyId = () => {
       const idText = document.getElementById('myId').textContent;
       navigator.clipboard.writeText(idText).then(() => {
-        alert("¡ID copiado al portapapeles! 📋");
+        alert("¡ID copiado! 📋");
       });
     };
   </script>

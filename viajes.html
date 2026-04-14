@@ -195,7 +195,7 @@
   <script src="global.js"></script>
   <script type="module">
     import { db, auth } from './firebase.js';
-    import { collection, addDoc, query, where, onSnapshot, getDoc, doc, deleteDoc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+    import { collection, addDoc, query, where, onSnapshot, getDoc, doc, deleteDoc, updateDoc, setDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
 
     let user, parejaId, selectedViajeId = null;
@@ -217,16 +217,18 @@
     }
 
     window.buscarYAñadirRuta = async () => {
-        const querySearch = document.getElementById('inputRuta').value;
-        if(!querySearch) return;
-        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(querySearch)}`);
-        const data = await res.json();
-        if(data.length > 0) {
-            const { lat, lon } = data[0];
-            puntosRuta.push({ nombre: querySearch, lat, lon });
-            actualizarMapaYRuta();
-            document.getElementById('inputRuta').value = '';
-        }
+        const q = document.getElementById('inputRuta').value;
+        if(!q) return;
+        try {
+            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}`);
+            const data = await res.json();
+            if(data.length > 0) {
+                const { lat, lon } = data[0];
+                puntosRuta.push({ nombre: q, lat, lon });
+                actualizarMapaYRuta();
+                document.getElementById('inputRuta').value = '';
+            }
+        } catch(e) {}
     };
 
     function actualizarMapaYRuta() {
@@ -305,7 +307,10 @@
           const v = d.data();
           const card = document.createElement('div');
           card.className = 'viaje-card';
-          card.innerHTML = `<div class="viaje-info"><h3>📍 ${v.nombre}</h3><p>🗓️ ${v.fechaInicio} - ${v.fechaFin}</p></div><div class="viaje-actions"><button class="action-btn btn-edit" onclick="prepararEdicion('${d.id}')">✏️</button><button class="action-btn btn-del" onclick="prepararBorrado('${d.id}', '${v.nombre}')">🗑️</button></div>`;
+          const fIn = new Date(v.fechaInicio + "T00:00:00");
+          const fOut = new Date(v.fechaFin + "T00:00:00");
+          let presuTag = (v.totalPresupuesto) ? `<span class="presupuesto-tag">💰 Presupuesto: <b>${v.totalPresupuesto}€</b></span>` : '';
+          card.innerHTML = `<div class="viaje-info"><h3>📍 ${v.nombre}</h3><p>🗓️ ${fIn.toLocaleDateString('es-ES',{day:'2-digit',month:'short'})} - ${fOut.toLocaleDateString('es-ES',{day:'2-digit',month:'short'})}</p>${presuTag}</div><div class="viaje-actions"><button class="action-btn btn-edit" onclick="prepararEdicion('${d.id}')">✏️</button><button class="action-btn btn-del" onclick="prepararBorrado('${d.id}', '${v.nombre}')">🗑️</button></div>`;
           container.appendChild(card);
         });
       });
@@ -315,7 +320,22 @@
       const nombre = document.getElementById('viajeNombre').value;
       const f1 = document.getElementById('fechaInicio').value;
       const f2 = document.getElementById('fechaFin').value;
-      if(!nombre || !f1 || !f2) return alert("Rellena los campos");
+      if(!nombre || !f1 || !f2) return alert("Rellena fechas");
+
+      let total = 0;
+      if(document.getElementById('chkTransporte').checked) total += (Number(document.getElementById('costeIda').value)||0) + (Number(document.getElementById('costeVuelta').value)||0);
+      if(document.getElementById('chkVehiculo').checked) total += (Number(document.getElementById('costeGasolina').value)||0);
+      if(document.getElementById('chkAlojamiento').checked) {
+          const n = Math.max(1, Math.ceil((new Date(f2)-new Date(f1))/(1000*60*60*24)));
+          total += (Number(document.getElementById('costeNoche').value)||0) * n;
+      }
+      const extrasData = [];
+      if(document.getElementById('chkExtra').checked) {
+          document.querySelectorAll('.extra-name').forEach((el, i) => {
+              const val = Number(document.querySelectorAll('.extra-value')[i].value)||0;
+              total += val; extrasData.push({concepto: el.value, valor: val});
+          });
+      }
 
       const myChecklistData = Array.from(document.querySelectorAll('#itemsContainer .checklist-item')).map(div => ({
         t: div.querySelector('.check-text').value,
@@ -323,8 +343,14 @@
       })).filter(it => it.t);
 
       const data = { 
-        nombre, fechaInicio: f1, fechaFin: f2, creadorPor: user.uid,
-        puntosRuta: puntosRuta, // RUTA GUARDADA AQUÍ
+        nombre, fechaInicio: f1, fechaFin: f2, totalPresupuesto: Math.round(total), creadorPor: user.uid,
+        puntosRuta: puntosRuta,
+        gastosDetalle: {
+            transporte: document.getElementById('chkTransporte').checked ? {ida:document.getElementById('costeIda').value, vuelta:document.getElementById('costeVuelta').value} : null,
+            vehiculo: document.getElementById('chkVehiculo').checked ? document.getElementById('costeGasolina').value : null,
+            alojamiento: document.getElementById('chkAlojamiento').checked ? document.getElementById('costeNoche').value : null,
+            extrasDinamicos: document.getElementById('chkExtra').checked ? extrasData : null
+        },
         checklists: {}
       };
       data.checklists[user.uid] = myChecklistData;
@@ -349,8 +375,25 @@
       document.getElementById('fechaFin').value = v.fechaFin;
       puntosRuta = v.puntosRuta || [];
       actualizarMapaYRuta();
+      
+      const det = v.gastosDetalle || {};
+      if(det.transporte) { document.getElementById('chkTransporte').checked = true; toggleGasto('inputsTransporte'); document.getElementById('costeIda').value = det.transporte.ida; document.getElementById('costeVuelta').value = det.transporte.vuelta; }
+      if(det.vehiculo) { document.getElementById('chkVehiculo').checked = true; toggleGasto('inputsVehiculo'); document.getElementById('costeGasolina').value = det.vehiculo; }
+      if(det.alojamiento) { document.getElementById('chkAlojamiento').checked = true; toggleGasto('inputsAlojamiento'); document.getElementById('costeNoche').value = det.alojamiento; }
+      if(det.extrasDinamicos) { document.getElementById('chkExtra').checked = true; toggleGasto('inputsExtra'); det.extrasDinamicos.forEach(e => addExtraField(e.concepto, e.valor)); }
+
       document.getElementById('itemsContainer').innerHTML = '';
       if(v.checklists && v.checklists[user.uid]) v.checklists[user.uid].forEach(it => addChecklistItem(it.t, it.c));
+
+      document.getElementById('partnerItemsContainer').innerHTML = '';
+      if(parejaId && v.checklists && v.checklists[parejaId]) {
+        v.checklists[parejaId].forEach(it => {
+          const d = document.createElement('div'); d.className = 'checklist-item';
+          d.innerHTML = `<input type="checkbox" disabled ${it.c ? 'checked' : ''}> <span style="font-size:12px; font-weight:700;">${it.t}</span>`;
+          document.getElementById('partnerItemsContainer').appendChild(d);
+        });
+      }
+
       document.getElementById('viajeModal').classList.add('show');
       setTimeout(() => map.invalidateSize(), 400);
     };
@@ -362,7 +405,14 @@
         setTimeout(() => map.invalidateSize(), 400);
     };
     
-    window.closeModal = () => document.getElementById('viajeModal').classList.remove('show');
+    window.closeModal = () => {
+        document.getElementById('viajeModal').classList.remove('show');
+        document.getElementById('dynamicExtrasContainer').innerHTML = '';
+        ['chkTransporte','chkVehiculo','chkAlojamiento','chkExtra'].forEach(id => {
+            document.getElementById(id).checked = false;
+            document.getElementById('inputs' + id.substring(3)).classList.remove('active');
+        });
+    };
     window.prepararBorrado = (id, n) => { selectedViajeId = id; document.getElementById('deleteText').textContent = n; document.getElementById('deleteModal').classList.add('show'); };
     window.closeDeleteModal = () => document.getElementById('deleteModal').classList.remove('show');
     document.getElementById('btnConfirmDelete').onclick = async () => { await deleteDoc(doc(db, "viajes", selectedViajeId)); closeDeleteModal(); };

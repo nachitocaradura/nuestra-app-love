@@ -103,13 +103,13 @@
     const msgInput = document.getElementById('msgInput');
     const messaging = getMessaging();
 
-    if ('serviceWorker' in navigator) {
+    /*if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('sw.js').then(reg => {
           console.log("Motor registrado con éxito");
         });
       });
-    }
+    }*/
 
     async function activarNotificacionesFCM(userId) {
       try {

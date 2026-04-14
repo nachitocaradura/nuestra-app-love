@@ -144,8 +144,6 @@
       width: 100%;
     }
 
-    .btn-link:active { transform: scale(0.95); }
-
     .logout-btn {
       margin-top: 20px;
       background: none;
@@ -166,19 +164,19 @@
   </header>
 
   <div class="profile-container">
-    <img id="userImg" src="https://via.placeholder.com/100" class="user-img" alt="Foto de perfil">
+    <img id="userImg" src="https://via.placeholder.com/100" class="user-img">
     <h2 id="userName" style="color: var(--pink-accent); font-weight: 900;">Cargando...</h2>
     
     <div class="info-card">
       <h3>Mi ID Personal</h3>
       <p id="myId">Cargando...</p>
-      <button onclick="copyId()" style="font-size: 10px; margin-top: 5px; background: none; border: none; color: var(--pink-accent); font-weight: 900; cursor: pointer;">📋 COPIAR ID</button>
+      <button onclick="copyId()" style="font-size: 10px; margin-top: 5px; background: none; border: none; color: var(--pink-accent); font-weight: 900;">📋 COPIAR ID</button>
     </div>
 
     <div class="info-card">
       <h3>Mi Fecha de Nacimiento 🎂</h3>
       <input type="date" id="birthDate">
-      <button class="btn-link" onclick="saveProfileData()" style="margin-top: 10px; font-size: 12px;">Guardar Cambios</button>
+      <button class="btn-link" onclick="guardarTodo()" style="margin-top: 10px; font-size: 12px;">Guardar Cambios</button>
     </div>
 
     <div class="info-card">
@@ -211,7 +209,6 @@
       document.getElementById('userImg').src = user.photoURL || "https://via.placeholder.com/100";
       document.getElementById('myId').textContent = user.uid;
 
-      // Escuchar cambios y cargar fecha inicial
       onSnapshot(doc(db, "usuarios", user.uid), (docSnap) => {
         if (docSnap.exists()) {
           const userData = docSnap.data();
@@ -221,20 +218,18 @@
       });
     });
 
-    // Nueva función que guarda la fecha Y asegura que la foto esté en el documento para el calendario
-    window.saveProfileData = async () => {
+    // Función mágica: guarda la fecha y la foto para que el otro la vea
+    window.guardarTodo = async () => {
       const bDate = document.getElementById('birthDate').value;
-      if (!bDate) {
-        alert("Selecciona una fecha");
-        return;
-      }
+      if (!bDate) return alert("Pon tu fecha de cumple");
+
       try {
         await updateDoc(doc(db, "usuarios", currentUser.uid), { 
           birthDate: bDate,
-          photoURL: currentUser.photoURL, // Esto es clave para que tu pareja vea tu foto en el calendario
+          photoURL: currentUser.photoURL,
           nombre: currentUser.displayName
         });
-        alert("¡Perfil actualizado! 🎂");
+        alert("¡Guardado! Ahora tu pareja podrá ver tu foto en el calendario 🎂");
       } catch (e) {
         alert("Error: " + e.message);
       }
@@ -251,35 +246,20 @@
 
     window.linkPartner = async () => {
       const pId = document.getElementById('partnerInput').value.trim();
-      if (!pId || pId === currentUser.uid) {
-        alert("Introduce un ID válido");
-        return;
-      }
+      if (!pId || pId === currentUser.uid) return alert("ID no válido");
 
-      try {
-        const partnerRef = doc(db, "usuarios", pId);
-        const partnerSnap = await getDoc(partnerRef);
+      const partnerRef = doc(db, "usuarios", pId);
+      const partnerSnap = await getDoc(partnerRef);
+      if (!partnerSnap.exists()) return alert("No existe ese usuario");
 
-        if (!partnerSnap.exists()) {
-          alert("No se encontró al usuario.");
-          return;
-        }
-
-        await updateDoc(doc(db, "usuarios", currentUser.uid), { parejaId: pId });
-        await updateDoc(partnerRef, { parejaId: currentUser.uid });
-
-        alert("¡Cuentas vinculadas con éxito! 💕");
-        location.reload();
-      } catch (e) {
-        alert("Error: " + e.message);
-      }
+      await updateDoc(doc(db, "usuarios", currentUser.uid), { parejaId: pId });
+      await updateDoc(partnerRef, { parejaId: currentUser.uid });
+      location.reload();
     };
 
     window.copyId = () => {
-      const idText = document.getElementById('myId').textContent;
-      navigator.clipboard.writeText(idText).then(() => {
-        alert("¡ID copiado! 📋");
-      });
+      navigator.clipboard.writeText(document.getElementById('myId').textContent);
+      alert("¡ID copiado! 📋");
     };
   </script>
 </body>

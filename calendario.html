@@ -55,7 +55,7 @@
 
     header {
       width: 100%;
-      padding: 80px 20px 20px; 
+      padding: 100px 20px 20px; /* Bajado para que no choque */
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -335,13 +335,19 @@
       if(parejaId) {
         const pDoc = await getDoc(doc(db, "usuarios", parejaId));
         if(pDoc.exists()) {
-            parejaDatos = { photo: pDoc.data()?.photoURL || pDoc.data()?.fotoUrl || pDoc.data()?.fotoURL, birth: pDoc.data()?.birthDate };
+            const data = pDoc.data();
+            // CORRECCIÓN AQUÍ: Buscamos en todas las variantes de nombre posibles
+            parejaDatos = { 
+              photo: data.photoURL || data.fotoUrl || data.fotoURL || data.photo, 
+              birth: data.birthDate 
+            };
         }
       }
       initData();
     });
 
     function initData() {
+      if(!user) return;
       const ids = [user.uid]; if (parejaId) ids.push(parejaId);
       onSnapshot(query(collection(db, "eventos_calendario"), where("creadorId", "in", ids)), (snap) => {
         events = {}; snap.forEach(d => {
@@ -408,7 +414,9 @@
       selectedDateStr = fecha;
       document.getElementById('selectedDateText').textContent = fecha.split('-').reverse().join('/');
       const list = document.getElementById('existingEvents'); list.innerHTML = '';
-      if (events[fecha]) events[fecha].forEach(ev => { list.innerHTML += `<div class="event-item"><span>${ev.titulo}</span> <button onclick="deleteEvent('${ev.id}')" style="border:none; background:none; color:red; font-weight:900;">×</button></div>`; });
+      if (events[fecha]) events[fecha].forEach(ev => { 
+        list.innerHTML += `<div class="event-item"><span>${ev.titulo}</span> <button onclick="deleteEvent('${ev.id}')" style="border:none; background:none; color:red; font-weight:900; cursor:pointer;">×</button></div>`; 
+      });
       document.getElementById('eventModal').classList.add('show');
     };
 
@@ -418,26 +426,37 @@
       document.getElementById('eventTitle').value = ''; closeModals();
     };
 
-    window.deleteEvent = async (id) => { if(confirm("¿Borrar?")) { await deleteDoc(doc(db, "eventos_calendario", id)); closeModals(); } };
+    window.deleteEvent = async (firestoreId) => {
+      if(confirm("¿Quieres borrar este evento?")) {
+        await deleteDoc(doc(db, "eventos_calendario", firestoreId));
+        closeModals();
+      }
+    };
+
     window.closeModals = () => document.getElementById('eventModal').classList.remove('show');
     window.changeMonth = (delta) => { date.setMonth(date.getMonth() + delta); renderCalendar(); };
-    window.openPicker = () => { 
-      const mWheel = document.getElementById('monthWheel'); const yWheel = document.getElementById('yearWheel');
+
+    window.openPicker = () => {
+      const mWheel = document.getElementById('monthWheel');
+      const yWheel = document.getElementById('yearWheel');
       mWheel.innerHTML = ''; yWheel.innerHTML = '';
       monthNames.forEach((m, i) => {
         const item = document.createElement('div');
         item.className = 'wheel-item' + (i === date.getMonth() ? ' selected' : '');
-        item.textContent = m; item.onclick = () => { date.setMonth(i); openPicker(); renderCalendar(); };
+        item.textContent = m;
+        item.onclick = () => { date.setMonth(i); openPicker(); renderCalendar(); };
         mWheel.appendChild(item);
       });
       for(let y = date.getFullYear() - 5; y <= date.getFullYear() + 5; y++) {
         const item = document.createElement('div');
         item.className = 'wheel-item' + (y === date.getFullYear() ? ' selected' : '');
-        item.textContent = y; item.onclick = () => { date.setFullYear(y); openPicker(); renderCalendar(); };
+        item.textContent = y;
+        item.onclick = () => { date.setFullYear(y); openPicker(); renderCalendar(); };
         yWheel.appendChild(item);
       }
-      document.getElementById('pickerModal').classList.add('show'); 
+      document.getElementById('pickerModal').classList.add('show');
     };
+
     window.closePicker = () => document.getElementById('pickerModal').classList.remove('show');
   </script>
 </body>

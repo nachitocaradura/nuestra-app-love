@@ -55,7 +55,7 @@
 
     header {
       width: 100%;
-      padding: 80px 20px 20px; /* Aumentado de 60px a 80px para bajar el calendario */
+      padding: 80px 20px 20px; 
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -89,7 +89,7 @@
       border-radius: 35px;
       padding: 20px;
       box-shadow: 0 15px 35px var(--shadow);
-      margin-top: 10px; /* Espacio extra superior */
+      margin-top: 10px;
     }
 
     .weekdays {
@@ -146,7 +146,6 @@
     }
     .today .event-dot { background: white; }
 
-    /* Indicadores de Viaje y Receta */
     .day-indicators {
       position: absolute;
       top: 4px;
@@ -157,7 +156,6 @@
       line-height: 1;
     }
 
-    /* Estilo para Foto de Perfil y Tarta de Cumpleaños */
     .birthday-container {
       position: absolute;
       bottom: 2px;
@@ -178,10 +176,8 @@
     .birthday-cake {
       font-size: 9px;
       margin-bottom: -4px;
-      filter: drop-shadow(0 1px 1px rgba(0,0,0,0.2));
     }
 
-    /* MODALES */
     .modal {
       position: fixed;
       inset: 0;
@@ -210,7 +206,7 @@
       font-weight: 900;
     }
 
-    input, textarea {
+    input {
       width: 100%;
       padding: 12px;
       margin: 10px 0;
@@ -248,11 +244,7 @@
       justify-content: space-between;
       align-items: center;
     }
-    [data-theme="blue"] .event-item { background: #e6f2ff; }
 
-    .event-item span { font-weight: 800; color: var(--pink-accent); }
-
-    /* PICKER DE MES/AÑO */
     .wheel-container {
       display: flex;
       gap: 20px;
@@ -330,9 +322,7 @@
     
     let date = new Date();
     let user, parejaId, selectedDateStr;
-    let events = {};
-    let viajesDias = {};
-    let recetasDias = {};
+    let events = {}, viajesDias = {}, recetasDias = {};
     let misDatos = {}, parejaDatos = {};
 
     auth.onAuthStateChanged(async (u) => {
@@ -345,45 +335,30 @@
       if(parejaId) {
         const pDoc = await getDoc(doc(db, "usuarios", parejaId));
         if(pDoc.exists()) {
-            parejaDatos = { photo: pDoc.data()?.fotoUrl || pDoc.data()?.photoURL, birth: pDoc.data()?.birthDate };
+            parejaDatos = { photo: pDoc.data()?.photoURL || pDoc.data()?.fotoUrl || pDoc.data()?.fotoURL, birth: pDoc.data()?.birthDate };
         }
       }
       initData();
     });
 
     function initData() {
-      const ids = [user.uid];
-      if (parejaId) ids.push(parejaId);
-
+      const ids = [user.uid]; if (parejaId) ids.push(parejaId);
       onSnapshot(query(collection(db, "eventos_calendario"), where("creadorId", "in", ids)), (snap) => {
-        events = {};
-        snap.forEach(d => {
-          const ev = d.data();
-          if (!events[ev.fecha]) events[ev.fecha] = [];
+        events = {}; snap.forEach(d => {
+          const ev = d.data(); if (!events[ev.fecha]) events[ev.fecha] = [];
           events[ev.fecha].push({ id: d.id, titulo: ev.titulo });
         });
         renderCalendar();
       });
-
       onSnapshot(query(collection(db, "viajes"), where("creadorPor", "in", ids)), (snap) => {
-        viajesDias = {};
-        snap.forEach(d => {
-          const v = d.data();
-          let start = new Date(v.fechaInicio + "T00:00:00");
-          let end = new Date(v.fechaFin + "T00:00:00");
-          for(let dt = new Date(start); dt <= end; dt.setDate(dt.getDate() + 1)) {
-            viajesDias[dt.toISOString().split('T')[0]] = true;
-          }
+        viajesDias = {}; snap.forEach(d => {
+          const v = d.data(); let start = new Date(v.fechaInicio + "T00:00:00"), end = new Date(v.fechaFin + "T00:00:00");
+          for(let dt = new Date(start); dt <= end; dt.setDate(dt.getDate() + 1)) viajesDias[dt.toISOString().split('T')[0]] = true;
         });
         renderCalendar();
       });
-
       onSnapshot(query(collection(db, "recetas"), where("creador", "in", ids)), (snap) => {
-        recetasDias = {};
-        snap.forEach(d => {
-          const r = d.data();
-          if(r.fechaCocinar) recetasDias[r.fechaCocinar] = true;
-        });
+        recetasDias = {}; snap.forEach(d => { const r = d.data(); if(r.fechaCocinar) recetasDias[r.fechaCocinar] = true; });
         renderCalendar();
       });
     }
@@ -394,13 +369,10 @@
       const prevLastDay = new Date(date.getFullYear(), date.getMonth(), 0).getDate();
       const firstDayIndex = (new Date(date.getFullYear(), date.getMonth(), 1).getDay() + 6) % 7;
       const nextDays = 42 - (firstDayIndex + lastDay);
-
       monthYearElement.textContent = `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
       let days = "";
 
-      for (let x = firstDayIndex; x > 0; x--) {
-        days += `<div class="day prev-date">${prevLastDay - x + 1}</div>`;
-      }
+      for (let x = firstDayIndex; x > 0; x--) days += `<div class="day prev-date">${prevLastDay - x + 1}</div>`;
 
       for (let i = 1; i <= lastDay; i++) {
         const fullDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
@@ -416,11 +388,11 @@
         }
 
         let birthdayHtml = "";
-        const curMonth = date.getMonth() + 1;
+        const m = date.getMonth() + 1;
         [misDatos, parejaDatos].forEach(p => {
            if(p.birth) {
-             const parts = p.birth.split('-');
-             if(parseInt(parts[1]) === curMonth && parseInt(parts[2]) === i) {
+             const b = p.birth.split('-');
+             if(parseInt(b[1]) === m && parseInt(b[2]) === i) {
                birthdayHtml += `<div class="birthday-container"><span class="birthday-cake">🎂</span><img src="${p.photo || 'https://via.placeholder.com/50'}" class="birthday-img"></div>`;
              }
            }
@@ -428,69 +400,44 @@
 
         days += `<div class="day ${isToday}" onclick="openDay('${fullDate}')">${indicators}${i}${hasEvent}${birthdayHtml}</div>`;
       }
-
-      for (let j = 1; j <= nextDays; j++) {
-        days += `<div class="day next-date">${j}</div>`;
-      }
+      for (let j = 1; j <= nextDays; j++) days += `<div class="day next-date">${j}</div>`;
       daysElement.innerHTML = days;
     }
 
     window.openDay = (fecha) => {
       selectedDateStr = fecha;
       document.getElementById('selectedDateText').textContent = fecha.split('-').reverse().join('/');
-      const list = document.getElementById('existingEvents');
-      list.innerHTML = '';
-      if (events[fecha]) {
-        events[fecha].forEach(ev => {
-          list.innerHTML += `<div class="event-item"><span>${ev.titulo}</span> <button onclick="deleteEvent('${ev.id}')" style="border:none; background:none; color:red; font-weight:900;">×</button></div>`;
-        });
-      }
+      const list = document.getElementById('existingEvents'); list.innerHTML = '';
+      if (events[fecha]) events[fecha].forEach(ev => { list.innerHTML += `<div class="event-item"><span>${ev.titulo}</span> <button onclick="deleteEvent('${ev.id}')" style="border:none; background:none; color:red; font-weight:900;">×</button></div>`; });
       document.getElementById('eventModal').classList.add('show');
     };
 
     window.saveEvent = async () => {
-      const title = document.getElementById('eventTitle').value;
-      if (!title) return;
-      await addDoc(collection(db, "eventos_calendario"), {
-        titulo: title,
-        fecha: selectedDateStr,
-        creadorId: user.uid
-      });
-      document.getElementById('eventTitle').value = '';
-      closeModals();
+      const title = document.getElementById('eventTitle').value; if (!title) return;
+      await addDoc(collection(db, "eventos_calendario"), { titulo: title, fecha: selectedDateStr, creadorId: user.uid });
+      document.getElementById('eventTitle').value = ''; closeModals();
     };
 
-    window.deleteEvent = async (firestoreId) => {
-      if(confirm("¿Quieres borrar este evento?")) {
-        await deleteDoc(doc(db, "eventos_calendario", firestoreId));
-        closeModals();
-      }
-    };
-
+    window.deleteEvent = async (id) => { if(confirm("¿Borrar?")) { await deleteDoc(doc(db, "eventos_calendario", id)); closeModals(); } };
     window.closeModals = () => document.getElementById('eventModal').classList.remove('show');
     window.changeMonth = (delta) => { date.setMonth(date.getMonth() + delta); renderCalendar(); };
-
-    window.openPicker = () => {
-      const mWheel = document.getElementById('monthWheel');
-      const yWheel = document.getElementById('yearWheel');
+    window.openPicker = () => { 
+      const mWheel = document.getElementById('monthWheel'); const yWheel = document.getElementById('yearWheel');
       mWheel.innerHTML = ''; yWheel.innerHTML = '';
       monthNames.forEach((m, i) => {
         const item = document.createElement('div');
         item.className = 'wheel-item' + (i === date.getMonth() ? ' selected' : '');
-        item.textContent = m;
-        item.onclick = () => { date.setMonth(i); openPicker(); renderCalendar(); };
+        item.textContent = m; item.onclick = () => { date.setMonth(i); openPicker(); renderCalendar(); };
         mWheel.appendChild(item);
       });
       for(let y = date.getFullYear() - 5; y <= date.getFullYear() + 5; y++) {
         const item = document.createElement('div');
         item.className = 'wheel-item' + (y === date.getFullYear() ? ' selected' : '');
-        item.textContent = y;
-        item.onclick = () => { date.setFullYear(y); openPicker(); renderCalendar(); };
+        item.textContent = y; item.onclick = () => { date.setFullYear(y); openPicker(); renderCalendar(); };
         yWheel.appendChild(item);
       }
-      document.getElementById('pickerModal').classList.add('show');
+      document.getElementById('pickerModal').classList.add('show'); 
     };
-
     window.closePicker = () => document.getElementById('pickerModal').classList.remove('show');
   </script>
 </body>

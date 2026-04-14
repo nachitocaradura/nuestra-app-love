@@ -93,6 +93,8 @@
   </div>
 
   <script type="module">
+    console.log("Script principal de chat.html cargado."); // Debug: Script cargado
+
     import { db, auth } from './firebase.js';
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
     import { collection, addDoc, query, where, orderBy, onSnapshot, doc, getDoc, setDoc, updateDoc, serverTimestamp, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
@@ -103,53 +105,81 @@
     const msgInput = document.getElementById('msgInput');
     const messaging = getMessaging();
 
-    /*if ('serviceWorker' in navigator) {
+    // Bloque de registro del Service Worker original comentado, Firebase Messaging lo registrará automáticamente
+    /*
+    if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('sw.js').then(reg => {
           console.log("Motor registrado con éxito");
         });
       });
-    }*/
+    }
+    */
 
     async function activarNotificacionesFCM(userId) {
       try {
+        console.log("Intentando activar notificaciones FCM para usuario:", userId); // Debug: Intentando activar FCM
         const token = await getToken(messaging, { 
           vapidKey: 'BCAD1wd4akkmElcAqzk2sOVuMPGV5ntxBeo7rF4q3K7Ey_4hIMhLVVvriRcRGUo46L51Tk73F49-IpISwRs0nOk' 
         });
         if (token) {
+          console.log("FCM Token generado:", token); // Debug: Token generado
           await setDoc(doc(db, "usuarios", userId), { fcmToken: token }, { merge: true });
+          console.log("FCM Token guardado en Firestore para el usuario:", userId); // Debug: Token guardado
+        } else {
+          console.log("No se pudo obtener el FCM Token (quizás permisos no concedidos o token inválido)"); // Debug: Token no obtenido
         }
       } catch (err) {
-        console.error("Error al activar FCM:", err);
+        console.error("Error en activarNotificacionesFCM:", err); // Debug: Error al activar FCM
       }
     }
 
     onAuthStateChanged(auth, async (u) => {
-      if (!u) { window.location.href = 'auth.html'; return; }
+      console.log("onAuthStateChanged activado. Usuario:", u ? u.uid : "No autenticado"); // Debug: Estado de autenticación
+      if (!u) {
+        console.log("Usuario no autenticado, redirigiendo a auth.html"); // Debug: Redirección
+        window.location.href = 'auth.html';
+        return;
+      }
       user = u;
+      console.log("Usuario autenticado:", user.uid); // Debug: Usuario autenticado
       activarNotificacionesFCM(u.uid);
+      
       const userDoc = await getDoc(doc(db, "usuarios", u.uid));
+      console.log("Documento de usuario obtenido. Existe:", userDoc.exists()); // Debug: Documento de usuario
+
       if (userDoc.exists() && userDoc.data().parejaId) {
         parejaId = userDoc.data().parejaId;
+        console.log("parejaId establecido a:", parejaId); // Debug: Pareja ID
         document.getElementById('statusDot').style.background = '#4CAF50';
         cargarMensajes();
+        console.log("cargarMensajes() llamado."); // Debug: Cargar mensajes
         escucharEscribiendo();
+        console.log("escucharEscribiendo() llamado."); // Debug: Escuchar escribiendo
+      } else {
+        console.log("Documento de usuario no existe o parejaId no definido/vacío."); // Debug: Sin pareja ID
+        // Opcional: Podrías redirigir o mostrar un mensaje si no hay pareja configurada
+        // window.location.href = 'perfil.html'; 
       }
     });
 
     function cargarMensajes() {
+      if (!user || !parejaId) {
+        console.log("No se pueden cargar mensajes: usuario o parejaId no definidos."); // Debug
+        return;
+      }
       const q = query(collection(db, "mensajes"), 
                 where("chatId", "in", [user.uid + parejaId, parejaId + user.uid]), 
                 orderBy("timestamp", "asc"));
       
       onSnapshot(q, (snap) => {
+        console.log("Nuevos mensajes recibidos en onSnapshot. Cantidad:", snap.docs.length); // Debug
         container.innerHTML = '';
         let lastDate = null;
 
         snap.forEach(d => {
           const m = d.data();
           
-          // Lógica para separadores de día y hora
           let timeString = "";
           if (m.timestamp) {
             const dateObj = m.timestamp.toDate();
@@ -167,6 +197,7 @@
 
           if (m.receiverId === user.uid && m.leido === false) {
              updateDoc(doc(db, "mensajes", d.id), { leido: true });
+             console.log("Mensaje marcado como leído:", d.id); // Debug
           }
 
           const isMe = m.senderId === user.uid;
@@ -187,7 +218,10 @@
 
     async function enviarMensaje() {
       const text = msgInput.value.trim();
-      if (!text || !parejaId) return;
+      if (!text || !parejaId) {
+        console.log("No se puede enviar mensaje: texto vacío o parejaId no definido."); // Debug
+        return;
+      }
       msgInput.value = '';
       await addDoc(collection(db, "mensajes"), {
         chatId: user.uid + parejaId,
@@ -199,16 +233,28 @@
         senderName: user.displayName || "Tu amor",
         timestamp: serverTimestamp()
       });
+      console.log("Mensaje enviado a Firestore."); // Debug
     }
 
     msgInput.addEventListener('input', () => {
-      if (!user || !parejaId) return;
+      if (!user || !parejaId) {
+        console.log("No se puede gestionar typing: usuario o parejaId no definidos."); // Debug
+        return;
+      }
       setDoc(doc(db, "typing", user.uid), { isTyping: true, to: parejaId, name: user.displayName, photo: user.photoURL }, { merge: true });
       clearTimeout(typingTimeout);
-      typingTimeout = setTimeout(() => { setDoc(doc(db, "typing", user.uid), { isTyping: false }, { merge: true }); }, 2000);
+      typingTimeout = setTimeout(() => { 
+        setDoc(doc(db, "typing", user.uid), { isTyping: false }, { merge: true }); 
+        console.log("Usuario dejó de escribir."); // Debug
+      }, 2000);
+      console.log("Usuario escribiendo."); // Debug
     });
 
     function escucharEscribiendo() {
+      if (!parejaId) {
+        console.log("No se puede escuchar escribiendo: parejaId no definido."); // Debug
+        return;
+      }
       onSnapshot(doc(db, "typing", parejaId), (snap) => {
         const data = snap.data();
         const area = document.getElementById('typing-area');
@@ -217,23 +263,31 @@
           document.getElementById('typing-name').textContent = data.name;
           area.classList.add('active');
           container.scrollTo(0, container.scrollHeight);
+          console.log("Pareja está escribiendo."); // Debug
         } else {
           area.classList.remove('active');
+          console.log("Pareja no está escribiendo."); // Debug
         }
       });
     }
 
-    window.toggleMenu = () => document.getElementById('chatMenu').classList.toggle('show');
+    window.toggleMenu = () => {
+      document.getElementById('chatMenu').classList.toggle('show');
+      console.log("Menú de chat toggled."); // Debug
+    };
     window.vaciarChat = async () => {
       if(!confirm("¿Borrar chat?")) return;
+      console.log("Vaciando chat..."); // Debug
       const q = query(collection(db, "mensajes"), where("chatId", "in", [user.uid + parejaId, parejaId + user.uid]));
       const snap = await getDocs(q);
       await Promise.all(snap.docs.map(d => deleteDoc(doc(db, "mensajes", d.id))));
       toggleMenu();
+      console.log("Chat vaciado."); // Debug
     };
 
     document.getElementById('sendBtn').onclick = enviarMensaje;
     msgInput.onkeypress = (e) => { if(e.key === 'Enter') enviarMensaje(); };
+    console.log("Event listeners para enviar mensaje adjuntos."); // Debug
   </script>
 </body>
 </html>

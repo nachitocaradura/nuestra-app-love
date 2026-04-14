@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>🧳 Nuestros Viajes</title>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     :root {
@@ -17,7 +18,6 @@
     header { padding: 60px 25px 20px; text-align: center; }
     header h1 { color: var(--accent); font-weight: 900; font-size: 32px; }
 
-    /* FLECHA IDENTICA AL CHAT */
     .back-btn {
       position: absolute; left: 18px; top: 55px; text-decoration: none; font-size: 20px; 
       background: rgba(255,255,255,0.6); border-radius: 12px; padding: 6px 10px; 
@@ -46,7 +46,6 @@
       background: var(--accent); border: none; color: white; font-size: 35px; box-shadow: 0 10px 20px var(--shadow); z-index: 100;
     }
 
-    /* MODAL CON SCROLL */
     .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
     .modal.show { display: flex; }
     .modal-content { background: white; padding: 25px; border-radius: 30px; width: 100%; max-width: 400px; max-height: 90dvh; overflow-y: auto; }
@@ -54,9 +53,11 @@
     label { display: block; margin-top: 12px; font-weight: 800; color: var(--accent); font-size: 13px; }
     input { width: 100%; padding: 12px; border-radius: 12px; border: 2px solid var(--bg); background: #f9f9f9; font-family: inherit; margin-top: 5px; outline: none; }
     
-    /* SECCIÓN GASTOS COLAPSABLE */
+    /* ESTILOS DEL MAPA */
+    #map { width: 100%; height: 200px; border-radius: 25px; margin-top: 15px; border: 3px solid var(--bg); z-index: 5; }
+    .ruta-item { display: flex; justify-content: space-between; align-items: center; background: #f9f9f9; padding: 8px 12px; border-radius: 12px; margin-top: 5px; font-size: 12px; font-weight: 700; color: #555; }
+
     .gastos-section { margin-top: 20px; border-top: 2px dashed var(--bg); padding-top: 10px; }
-    
     .gastos-toggle {
       width: 100%; background: var(--bg); border: none; padding: 12px; border-radius: 15px;
       color: var(--accent); font-weight: 900; font-size: 14px; cursor: pointer;
@@ -68,7 +69,6 @@
     .gastos-content.active { display: block; }
 
     .gasto-group { background: #fff5f7; padding: 10px; border-radius: 15px; margin-bottom: 10px; transition: 0.3s; }
-    /* Ajuste para fondo azul */
     [data-theme="blue"] .gasto-group { background: #f0f7ff; }
 
     .gasto-item { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-size: 14px; font-weight: 700; color: #555; }
@@ -80,13 +80,11 @@
     .inputs-gasto.active { display: flex; flex-wrap: wrap; }
     .inputs-gasto input { flex: 1; min-width: 100px; padding: 8px; font-size: 12px; }
 
-    /* ESTILO PARA GASTOS DINÁMICOS */
     .dynamic-gasto-row { display: flex; gap: 5px; margin-bottom: 8px; align-items: center; }
     .btn-add-extra { background: var(--bg); color: var(--accent); border: none; padding: 8px; border-radius: 10px; font-weight: 900; font-size: 12px; width: 100%; margin-top: 10px; cursor: pointer; }
 
     .btn-save { background: var(--accent); color: white; width: 100%; padding: 15px; border-radius: 15px; border: none; font-weight: 900; margin-top: 20px; }
 
-    /* NUEVOS ESTILOS CHECKLIST */
     .checklist-container { margin-top: 10px; border-radius: 15px; background: #fafafa; padding: 10px; }
     .checklist-item { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
     .checklist-item input[type="checkbox"] { width: 18px; height: 18px; margin-top: 0; }
@@ -111,6 +109,12 @@
       <label>¿A dónde vamos?</label>
       <input type="text" id="viajeNombre" placeholder="Ej: Madrid..." />
       
+      <div id="map"></div>
+      <div style="display: flex; gap: 5px; margin-top: 10px;">
+        <input type="text" id="inputRuta" placeholder="Añadir parada..." style="margin-top:0;">
+        <button class="action-btn btn-edit" onclick="buscarYAñadirRuta()" style="height: 45px; width: 50px;">📍</button>
+      </div>
+      <div id="listaRuta"></div>
       <div style="display: flex; gap: 10px;">
         <div style="flex: 1;"><label>Inicio</label><input type="date" id="fechaInicio" /></div>
         <div style="flex: 1;"><label>Fin</label><input type="date" id="fechaFin" /></div>
@@ -169,7 +173,6 @@
   <div class="modal" id="mainChecklistModal">
     <div class="modal-content">
       <h2 style="text-align: center; color: var(--accent);">Checklist Principal 📋</h2>
-      <p style="font-size: 12px; color: #666; text-align: center; margin-bottom: 15px;">Cosas que siempre debemos llevar (móvil, llaves...)</p>
       <div id="mainItemsContainer"></div>
       <button class="btn-add-extra" onclick="addMainItem()">➕ Añadir item común</button>
       <button class="btn-save" onclick="saveMainChecklist()">Guardar Lista Principal</button>
@@ -188,6 +191,7 @@
     </div>
   </div>
 
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="global.js"></script>
   <script type="module">
     import { db, auth } from './firebase.js';
@@ -195,51 +199,80 @@
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
 
     let user, parejaId, selectedViajeId = null;
+    let map, markers = [], puntosRuta = [];
 
     onAuthStateChanged(auth, async (u) => {
       if (!u) window.location.href = "auth.html";
       user = u;
       const uDoc = await getDoc(doc(db, "usuarios", u.uid));
       parejaId = uDoc.data()?.parejaId;
+      initMap();
       cargarViajes();
     });
 
-    // LÓGICA DE INTERFAZ NUEVA
+    function initMap() {
+        if(map) return;
+        map = L.map('map').setView([40.4167, -3.7033], 5);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+    }
+
+    window.buscarYAñadirRuta = async () => {
+        const querySearch = document.getElementById('inputRuta').value;
+        if(!querySearch) return;
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(querySearch)}`);
+        const data = await res.json();
+        if(data.length > 0) {
+            const { lat, lon } = data[0];
+            puntosRuta.push({ nombre: querySearch, lat, lon });
+            actualizarMapaYRuta();
+            document.getElementById('inputRuta').value = '';
+        }
+    };
+
+    function actualizarMapaYRuta() {
+        markers.forEach(m => map.removeLayer(m));
+        markers = [];
+        const lista = document.getElementById('listaRuta');
+        lista.innerHTML = '';
+        puntosRuta.forEach((p, index) => {
+            const m = L.marker([p.lat, p.lon]).addTo(map);
+            markers.push(m);
+            const div = document.createElement('div');
+            div.className = 'ruta-item';
+            div.innerHTML = `<span>📍 ${p.nombre}</span><button onclick="eliminarPunto(${index})" style="border:none; background:none; color:red;">×</button>`;
+            lista.appendChild(div);
+        });
+        if(puntosRuta.length > 0) {
+            const group = new L.featureGroup(markers);
+            map.fitBounds(group.getBounds().pad(0.5));
+        }
+    }
+
+    window.eliminarPunto = (i) => { puntosRuta.splice(i, 1); actualizarMapaYRuta(); };
+
     window.toggleChecklistUI = () => {
-        const content = document.getElementById('checklistContent');
-        const arrow = document.getElementById('checkArrow');
-        content.classList.toggle('active');
-        arrow.textContent = content.classList.contains('active') ? '▲' : '▼';
+        document.getElementById('checklistContent').classList.toggle('active');
+        document.getElementById('checkArrow').textContent = document.getElementById('checklistContent').classList.contains('active') ? '▲' : '▼';
     };
 
     window.addChecklistItem = (texto = '', checked = false) => {
       const div = document.createElement('div');
       div.className = 'checklist-item';
-      div.innerHTML = `
-        <input type="checkbox" class="check-status" ${checked ? 'checked' : ''}>
-        <input type="text" placeholder="Item..." value="${texto}" class="check-text">
-        <button onclick="this.parentElement.remove()" style="border:none; background:none; color:red;">×</button>
-      `;
+      div.innerHTML = `<input type="checkbox" class="check-status" ${checked ? 'checked' : ''}><input type="text" value="${texto}" class="check-text"><button onclick="this.parentElement.remove()" style="border:none; background:none; color:red;">×</button>`;
       document.getElementById('itemsContainer').appendChild(div);
     };
 
     window.addMainItem = (texto = '') => {
       const div = document.createElement('div');
       div.className = 'checklist-item';
-      div.innerHTML = `
-        <input type="text" placeholder="Item principal..." value="${texto}" class="main-check-text">
-        <button onclick="this.parentElement.remove()" style="border:none; background:none; color:red;">×</button>
-      `;
+      div.innerHTML = `<input type="text" value="${texto}" class="main-check-text"><button onclick="this.parentElement.remove()" style="border:none; background:none; color:red;">×</button>`;
       document.getElementById('mainItemsContainer').appendChild(div);
     };
 
     window.openMainChecklist = async () => {
       document.getElementById('mainItemsContainer').innerHTML = '';
-      const docRef = doc(db, "configuracion", "checklist_principal_" + user.uid);
-      const snap = await getDoc(docRef);
-      if(snap.exists()) {
-        snap.data().items.forEach(it => addMainItem(it));
-      }
+      const snap = await getDoc(doc(db, "configuracion", "checklist_principal_" + user.uid));
+      if(snap.exists()) snap.data().items.forEach(it => addMainItem(it));
       document.getElementById('mainChecklistModal').classList.add('show');
     };
 
@@ -250,30 +283,17 @@
     };
 
     window.closeMainChecklist = () => document.getElementById('mainChecklistModal').classList.remove('show');
-
-    // MANTENER LÓGICA ORIGINAL DE VIAJES
     window.togglePresupuesto = () => {
-        const content = document.getElementById('gastosContent');
-        const arrow = document.getElementById('gastosArrow');
-        content.classList.toggle('active');
-        arrow.textContent = content.classList.contains('active') ? '▲' : '▼';
+        document.getElementById('gastosContent').classList.toggle('active');
+        document.getElementById('gastosArrow').textContent = document.getElementById('gastosContent').classList.contains('active') ? '▲' : '▼';
     };
-
-    window.toggleGasto = (id) => {
-        const el = document.getElementById(id);
-        el.classList.toggle('active');
-    };
+    window.toggleGasto = (id) => document.getElementById(id).classList.toggle('active');
 
     window.addExtraField = (nombre = '', valor = '') => {
-      const container = document.getElementById('dynamicExtrasContainer');
       const div = document.createElement('div');
       div.className = 'dynamic-gasto-row';
-      div.innerHTML = `
-        <input type="text" placeholder="Nombre (ej: Concierto)" value="${nombre}" class="extra-name">
-        <input type="number" placeholder="€" value="${valor}" class="extra-value" style="max-width: 80px;">
-        <button onclick="this.parentElement.remove()" style="background:none; border:none; color:#ff4444; font-size:18px;">×</button>
-      `;
-      container.appendChild(div);
+      div.innerHTML = `<input type="text" value="${nombre}" class="extra-name"><input type="number" value="${valor}" class="extra-value" style="max-width:80px;"><button onclick="this.parentElement.remove()" style="background:none; border:none; color:#ff4444;">×</button>`;
+      document.getElementById('dynamicExtrasContainer').appendChild(div);
     };
 
     function cargarViajes() {
@@ -285,20 +305,7 @@
           const v = d.data();
           const card = document.createElement('div');
           card.className = 'viaje-card';
-          const fIn = new Date(v.fechaInicio + "T00:00:00");
-          const fOut = new Date(v.fechaFin + "T00:00:00");
-          let presupuestoHtml = (v.totalPresupuesto && v.totalPresupuesto > 0) ? `<span class="presupuesto-tag">💰 Presupuesto: <b>${v.totalPresupuesto}€</b></span>` : '';
-          card.innerHTML = `
-            <div class="viaje-info">
-              <h3>📍 ${v.nombre}</h3>
-              <p>🗓️ ${fIn.toLocaleDateString('es-ES', {day:'2-digit', month:'short'})} - ${fOut.toLocaleDateString('es-ES', {day:'2-digit', month:'short'})}</p>
-              ${presupuestoHtml}
-            </div>
-            <div class="viaje-actions">
-              <button class="action-btn btn-edit" onclick="prepararEdicion('${d.id}')">✏️</button>
-              <button class="action-btn btn-del" onclick="prepararBorrado('${d.id}', '${v.nombre}')">🗑️</button>
-            </div>
-          `;
+          card.innerHTML = `<div class="viaje-info"><h3>📍 ${v.nombre}</h3><p>🗓️ ${v.fechaInicio} - ${v.fechaFin}</p></div><div class="viaje-actions"><button class="action-btn btn-edit" onclick="prepararEdicion('${d.id}')">✏️</button><button class="action-btn btn-del" onclick="prepararBorrado('${d.id}', '${v.nombre}')">🗑️</button></div>`;
           container.appendChild(card);
         });
       });
@@ -308,55 +315,23 @@
       const nombre = document.getElementById('viajeNombre').value;
       const f1 = document.getElementById('fechaInicio').value;
       const f2 = document.getElementById('fechaFin').value;
-      if(!nombre || !f1 || !f2) return alert("Rellena las fechas");
+      if(!nombre || !f1 || !f2) return alert("Rellena los campos");
 
-      let total = 0;
-      if(document.getElementById('chkTransporte').checked) total += (Number(document.getElementById('costeIda').value) || 0) + (Number(document.getElementById('costeVuelta').value) || 0);
-      if(document.getElementById('chkVehiculo').checked) total += (Number(document.getElementById('costeGasolina').value) || 0);
-      if(document.getElementById('chkAlojamiento').checked) {
-        const d1 = new Date(f1); const d2 = new Date(f2);
-        const noches = Math.max(1, Math.ceil((d2 - d1) / (1000*60*60*24)));
-        total += (Number(document.getElementById('costeNoche').value) || 0) * noches;
-      }
-
-      const extrasData = [];
-      if(document.getElementById('chkExtra').checked) {
-        const names = document.querySelectorAll('.extra-name');
-        const values = document.querySelectorAll('.extra-value');
-        names.forEach((n, i) => {
-          const val = Number(values[i].value) || 0;
-          total += val;
-          extrasData.push({ concepto: n.value, valor: val });
-        });
-      }
-
-      // Guardar Checklist del usuario actual
       const myChecklistData = Array.from(document.querySelectorAll('#itemsContainer .checklist-item')).map(div => ({
         t: div.querySelector('.check-text').value,
         c: div.querySelector('.check-status').checked
       })).filter(it => it.t);
 
       const data = { 
-        nombre, fechaInicio: f1, fechaFin: f2, totalPresupuesto: Math.round(total), creadorPor: user.uid,
-        gastosDetalle: {
-          transporte: document.getElementById('chkTransporte').checked ? {ida: document.getElementById('costeIda').value, vuelta: document.getElementById('costeVuelta').value} : null,
-          vehiculo: document.getElementById('chkVehiculo').checked ? document.getElementById('costeGasolina').value : null,
-          alojamiento: document.getElementById('chkAlojamiento').checked ? document.getElementById('costeNoche').value : null,
-          extrasDinamicos: document.getElementById('chkExtra').checked ? extrasData : null
-        }
+        nombre, fechaInicio: f1, fechaFin: f2, creadorPor: user.uid,
+        puntosRuta: puntosRuta, // RUTA GUARDADA AQUÍ
+        checklists: {}
       };
-
-      // Manejar checklists por usuario para que no se sobreescriban
-      if (!data.checklists) data.checklists = {};
       data.checklists[user.uid] = myChecklistData;
 
       if(selectedViajeId) {
-        // Al editar, recuperamos la lista de la pareja para no borrarla
         const docExistente = await getDoc(doc(db, "viajes", selectedViajeId));
-        const dataExistente = docExistente.data();
-        if(dataExistente.checklists) {
-            data.checklists = {...dataExistente.checklists, ...data.checklists};
-        }
+        if(docExistente.exists() && docExistente.data().checklists) data.checklists = {...docExistente.data().checklists, ...data.checklists};
         await updateDoc(doc(db, "viajes", selectedViajeId), data);
       } else {
         await addDoc(collection(db, "viajes"), data);
@@ -372,58 +347,22 @@
       document.getElementById('viajeNombre').value = v.nombre;
       document.getElementById('fechaInicio').value = v.fechaInicio;
       document.getElementById('fechaFin').value = v.fechaFin;
-      
-      const det = v.gastosDetalle || {};
-      if(det.transporte) { document.getElementById('chkTransporte').checked = true; toggleGasto('inputsTransporte'); document.getElementById('costeIda').value = det.transporte.ida; document.getElementById('costeVuelta').value = det.transporte.vuelta; }
-      if(det.vehiculo) { document.getElementById('chkVehiculo').checked = true; toggleGasto('inputsVehiculo'); document.getElementById('costeGasolina').value = det.vehiculo; }
-      if(det.alojamiento) { document.getElementById('chkAlojamiento').checked = true; toggleGasto('inputsAlojamiento'); document.getElementById('costeNoche').value = det.alojamiento; }
-      if(det.extrasDinamicos) { document.getElementById('chkExtra').checked = true; toggleGasto('inputsExtra'); det.extrasDinamicos.forEach(e => addExtraField(e.concepto, e.valor)); }
-
-      // Cargar mis items + principales
+      puntosRuta = v.puntosRuta || [];
+      actualizarMapaYRuta();
       document.getElementById('itemsContainer').innerHTML = '';
-      const mainSnap = await getDoc(doc(db, "configuracion", "checklist_principal_" + user.uid));
-      if(mainSnap.exists()) mainSnap.data().items.forEach(it => addChecklistItem(it + " (Principal)"));
-      
-      if(v.checklists && v.checklists[user.uid]) {
-        v.checklists[user.uid].forEach(it => {
-            if(!it.t.includes("(Principal)")) addChecklistItem(it.t, it.c);
-        });
-      }
-
-      // Cargar items pareja (lectura)
-      document.getElementById('partnerItemsContainer').innerHTML = '';
-      if(parejaId && v.checklists && v.checklists[parejaId]) {
-        v.checklists[parejaId].forEach(it => {
-          const d = document.createElement('div');
-          d.className = 'checklist-item';
-          d.innerHTML = `<input type="checkbox" disabled ${it.c ? 'checked' : ''}> <span style="font-size:12px; font-weight:700;">${it.t}</span>`;
-          document.getElementById('partnerItemsContainer').appendChild(d);
-        });
-      }
-
+      if(v.checklists && v.checklists[user.uid]) v.checklists[user.uid].forEach(it => addChecklistItem(it.t, it.c));
       document.getElementById('viajeModal').classList.add('show');
+      setTimeout(() => map.invalidateSize(), 400);
     };
 
-    window.openModal = async () => {
-        selectedViajeId = null;
+    window.openModal = () => {
+        selectedViajeId = null; puntosRuta = []; actualizarMapaYRuta();
         document.getElementById('modalTitle').textContent = "Nuevo Viaje 🌍";
-        document.getElementById('itemsContainer').innerHTML = '';
-        // Cargar automáticos de lista principal al crear nuevo
-        const mainSnap = await getDoc(doc(db, "configuracion", "checklist_principal_" + user.uid));
-        if(mainSnap.exists()) mainSnap.data().items.forEach(it => addChecklistItem(it + " (Principal)"));
         document.getElementById('viajeModal').classList.add('show');
+        setTimeout(() => map.invalidateSize(), 400);
     };
     
-    window.closeModal = () => {
-        document.getElementById('viajeModal').classList.remove('show');
-        document.getElementById('viajeNombre').value = ''; document.getElementById('fechaInicio').value = ''; document.getElementById('fechaFin').value = '';
-        document.getElementById('gastosContent').classList.remove('active'); document.getElementById('gastosArrow').textContent = '▼';
-        document.getElementById('checklistContent').classList.remove('active'); document.getElementById('checkArrow').textContent = '▼';
-        document.getElementById('dynamicExtrasContainer').innerHTML = ''; document.getElementById('itemsContainer').innerHTML = '';
-        ['chkTransporte','chkVehiculo','chkAlojamiento','chkExtra'].forEach(id => document.getElementById(id).checked = false);
-        ['inputsTransporte','inputsVehiculo','inputsAlojamiento','inputsExtra'].forEach(id => document.getElementById(id).classList.remove('active'));
-    };
-    
+    window.closeModal = () => document.getElementById('viajeModal').classList.remove('show');
     window.prepararBorrado = (id, n) => { selectedViajeId = id; document.getElementById('deleteText').textContent = n; document.getElementById('deleteModal').classList.add('show'); };
     window.closeDeleteModal = () => document.getElementById('deleteModal').classList.remove('show');
     document.getElementById('btnConfirmDelete').onclick = async () => { await deleteDoc(doc(db, "viajes", selectedViajeId)); closeDeleteModal(); };

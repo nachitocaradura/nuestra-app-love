@@ -389,7 +389,34 @@
       hideLoading();
       escucharMensajes();
       escucharEscribiendo();
+      registrarTokenFCM(u.uid);
     });
+
+    /* ── FCM: registrar/refrescar token ──────────────────────────────── */
+    async function registrarTokenFCM(uid) {
+      try {
+        const permiso = await Notification.requestPermission();
+        if (permiso !== 'granted') { console.log('Notis no permitidas'); return; }
+
+        const swReg = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+
+        const { getMessaging, getToken } = await import(
+          'https://www.gstatic.com/firebasejs/11.6.0/firebase-messaging.js'
+        );
+        const messaging = getMessaging();
+        const token = await getToken(messaging, {
+          vapidKey: 'BCAD1wd4akkmElcAqzk2sOVuMPGV5ntxBeo7rF4q3K7Ey_4hIMhLVVvriRcRGUo46L51Tk73F49-IpISwRs0nOk',
+          serviceWorkerRegistration: swReg
+        });
+
+        if (token) {
+          await setDoc(doc(db, 'usuarios', uid), { fcmToken: token }, { merge: true });
+          console.log('Token FCM registrado OK');
+        }
+      } catch (err) {
+        console.warn('FCM no disponible:', err.message);
+      }
+    }
 
     /* ── Mensajes ────────────────────────────── */
     function escucharMensajes() {

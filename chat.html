@@ -137,7 +137,7 @@
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
     import {
       collection, addDoc, query, where, orderBy, onSnapshot,
-      doc, getDoc, setDoc, updateDoc, serverTimestamp, getDocs, deleteDoc
+      doc, getDoc, getDocFromServer, setDoc, updateDoc, serverTimestamp, getDocs, deleteDoc
     } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
     import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-messaging.js";
 
@@ -177,8 +177,17 @@
       activarNotificacionesFCM(u.uid);
 
       // Leer el documento del usuario para obtener parejaId
+      // IMPORTANTE: usamos getDocFromServer para evitar que el caché offline
+      // devuelva una versión stale donde parejaId aparece como null
       try {
-        const userDoc = await getDoc(doc(db, "usuarios", u.uid));
+        let userDoc;
+        try {
+          userDoc = await getDocFromServer(doc(db, "usuarios", u.uid));
+        } catch (networkErr) {
+          // Sin conexión: caer en caché como fallback
+          console.warn("Sin red, usando caché:", networkErr.message);
+          userDoc = await getDoc(doc(db, "usuarios", u.uid));
+        }
 
         if (!userDoc.exists() || !userDoc.data().parejaId) {
           // No hay pareja vinculada → mostrar pantalla de aviso

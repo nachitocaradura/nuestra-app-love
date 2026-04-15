@@ -423,14 +423,16 @@
         });
 
         if (token) {
-          // Detectar plataforma para que la Cloud Function sepa qué payload enviar
-          const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+          // Detección de iOS robusta — cubre iPhone, iPad, iPod e iPad Pro en PWA
+          const ua  = navigator.userAgent || '';
+          const isIOS = /iPhone|iPad|iPod/.test(ua) ||
+                        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
           const plataforma = isIOS ? 'ios' : 'android';
-          await setDoc(doc(db, 'usuarios', uid), { 
+          await setDoc(doc(db, 'usuarios', uid), {
             fcmToken: token,
-            plataforma 
+            plataforma
           }, { merge: true });
-          console.log('Token FCM registrado OK - plataforma:', plataforma);
+          console.log('Token FCM OK — UA:', ua, '— plataforma:', plataforma);
         }
       } catch (err) {
         console.warn('FCM no disponible:', err.message);

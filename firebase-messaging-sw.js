@@ -12,36 +12,120 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
-// Android recibe payload solo-data → FCM no muestra nada automático
-// Este handler se dispara UNA sola vez y muestra la notificación
-messaging.onBackgroundMessage((payload) => {
-  console.log('[SW] Payload:', JSON.stringify(payload));
+const TAG = 'nuestra-app-chat';
 
-  const data  = payload.data  || {};
-  const title = data.title    || '💕 Nuevo mensaje';
-  const body  = data.body     || '';
-  const icon  = data.icon     || '/icono-app-192.png';
-  const url   = data.url      || 'https://nuestra-app-love.vercel.app/chat.html';
+// Leer mensajes acumulados desde IndexedDB
+function getMensajes() {
+  return new Promise((resolve) => {
+    const req = indexedDB.open('notidb', 1);
+    req.onupgradeneeded = e => e.target.result.createObjectStore('pendientes', { autoIncrement: true });
+    req.onsuccess = e => {
+      const db  = e.target.result;
+      const tx  = db.transaction('pendientes', 'readonly');
+      const st  = tx.objectStore('pendientes');
+      const all = st.getAll();
+      all.onsuccess = () => resolve(all.result || []);
+      all.onerror   = () => resolve([]);
+    };
+    req.onerror = () => resolve([]);
+  });
+}
 
-  self.registration.showNotification(title, {
-    body,
+// Añadir mensaje y devolver todos los acumulados
+function addMensaje(texto) {
+  return new Promise((resolve) => {
+    const req = indexedDB.open('notidb', 1);
+    req.onupgradeneeded = e => e.target.result.createObjectStore('pendientes', { autoIncrement: true });
+    req.onsuccess = e => {
+      const db = e.target.result;
+      const tx = db.transaction('pendientes', 'readwrite');
+      const st = tx.objectStore('pendientes');
+      st.add(texto);
+      tx.oncomplete = () => {
+        // Leer todos después de añadir
+        const tx2  = db.transaction('pendientes', 'readonly');
+        const all  = tx2.objectStore('pendientes').getAll();
+        all.onsuccess = () => resolve(all.result || []);
+        all.onerror   = () => resolve([texto]);
+      };
+    };
+    req.onerror = () => resolve([texto]);
+  });
+}
+
+// Borrar todos los mensajes acumulados
+function limpiarMensajes() {
+  return new Promise((resolve) => {
+    const req = indexedDB.open('notidb', 1);
+    req.onsuccess = e => {
+      const db = e.target.result;
+      const tx = db.transaction('pendientes', 'readwrite');
+      tx.objectStore('pendientes').clear();
+      tx.oncomplete = () => resolve();
+    };
+    req.onerror = () => resolve();
+  });
+}
+
+messaging.onBackgroundMessage(async (payload) => {
+  console.log('[SW] Mensaje recibido:', payload);
+
+  const notif      = payload.notification || {};
+  const senderName = (notif.title || '💕').replace('💕 ', '');
+  const body       = notif.body  || '';
+  const icon       = payload.webpush?.notification?.icon || '/icono-app-192.png';
+  const url        = 'https://nuestra-app-love.vercel.app/chat.html';
+
+  // Comprobar si la notificación anterior sigue visible
+  const notifsActivas = await self.registration.getNotifications({ tag: TAG });
+  
+  // Si no hay notificación activa, limpiar acumulados (usuario la borró)
+  if (notifsActivas.length === 0) {
+    await limpiarMensajes();
+  }
+
+  // Acumular el nuevo mensaje
+  const todos = await addMensaje(body);
+
+  // Construir el body agrupado
+  const bodyAgrupado = todos.join('\n');
+  const titulo       = todos.length > 1
+    ? `💕 ${senderName} (${todos.length} mensajes)`
+    : `💕 ${senderName}`;
+
+  // Mostrar con tag fijo → reemplaza la anterior en vez de acumular
+  await self.registration.showNotification(titulo, {
+    body:     bodyAgrupado,
     icon,
-    badge: '/icono-app-192.png',
-    data:  { url }
+    badge:    '/icono-app-192.png',
+    tag:      TAG,       // ← mismo tag = reemplaza la notificación anterior
+    renotify: true,      // ← vibra/suena igualmente aunque reemplace
+    data:     { url }
   });
 });
 
+// Cuando el usuario toca la notificación → limpiar acumulados y abrir chat
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   const url = event.notification.data?.url || 'https://nuestra-app-love.vercel.app/chat.html';
+  
   event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-      for (const client of clientList) {
-        if (client.url.includes('nuestra-app-love.vercel.app') && 'focus' in client) {
-          return client.focus();
+    limpiarMensajes().then(() =>
+      clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+        for (const client of clientList) {
+          if (client.url.includes('nuestra-app-love.vercel.app') && 'focus' in client) {
+            return client.focus();
+          }
         }
-      }
-      return clients.openWindow(url);
-    })
+        return clients.openWindow(url);
+      })
+    )
   );
+});
+
+// Cuando el usuario desliza y borra la notificación → limpiar acumulados
+self.addEventListener('notificationclose', (event) => {
+  if (event.notification.tag === TAG) {
+    limpiarMensajes();
+  }
 });

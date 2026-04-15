@@ -340,12 +340,19 @@
     function scrollDown() { container.scrollTop = container.scrollHeight; }
 
     /* ── Arranque ────────────────────────────── */
+    let iniciando = false; // flag para evitar doble arranque
+
     onAuthStateChanged(auth, async (u) => {
-      // Cancelar listeners anteriores (PWA volviendo de background)
+      if (!u) { window.location.href = 'auth.html'; return; }
+
+      // Si ya estamos inicializando con este mismo usuario, ignorar
+      if (iniciando && user?.uid === u.uid) return;
+      iniciando = true;
+
+      // Cancelar listeners anteriores
       unsubMsgs?.();   unsubMsgs   = null;
       unsubTyping?.(); unsubTyping = null;
 
-      if (!u) { window.location.href = 'auth.html'; return; }
       user = u;
 
       // Avatar propio en header
@@ -390,6 +397,7 @@
       escucharMensajes();
       escucharEscribiendo();
       registrarTokenFCM(u.uid);
+      iniciando = false;
     });
 
     /* ── FCM: registrar/refrescar token ──────────────────────────────── */

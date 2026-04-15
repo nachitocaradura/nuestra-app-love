@@ -21,11 +21,15 @@ messaging.onBackgroundMessage((payload) => {
   const icon  = payload.webpush?.notification?.icon || '/icono-app-192.png';
   const url   = 'https://nuestra-app-love.vercel.app/chat.html';
 
+  // tag único por conversación — si llegan dos iguales, la segunda reemplaza a la primera
+  // en vez de mostrarse dos veces
   self.registration.showNotification(title, {
     body,
     icon,
-    badge: '/icono-app-192.png',
-    data:  { url }
+    badge:    '/icono-app-192.png',
+    tag:      'chat-msg',   // ← misma tag = colapsa duplicados
+    renotify: true,         // ← aun así vibra/suena aunque reemplace
+    data:     { url }
   });
 });
 

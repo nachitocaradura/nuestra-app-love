@@ -12,39 +12,38 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
-// Guard anti-duplicados: guardamos los IDs de mensajes ya mostrados
+// Guardamos los IDs de mensajes ya mostrados para evitar duplicados
 const shown = new Set();
 
 messaging.onBackgroundMessage((payload) => {
-  console.log('[SW] Mensaje recibido:', payload);
+  console.log('[SW] Payload recibido:', JSON.stringify(payload));
 
-  const data    = payload.data || {};
-  const msgId   = data.chatId + '_' + Date.now(); // ID único por mensaje
+  const data     = payload.data || {};
+  const msgId    = payload.messageId || data.chatId + Date.now();
+  const title    = data.title || '💕 Nuevo mensaje';
+  const body     = data.body  || '';
+  const icon     = data.icon  || '/icono-app-192.png';
+  const url      = data.url   || 'https://nuestra-app-love.vercel.app/chat.html';
 
-  // Si ya mostramos este mensaje en los últimos 3 segundos, ignorar
-  if (shown.has(data.chatId)) {
-    console.log('[SW] Duplicado ignorado');
+  // Si ya mostramos esta notificación, ignorar
+  if (shown.has(msgId)) {
+    console.log('[SW] Duplicado ignorado:', msgId);
     return;
   }
-  shown.add(data.chatId);
-  setTimeout(() => shown.delete(data.chatId), 3000); // limpiar después de 3s
-
-  const title = data.title || '💕 Nuevo mensaje';
-  const body  = data.body  || '';
-  const icon  = data.icon  || '/icono-app-192.png';
-  const url   = data.url   || 'https://nuestra-app-love.vercel.app/chat.html';
+  shown.add(msgId);
+  // Limpiar después de 5 segundos para no acumular memoria
+  setTimeout(() => shown.delete(msgId), 5000);
 
   self.registration.showNotification(title, {
     body,
     icon,
     badge: '/icono-app-192.png',
-    tag: 'msg-' + data.chatId,  // ← tag igual = reemplaza en vez de duplicar
-    renotify: true,
+    tag: msgId,        // ← mismo tag = reemplaza en vez de duplicar
+    renotify: false,
     data: { url }
   });
 });
 
-// Al pulsar la notificación → abrir el chat
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   const url = event.notification.data?.url || 'https://nuestra-app-love.vercel.app/chat.html';

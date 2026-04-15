@@ -41,11 +41,7 @@ const urlsToCache = [
   '/calendario.html',
   '/chat.html',
   '/recetas.html',
-  '/firebase.js', // Tu configuración de Firebase
-  // '/sw.js', // Este archivo es el propio service worker, no lo cacheados
-  '/global.js',
-  '/manifest.html', // Tu manifest
-  '/logos.png', // Tus imágenes
+  '/firebase.js'
   // Añade aquí cualquier otro archivo JS, CSS o imagen que tu app necesite para funcionar sin conexión
 ];
 

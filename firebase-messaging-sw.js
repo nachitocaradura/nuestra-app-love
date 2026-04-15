@@ -25,6 +25,7 @@ messaging.onBackgroundMessage((payload) => {
     body,
     icon,
     badge: '/icono-app-192.png',
+    sound: '/notification.mp3',   // ← tu archivo de sonido
     data: { url: 'https://nuestra-app-love.vercel.app/chat.html' }
   });
 });

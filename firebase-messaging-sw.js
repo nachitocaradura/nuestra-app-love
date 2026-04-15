@@ -10,14 +10,16 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
-// Este evento maneja las notificaciones cuando la app está en SEGUNDO PLANO
+// Importante: No es estrictamente necesario registrar onBackgroundMessage 
+// manualmente si solo quieres mostrar la notificación estándar de Firebase,
+// pero si lo haces, asegúrate de que no haya errores de sintaxis.
 messaging.onBackgroundMessage((payload) => {
-  console.log('Recibido mensaje en segundo plano: ', payload);
+  console.log('Mensaje en segundo plano:', payload);
   const notificationTitle = payload.notification.title;
   const notificationOptions = {
     body: payload.notification.body,
-    icon: '/icono-app-192.png'
+    icon: '/icono-app-192.png', // Verifica que esta ruta sea accesible
+    badge: '/icono-app-192.png'
   };
-
-  self.registration.showNotification(notificationTitle, notificationOptions);
+  return self.registration.showNotification(notificationTitle, notificationOptions);
 });

@@ -6,379 +6,522 @@
   <title>💬 Nuestro Chat</title>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
   <style>
+    /* ── TEMAS ─────────────────────────────────────────────────────── */
     :root {
-      --bg: #ffd6e0; --mid: #ffb3c6; --dark: #ff85a1; --accent: #ff4d79; --shadow: rgba(255, 77, 121, 0.25);
+      --bg: #ffd6e0;
+      --mid: #ffb3c6;
+      --dark: #ff85a1;
+      --accent: #ff4d79;
+      --accent-soft: rgba(255,77,121,0.12);
+      --shadow: rgba(255,77,121,0.22);
     }
     [data-theme="blue"] {
-      --bg: #d6eaff; --mid: #b3d9ff; --dark: #85bfff; --accent: #4d94ff; --shadow: rgba(77, 148, 255, 0.25);
+      --bg: #d6eaff;
+      --mid: #b3d9ff;
+      --dark: #85bfff;
+      --accent: #4d94ff;
+      --accent-soft: rgba(77,148,255,0.12);
+      --shadow: rgba(77,148,255,0.22);
     }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { height: 100%; overflow: hidden; background: var(--bg); }
-    body { font-family: 'Nunito', sans-serif; display: flex; flex-direction: column; height: 100dvh; transition: background 0.4s ease; }
 
-    /* PANTALLA DE CARGA — nueva, evita que se vea el chat vacío */
+    /* ── RESET ─────────────────────────────────────────────────────── */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; overflow: hidden; }
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--bg);
+      display: flex; flex-direction: column;
+      height: 100dvh;
+      transition: background 0.4s ease;
+    }
+
+    /* ── LOADING ────────────────────────────────────────────────────── */
     #loadingScreen {
-      position: fixed; inset: 0; background: var(--bg);
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      z-index: 9999; gap: 15px; transition: opacity 0.3s ease;
+      position: fixed; inset: 0;
+      background: var(--bg);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 16px; z-index: 9999;
+      transition: opacity 0.35s ease;
     }
-    #loadingScreen.hidden { opacity: 0; pointer-events: none; }
-    #loadingScreen .spinner {
-      width: 40px; height: 40px; border: 4px solid rgba(255,77,121,0.2);
-      border-top-color: var(--accent); border-radius: 50%;
-      animation: spin 0.8s linear infinite;
+    #loadingScreen.fade-out { opacity: 0; pointer-events: none; }
+    .loader-ring {
+      width: 44px; height: 44px;
+      border: 4px solid var(--accent-soft);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
     }
-    #loadingScreen p { color: var(--accent); font-weight: 900; font-size: 16px; }
+    #loadingScreen p { color: var(--accent); font-weight: 900; font-size: 15px; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* PANTALLA DE ERROR — si no hay pareja vinculada */
+    /* ── SIN PAREJA ─────────────────────────────────────────────────── */
     #noPartnerScreen {
-      position: fixed; inset: 0; background: var(--bg);
-      display: none; flex-direction: column; align-items: center; justify-content: center;
-      z-index: 9998; gap: 15px; padding: 30px; text-align: center;
+      position: fixed; inset: 0;
+      background: var(--bg);
+      display: none; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 18px; padding: 40px; text-align: center;
+      z-index: 9998;
     }
     #noPartnerScreen.show { display: flex; }
-    #noPartnerScreen p { color: var(--accent); font-weight: 900; font-size: 16px; }
+    #noPartnerScreen .np-emoji { font-size: 52px; }
+    #noPartnerScreen p { color: var(--accent); font-weight: 900; font-size: 17px; max-width: 260px; line-height: 1.5; }
     #noPartnerScreen a {
-      background: var(--accent); color: white; padding: 12px 25px;
-      border-radius: 20px; text-decoration: none; font-weight: 900;
+      background: var(--accent); color: #fff;
+      padding: 13px 30px; border-radius: 999px;
+      text-decoration: none; font-weight: 900; font-size: 15px;
+      box-shadow: 0 6px 18px var(--shadow);
     }
 
+    /* ── HEADER ─────────────────────────────────────────────────────── */
     .chat-header {
-      padding: 50px 20px 15px; background: white; display: flex; flex-direction: column;
-      align-items: center; justify-content: center; box-shadow: 0 2px 10px var(--shadow);
-      flex-shrink: 0; position: relative;
+      background: #fff;
+      padding: 50px 20px 14px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 2px 12px var(--shadow);
+      flex-shrink: 0; position: relative; gap: 10px;
     }
+    /* Botón volver — idéntico al resto de páginas */
     .back-btn {
-      position: absolute; left: 18px; bottom: 12px; text-decoration: none; font-size: 20px;
-      background: rgba(255,255,255,0.6); border-radius: 12px; padding: 6px 10px;
-      color: var(--accent); font-weight: 900; box-shadow: 0 2px 8px var(--shadow);
-      cursor: pointer; border: none; display: flex; align-items: center; justify-content: center;
+      position: absolute; left: 18px; bottom: 12px;
+      text-decoration: none; font-size: 20px;
+      background: rgba(255,255,255,0.7); border-radius: 12px;
+      padding: 6px 11px; color: var(--accent); font-weight: 900;
+      box-shadow: 0 2px 8px var(--shadow);
+      border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: transform 0.12s;
     }
+    .back-btn:active { transform: scale(0.92); }
+
+    .header-avatars { display: flex; align-items: center; }
+    .header-avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      border: 2.5px solid #fff; object-fit: cover;
+      box-shadow: 0 2px 6px var(--shadow);
+      display: none;
+    }
+    .header-avatar:nth-child(2) { margin-left: -8px; }
+
+    .header-title { font-size: 17px; color: var(--accent); font-weight: 900; }
+
+    #statusDot {
+      width: 9px; height: 9px; border-radius: 50%;
+      background: #ccc; flex-shrink: 0; transition: background 0.4s;
+    }
+
     .menu-btn {
-      position: absolute; right: 18px; bottom: 12px; background: white; border-radius: 50%;
-      width: 35px; height: 35px; display: flex; align-items: center; justify-content: center;
-      color: var(--accent); font-size: 20px; box-shadow: 0 2px 8px var(--shadow);
+      position: absolute; right: 18px; bottom: 10px;
+      background: #fff; border-radius: 50%;
+      width: 36px; height: 36px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--accent); font-size: 22px;
+      box-shadow: 0 2px 8px var(--shadow);
       cursor: pointer; border: none; z-index: 10;
     }
-    .dropdown-menu {
-      position: absolute; right: 20px; top: 95px; background: white; border-radius: 15px;
-      box-shadow: 0 5px 20px rgba(0,0,0,0.15); display: none; flex-direction: column;
-      overflow: hidden; z-index: 100; min-width: 150px;
+
+    /* ── DROPDOWN ───────────────────────────────────────────────────── */
+    .dropdown-wrap { position: absolute; right: 18px; top: 100%; z-index: 200; }
+    .dropdown {
+      background: #fff; border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.13);
+      overflow: hidden; min-width: 160px;
+      transform-origin: top right;
+      transform: scale(0.85); opacity: 0; pointer-events: none;
+      transition: transform 0.15s ease, opacity 0.15s ease;
     }
-    .dropdown-menu.show { display: flex; }
-    .menu-item { padding: 12px 20px; font-size: 14px; font-weight: 700; color: #ff4d4d; cursor: pointer; text-align: left; border: none; background: none; width: 100%; }
-    .chat-header h2 { font-size: 18px; color: var(--accent); font-weight: 900; }
-    #chat-container { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 12px; }
-    #typing-area { display: none; align-items: center; gap: 8px; margin-bottom: 10px; padding-left: 5px; }
-    #typing-area.active { display: flex; }
-    .typing-text { font-size: 13px; color: var(--dark); font-weight: 700; }
-    .message-row { display: flex; align-items: flex-end; gap: 8px; max-width: 85%; }
-    .message-row.me { align-self: flex-end; flex-direction: row-reverse; }
-    .mini-avatar { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; border: 2px solid white; flex-shrink: 0; }
-    .bubble { padding: 10px 14px; border-radius: 18px; font-size: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); word-break: break-word; }
-    .me .bubble { background: var(--accent); color: white; border-bottom-right-radius: 4px; }
-    .them .bubble { background: white; color: #444; border-bottom-left-radius: 4px; }
-    .input-area { background: white; display: flex; gap: 10px; align-items: center; border-top: 1px solid #eee; padding: 12px 15px 60px; }
-    #msgInput { flex: 1; padding: 12px 18px; border-radius: 25px; border: 2px solid var(--bg); outline: none; font-size: 16px; font-family: inherit; }
-    .send-btn { width: 45px; height: 45px; border-radius: 50%; background: var(--accent); border: none; color: white; font-size: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
-    #statusDot { position: absolute; top: 58px; right: 28%; width:8px; height:8px; border-radius:50%; background:#ccc; }
-    .message-content { display: flex; flex-direction: column; gap: 2px; }
-    .msg-time { font-size: 10px; opacity: 0.7; margin-top: 2px; align-self: flex-end; font-weight: 700; }
-    .me .msg-time { color: rgba(255, 255, 255, 0.9); }
-    .them .msg-time { color: var(--dark); }
-    .date-separator {
-      text-align: center; margin: 20px 0; font-size: 11px; font-weight: 900;
-      color: var(--dark); text-transform: uppercase; letter-spacing: 1px;
+    .dropdown.show { transform: scale(1); opacity: 1; pointer-events: all; }
+    .dropdown-item {
+      display: block; width: 100%; padding: 13px 20px;
+      font-family: 'Nunito', sans-serif; font-size: 14px;
+      font-weight: 700; color: #ff4d4d;
+      background: none; border: none; text-align: left; cursor: pointer;
     }
+    .dropdown-item:hover { background: #fff5f5; }
+
+    /* ── MENSAJES ────────────────────────────────────────────────────── */
+    #chatContainer {
+      flex: 1; overflow-y: auto;
+      padding: 16px 14px 8px;
+      display: flex; flex-direction: column; gap: 4px;
+    }
+
+    .date-sep {
+      text-align: center; margin: 14px 0 8px;
+      font-size: 11px; font-weight: 900;
+      color: var(--dark); text-transform: uppercase; letter-spacing: 1.2px;
+      position: relative;
+    }
+    .date-sep::before, .date-sep::after {
+      content: ''; position: absolute; top: 50%;
+      width: 26%; height: 1.5px; background: var(--mid);
+    }
+    .date-sep::before { left: 0; }
+    .date-sep::after  { right: 0; }
+
+    .msg-row {
+      display: flex; align-items: flex-end;
+      gap: 7px; max-width: 82%;
+      animation: msgIn 0.2s ease;
+    }
+    @keyframes msgIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .msg-row.me   { align-self: flex-end;  flex-direction: row-reverse; }
+    .msg-row.them { align-self: flex-start; }
+
+    .msg-avatar {
+      width: 28px; height: 28px; border-radius: 50%;
+      object-fit: cover; border: 2px solid #fff;
+      box-shadow: 0 2px 5px var(--shadow);
+      flex-shrink: 0;
+    }
+
+    .msg-body { display: flex; flex-direction: column; gap: 3px; }
+
+    .bubble {
+      padding: 9px 14px; border-radius: 20px;
+      font-size: 15px; line-height: 1.45; word-break: break-word;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    }
+    .me   .bubble { background: var(--accent); color: #fff; border-bottom-right-radius: 5px; }
+    .them .bubble { background: #fff; color: #444; border-bottom-left-radius: 5px; }
+
+    .msg-time { font-size: 10px; font-weight: 700; opacity: 0.7; padding: 0 4px; }
+    .me   .msg-time { align-self: flex-end;  color: var(--dark); }
+    .them .msg-time { align-self: flex-start; color: var(--dark); }
+
+    /* ── ESCRIBIENDO ─────────────────────────────────────────────────── */
+    #typingArea {
+      display: none; align-items: center;
+      gap: 8px; padding: 0 14px 8px;
+    }
+    #typingArea.show { display: flex; }
+    #typingAvatar { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; }
+    .typing-bubble {
+      background: #fff; padding: 9px 14px;
+      border-radius: 18px; border-bottom-left-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+      display: flex; align-items: center; gap: 5px;
+    }
+    .typing-dot {
+      width: 7px; height: 7px; border-radius: 50%; background: var(--dark);
+      animation: tdot 1.2s ease-in-out infinite;
+    }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes tdot {
+      0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+      30%            { transform: translateY(-5px); opacity: 1; }
+    }
+
+    /* ── INPUT ───────────────────────────────────────────────────────── */
+    .input-wrap {
+      background: #fff; padding: 10px 14px 56px;
+      display: flex; align-items: center; gap: 10px;
+      border-top: 1.5px solid var(--mid); flex-shrink: 0;
+    }
+    #msgInput {
+      flex: 1; padding: 11px 18px; border-radius: 999px;
+      border: 2px solid var(--mid); outline: none;
+      font-family: 'Nunito', sans-serif;
+      font-size: 15px; font-weight: 700; color: #444;
+      background: #fafafa; transition: border-color 0.2s;
+    }
+    #msgInput:focus { border-color: var(--accent); }
+    #sendBtn {
+      width: 44px; height: 44px; border-radius: 50%;
+      background: var(--accent); border: none; color: #fff;
+      font-size: 18px; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; flex-shrink: 0;
+      box-shadow: 0 4px 12px var(--shadow);
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+    #sendBtn:active { transform: scale(0.88); box-shadow: none; }
   </style>
 </head>
 <body>
-  <script>if(localStorage.getItem('theme') === 'blue') document.documentElement.setAttribute('data-theme', 'blue');</script>
 
-  <!-- PANTALLA DE CARGA: visible mientras Firebase resuelve auth + parejaId -->
+  <script>
+    if (localStorage.getItem('theme') === 'blue')
+      document.documentElement.setAttribute('data-theme', 'blue');
+  </script>
+
+  <!-- LOADING -->
   <div id="loadingScreen">
-    <div class="spinner"></div>
-    <p>Cargando chat... 💕</p>
+    <div class="loader-ring"></div>
+    <p>Cargando chat… 💕</p>
   </div>
 
-  <!-- PANTALLA SI NO HAY PAREJA VINCULADA -->
+  <!-- SIN PAREJA -->
   <div id="noPartnerScreen">
-    <p style="font-size: 40px;">💔</p>
+    <div class="np-emoji">💔</div>
     <p>Aún no tienes una pareja vinculada</p>
     <a href="perfil.html">Ir a Mi Perfil</a>
   </div>
 
+  <!-- HEADER -->
   <div class="chat-header">
     <a href="index.html" class="back-btn">‹</a>
-    <h2>Nuestro Chat 💕</h2>
+
+    <div class="header-avatars">
+      <img id="avatarMe"      src="" class="header-avatar">
+      <img id="avatarPartner" src="" class="header-avatar">
+    </div>
+    <span class="header-title">Nuestro Chat 💕</span>
     <div id="statusDot"></div>
-    <button class="menu-btn" onclick="toggleMenu()">⋮</button>
+
+    <button class="menu-btn" id="menuBtn">⋮</button>
+    <div class="dropdown-wrap">
+      <div class="dropdown" id="dropdown">
+        <button class="dropdown-item" id="btnVaciar">🗑️ Vaciar chat</button>
+      </div>
+    </div>
   </div>
 
-  <div class="dropdown-menu" id="chatMenu">
-    <button class="menu-item" onclick="vaciarChat()">🗑️ Vaciar chat</button>
+  <!-- MENSAJES -->
+  <div id="chatContainer"></div>
+
+  <!-- ESCRIBIENDO -->
+  <div id="typingArea">
+    <img id="typingAvatar" src="" alt="">
+    <div class="typing-bubble">
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+    </div>
   </div>
 
-  <div id="chat-container"></div>
-
-  <div id="typing-area">
-    <img id="typing-img" src="" class="mini-avatar">
-    <span class="typing-text"><span id="typing-name"></span> está escribiendo...</span>
-  </div>
-
-  <div class="input-area">
-    <input type="text" id="msgInput" placeholder="Escribe aquí..." autocomplete="off">
-    <button class="send-btn" id="sendBtn">➤</button>
+  <!-- INPUT -->
+  <div class="input-wrap">
+    <input type="text" id="msgInput" placeholder="Escribe aquí…" autocomplete="off" />
+    <button id="sendBtn">➤</button>
   </div>
 
   <script type="module">
     import { db, auth } from './firebase.js';
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
     import {
-      collection, addDoc, query, where, orderBy, onSnapshot,
-      doc, getDoc, getDocFromServer, setDoc, updateDoc, serverTimestamp, getDocs, deleteDoc
+      collection, addDoc, query, where, orderBy,
+      onSnapshot, doc, getDoc, getDocFromServer,
+      setDoc, updateDoc, serverTimestamp,
+      getDocs, deleteDoc
     } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
-    import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-messaging.js";
 
-    // ─── Variables de estado globales ───────────────────────────────────────
-    let user = null;
-    let parejaId = null;
-    let typingTimeout = null;
-    let mensajesUnsubscribe = null;   // guarda el listener para poder limpiarlo
-    let typingUnsubscribe = null;
+    /* ── Estado ─────────────────────────────── */
+    let user        = null;
+    let parejaId    = null;
+    let unsubMsgs   = null;
+    let unsubTyping = null;
+    let typingTimer = null;
 
-    const container = document.getElementById('chat-container');
-    const msgInput  = document.getElementById('msgInput');
-    const messaging = getMessaging();
+    const container    = document.getElementById('chatContainer');
+    const msgInput     = document.getElementById('msgInput');
+    const typingArea   = document.getElementById('typingArea');
+    const typingAvatar = document.getElementById('typingAvatar');
+    const statusDot    = document.getElementById('statusDot');
 
-    // ─── Service Worker ──────────────────────────────────────────────────────
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js').catch(err => console.warn("SW error:", err));
+    /* ── Helpers ────────────────────────────── */
+    function hideLoading() {
+      const s = document.getElementById('loadingScreen');
+      s.classList.add('fade-out');
+      setTimeout(() => s.style.display = 'none', 380);
     }
+    function showNoPartner() {
+      document.getElementById('noPartnerScreen').classList.add('show');
+    }
+    function esc(t) {
+      return String(t)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+    function scrollDown() { container.scrollTop = container.scrollHeight; }
 
-    // ─── PUNTO DE ENTRADA ÚNICO: onAuthStateChanged ──────────────────────────
-    // Todo el arranque pasa por aquí. No hay código que dependa de user/parejaId
-    // fuera de este bloque.
+    /* ── Arranque ────────────────────────────── */
     onAuthStateChanged(auth, async (u) => {
+      // Cancelar listeners anteriores (PWA volviendo de background)
+      unsubMsgs?.();   unsubMsgs   = null;
+      unsubTyping?.(); unsubTyping = null;
 
-      // Limpiar listeners anteriores si el usuario cambia (p.ej. logout/login)
-      if (mensajesUnsubscribe) { mensajesUnsubscribe(); mensajesUnsubscribe = null; }
-      if (typingUnsubscribe)   { typingUnsubscribe();   typingUnsubscribe = null;   }
+      if (!u) { window.location.href = 'auth.html'; return; }
+      user = u;
 
-      if (!u) {
-        window.location.href = 'auth.html';
+      // Avatar propio en header
+      if (u.photoURL) {
+        const av = document.getElementById('avatarMe');
+        av.src = u.photoURL;
+        av.style.display = 'block';
+      }
+
+      // Leer usuario — primero servidor para evitar caché stale con parejaId null
+      let snap;
+      try {
+        snap = await getDocFromServer(doc(db, 'usuarios', u.uid));
+      } catch (_) {
+        snap = await getDoc(doc(db, 'usuarios', u.uid));
+      }
+
+      if (!snap.exists() || !snap.data().parejaId) {
+        hideLoading();
+        showNoPartner();
         return;
       }
 
-      user = u;
+      parejaId = snap.data().parejaId;
+      statusDot.style.background = '#4CAF50';
 
-      // Activar FCM sin bloquear el flujo principal
-      activarNotificacionesFCM(u.uid);
-
-      // Leer el documento del usuario para obtener parejaId
-      // IMPORTANTE: usamos getDocFromServer para evitar que el caché offline
-      // devuelva una versión stale donde parejaId aparece como null
+      // Avatar pareja en header
       try {
-        let userDoc;
-        try {
-          userDoc = await getDocFromServer(doc(db, "usuarios", u.uid));
-        } catch (networkErr) {
-          // Sin conexión: caer en caché como fallback
-          console.warn("Sin red, usando caché:", networkErr.message);
-          userDoc = await getDoc(doc(db, "usuarios", u.uid));
+        const pSnap = await getDoc(doc(db, 'usuarios', parejaId));
+        if (pSnap.exists()) {
+          const pd = pSnap.data();
+          const foto = pd.photoURL || pd.fotoUrl || pd.photo;
+          if (foto) {
+            const av = document.getElementById('avatarPartner');
+            av.src = foto;
+            av.style.display = 'block';
+          }
         }
+      } catch (_) {}
 
-        if (!userDoc.exists() || !userDoc.data().parejaId) {
-          // No hay pareja vinculada → mostrar pantalla de aviso
-          ocultarCarga();
-          document.getElementById('noPartnerScreen').classList.add('show');
-          return;
-        }
-
-        parejaId = userDoc.data().parejaId;
-        document.getElementById('statusDot').style.background = '#4CAF50';
-
-        // TODO está listo: arrancar el chat
-        ocultarCarga();
-        cargarMensajes();
-        escucharEscribiendo();
-
-      } catch (err) {
-        console.error("Error cargando usuario:", err);
-        ocultarCarga();
-      }
+      hideLoading();
+      escucharMensajes();
+      escucharEscribiendo();
     });
 
-    // ─── Ocultar pantalla de carga ────────────────────────────────────────────
-    function ocultarCarga() {
-      const screen = document.getElementById('loadingScreen');
-      screen.classList.add('hidden');
-      // Quitar del DOM después de la transición para no bloquear toques
-      setTimeout(() => screen.style.display = 'none', 350);
-    }
-
-    // ─── Cargar y escuchar mensajes ───────────────────────────────────────────
-    function cargarMensajes() {
-      // Guardamos la referencia para poder cancelar el listener si hace falta
+    /* ── Mensajes ────────────────────────────── */
+    function escucharMensajes() {
       const q = query(
-        collection(db, "mensajes"),
-        where("chatId", "in", [user.uid + parejaId, parejaId + user.uid]),
-        orderBy("timestamp", "asc")
+        collection(db, 'mensajes'),
+        where('chatId', 'in', [user.uid + parejaId, parejaId + user.uid]),
+        orderBy('timestamp', 'asc')
       );
 
-      mensajesUnsubscribe = onSnapshot(q, (snap) => {
+      unsubMsgs = onSnapshot(q, snap => {
         container.innerHTML = '';
         let lastDate = null;
 
         snap.forEach(d => {
           const m = d.data();
-          let timeString = "";
+          let timeStr = '';
 
           if (m.timestamp) {
-            const dateObj    = m.timestamp.toDate();
-            const dateString = dateObj.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' });
-            timeString       = dateObj.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+            const dt        = m.timestamp.toDate();
+            const dateLabel = dt.toLocaleDateString('es-ES', { weekday:'long', day:'numeric', month:'long' });
+            timeStr         = dt.toLocaleTimeString('es-ES', { hour:'2-digit', minute:'2-digit' });
 
-            if (dateString !== lastDate) {
+            if (dateLabel !== lastDate) {
               const sep = document.createElement('div');
-              sep.className   = 'date-separator';
-              sep.textContent = dateString;
+              sep.className   = 'date-sep';
+              sep.textContent = dateLabel;
               container.appendChild(sep);
-              lastDate = dateString;
+              lastDate = dateLabel;
             }
           }
 
-          // Marcar como leído si corresponde
+          // Marcar leído
           if (m.receiverId === user.uid && m.leido === false) {
-            updateDoc(doc(db, "mensajes", d.id), { leido: true }).catch(() => {});
+            updateDoc(doc(db, 'mensajes', d.id), { leido: true }).catch(() => {});
           }
 
           const isMe = m.senderId === user.uid;
-          const div  = document.createElement('div');
-          div.className = `message-row ${isMe ? 'me' : 'them'}`;
-          div.innerHTML = `
-            <img src="${m.senderPhoto || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'}" class="mini-avatar" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3135/3135715.png'">
-            <div class="message-content">
-              <div class="bubble">${escapeHtml(m.text)}</div>
-              <span class="msg-time">${timeString}</span>
-            </div>
-          `;
-          container.appendChild(div);
+          const row  = document.createElement('div');
+          row.className = `msg-row ${isMe ? 'me' : 'them'}`;
+          row.innerHTML = `
+            <img class="msg-avatar"
+              src="${esc(m.senderPhoto || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png')}"
+              onerror="this.src='https://cdn-icons-png.flaticon.com/512/3135/3135715.png'">
+            <div class="msg-body">
+              <div class="bubble">${esc(m.text)}</div>
+              <span class="msg-time">${timeStr}</span>
+            </div>`;
+          container.appendChild(row);
         });
 
-        container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
-      }, (err) => {
-        // El onSnapshot puede fallar si el índice de Firestore no está listo
-        console.error("Error escuchando mensajes:", err);
-      });
+        scrollDown();
+      }, err => console.error('Mensajes error:', err));
     }
 
-    // ─── Enviar mensaje ───────────────────────────────────────────────────────
-    async function enviarMensaje() {
+    /* ── Enviar ─────────────────────────────── */
+    async function enviar() {
       const text = msgInput.value.trim();
-      // Guard: no hacer nada si falta user, parejaId o texto
       if (!text || !user || !parejaId) return;
-
       msgInput.value = '';
 
+      clearTimeout(typingTimer);
+      setDoc(doc(db, 'typing', user.uid), { isTyping: false }, { merge: true }).catch(() => {});
+
       try {
-        await addDoc(collection(db, "mensajes"), {
+        await addDoc(collection(db, 'mensajes'), {
           chatId:      user.uid + parejaId,
-          text:        text,
+          text,
           senderId:    user.uid,
           receiverId:  parejaId,
           leido:       false,
           senderPhoto: user.photoURL || '',
-          senderName:  user.displayName || "Tu amor",
+          senderName:  user.displayName || 'Tu amor',
           timestamp:   serverTimestamp()
         });
-      } catch (err) {
-        console.error("Error enviando mensaje:", err);
-        msgInput.value = text; // Devolver el texto si falló
+      } catch (e) {
+        console.error('Error enviando:', e);
+        msgInput.value = text;
       }
     }
 
-    // ─── Indicador "está escribiendo" ─────────────────────────────────────────
+    /* ── Indicador escribiendo ──────────────── */
     msgInput.addEventListener('input', () => {
       if (!user || !parejaId) return;
-      setDoc(doc(db, "typing", user.uid), {
+      setDoc(doc(db, 'typing', user.uid), {
         isTyping: true, to: parejaId,
         name: user.displayName || 'Tu amor',
         photo: user.photoURL || ''
       }, { merge: true }).catch(() => {});
 
-      clearTimeout(typingTimeout);
-      typingTimeout = setTimeout(() => {
-        setDoc(doc(db, "typing", user.uid), { isTyping: false }, { merge: true }).catch(() => {});
+      clearTimeout(typingTimer);
+      typingTimer = setTimeout(() => {
+        setDoc(doc(db, 'typing', user.uid), { isTyping: false }, { merge: true }).catch(() => {});
       }, 2000);
     });
 
     function escucharEscribiendo() {
-      // CORRECCIÓN: solo llamar si parejaId es válido (no null/undefined)
       if (!parejaId) return;
-
-      typingUnsubscribe = onSnapshot(doc(db, "typing", parejaId), (snap) => {
-        const data = snap.data();
-        const area = document.getElementById('typing-area');
-        if (data && data.isTyping && data.to === user.uid) {
-          document.getElementById('typing-img').src  = data.photo || '';
-          document.getElementById('typing-name').textContent = data.name || '';
-          area.classList.add('active');
-          container.scrollTo({ top: container.scrollHeight });
+      unsubTyping = onSnapshot(doc(db, 'typing', parejaId), snap => {
+        const d = snap.data();
+        if (d?.isTyping && d.to === user.uid) {
+          typingAvatar.src = d.photo || '';
+          typingArea.classList.add('show');
+          scrollDown();
         } else {
-          area.classList.remove('active');
+          typingArea.classList.remove('show');
         }
-      }, () => {}); // silenciar errores de typing (no es crítico)
+      }, () => {});
     }
 
-    // ─── Vaciar chat ──────────────────────────────────────────────────────────
-    window.vaciarChat = async () => {
-      if (!confirm("¿Borrar todos los mensajes?")) return;
+    /* ── Vaciar chat ────────────────────────── */
+    document.getElementById('btnVaciar').onclick = async () => {
+      if (!confirm('¿Borrar todos los mensajes?')) return;
       if (!user || !parejaId) return;
-
-      const q    = query(collection(db, "mensajes"), where("chatId", "in", [user.uid + parejaId, parejaId + user.uid]));
-      const snap = await getDocs(q);
-      await Promise.all(snap.docs.map(d => deleteDoc(doc(db, "mensajes", d.id))));
-      toggleMenu();
+      closeDropdown();
+      const q = query(collection(db, 'mensajes'),
+        where('chatId', 'in', [user.uid + parejaId, parejaId + user.uid]));
+      const s = await getDocs(q);
+      await Promise.all(s.docs.map(d => deleteDoc(doc(db, 'mensajes', d.id))));
     };
 
-    // ─── FCM ──────────────────────────────────────────────────────────────────
-    async function activarNotificacionesFCM(userId) {
-      try {
-        const token = await getToken(messaging, {
-          vapidKey: 'BCAD1wd4akkmElcAqzk2sOVuMPGV5ntxBeo7rF4q3K7Ey_4hIMhLVVvriRcRGUo46L51Tk73F49-IpISwRs0nOk'
-        });
-        if (token) {
-          await setDoc(doc(db, "usuarios", userId), { fcmToken: token }, { merge: true });
-        }
-      } catch (err) {
-        console.warn("FCM no disponible:", err.message);
-      }
-    }
-
-    // ─── Sanitizar HTML para evitar XSS en los mensajes ──────────────────────
-    function escapeHtml(text) {
-      return text
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;");
-    }
-
-    // ─── Eventos UI ──────────────────────────────────────────────────────────
-    document.getElementById('sendBtn').onclick = enviarMensaje;
-    msgInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') enviarMensaje(); });
-
-    window.toggleMenu = () => document.getElementById('chatMenu').classList.toggle('show');
-
-    // Cerrar menú si se toca fuera
-    document.addEventListener('click', (e) => {
-      const menu = document.getElementById('chatMenu');
-      if (!e.target.closest('#chatMenu') && !e.target.closest('.menu-btn')) {
-        menu.classList.remove('show');
-      }
+    /* ── Dropdown ───────────────────────────── */
+    const dropdown = document.getElementById('dropdown');
+    function closeDropdown() { dropdown.classList.remove('show'); }
+    document.getElementById('menuBtn').addEventListener('click', e => {
+      e.stopPropagation();
+      dropdown.classList.toggle('show');
     });
+    document.addEventListener('click', closeDropdown);
+
+    /* ── Input events ───────────────────────── */
+    document.getElementById('sendBtn').addEventListener('click', enviar);
+    msgInput.addEventListener('keypress', e => { if (e.key === 'Enter') enviar(); });
   </script>
 </body>
 </html>

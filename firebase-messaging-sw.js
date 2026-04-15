@@ -12,62 +12,32 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
-// Lock anti-duplicados usando IndexedDB (persiste entre instancias del SW)
-function abrirDB() {
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.open('fcm-dedup', 1);
-    req.onupgradeneeded = e => e.target.result.createObjectStore('msgs', { keyPath: 'id' });
-    req.onsuccess = e => resolve(e.target.result);
-    req.onerror   = e => reject(e);
+messaging.onBackgroundMessage((payload) => {
+  console.log('[SW] Payload recibido:', JSON.stringify(payload));
+
+  // Primero cerramos TODAS las notificaciones automáticas que FCM
+  // pueda haber mostrado ya con el campo notification del payload
+  self.registration.getNotifications().then(notifs => {
+    notifs.forEach(n => {
+      // Cerramos las genéricas (las que no tienen foto de perfil en el body)
+      if (!n.body || n.body === '') n.close();
+    });
   });
-}
 
-async function yaFueMostrado(id) {
-  const db = await abrirDB();
-  return new Promise((resolve) => {
-    const tx  = db.transaction('msgs', 'readwrite');
-    const st  = tx.objectStore('msgs');
-    const get = st.get(id);
-    get.onsuccess = () => {
-      if (get.result) {
-        resolve(true); // ya existe → duplicado
-      } else {
-        st.put({ id, ts: Date.now() }); // guardar y continuar
-        resolve(false);
-      }
-    };
-    get.onerror = () => resolve(false);
-    // Limpiar entradas viejas (>10s) para no acumular
-    const range = IDBKeyRange.upperBound(Date.now() - 10000);
-    st.index && st.openCursor?.(range)?.onsuccess;
-  });
-}
+  const notif   = payload.notification || {};
+  const title   = notif.title || '💕 Nuevo mensaje';
+  const body    = notif.body  || '';
+  const icon    = payload.webpush?.notification?.icon || '/icono-app-192.png';
+  const url     = 'https://nuestra-app-love.vercel.app/chat.html';
 
-messaging.onBackgroundMessage(async (payload) => {
-  console.log('[SW] Payload:', JSON.stringify(payload));
-
-  const data  = payload.data || {};
-  const msgId = payload.messageId || (data.chatId + '_' + data.senderId);
-
-  // Si ya mostramos esta noti, salir sin hacer nada
-  const duplicado = await yaFueMostrado(msgId);
-  if (duplicado) {
-    console.log('[SW] Duplicado bloqueado:', msgId);
-    return;
-  }
-
-  const title = data.title || '💕 Nuevo mensaje';
-  const body  = data.body  || '';
-  const icon  = data.icon  || '/icono-app-192.png';
-  const url   = data.url   || 'https://nuestra-app-love.vercel.app/chat.html';
-
-  await self.registration.showNotification(title, {
+  // Usamos tag fijo para que si llega duplicado, reemplace en vez de acumularse
+  self.registration.showNotification(title, {
     body,
     icon,
-    badge:     '/icono-app-192.png',
-    tag:       msgId,
-    renotify:  false,
-    data:      { url }
+    badge:    '/icono-app-192.png',
+    tag:      'mensaje-' + (payload.data?.chatId || 'chat'),
+    renotify: true,
+    data:     { url }
   });
 });
 

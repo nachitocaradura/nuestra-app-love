@@ -13,31 +13,19 @@ firebase.initializeApp({
 const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage((payload) => {
-  console.log('[SW] Payload recibido:', JSON.stringify(payload));
+  console.log('[SW] Mensaje recibido:', payload);
 
-  // Primero cerramos TODAS las notificaciones automáticas que FCM
-  // pueda haber mostrado ya con el campo notification del payload
-  self.registration.getNotifications().then(notifs => {
-    notifs.forEach(n => {
-      // Cerramos las genéricas (las que no tienen foto de perfil en el body)
-      if (!n.body || n.body === '') n.close();
-    });
-  });
+  const notif = payload.notification || {};
+  const title = notif.title || '💕 Nuevo mensaje';
+  const body  = notif.body  || '';
+  const icon  = payload.webpush?.notification?.icon || '/icono-app-192.png';
+  const url   = 'https://nuestra-app-love.vercel.app/chat.html';
 
-  const notif   = payload.notification || {};
-  const title   = notif.title || '💕 Nuevo mensaje';
-  const body    = notif.body  || '';
-  const icon    = payload.webpush?.notification?.icon || '/icono-app-192.png';
-  const url     = 'https://nuestra-app-love.vercel.app/chat.html';
-
-  // Usamos tag fijo para que si llega duplicado, reemplace en vez de acumularse
   self.registration.showNotification(title, {
     body,
     icon,
-    badge:    '/icono-app-192.png',
-    tag:      'mensaje-' + (payload.data?.chatId || 'chat'),
-    renotify: true,
-    data:     { url }
+    badge: '/icono-app-192.png',
+    data:  { url }
   });
 });
 

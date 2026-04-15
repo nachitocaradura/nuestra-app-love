@@ -12,13 +12,23 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
-// Con payload solo-data, FCM no muestra nada automáticamente
-// y este handler se dispara UNA SOLA VEZ
+// Guard anti-duplicados: guardamos los IDs de mensajes ya mostrados
+const shown = new Set();
+
 messaging.onBackgroundMessage((payload) => {
   console.log('[SW] Mensaje recibido:', payload);
 
-  // Los datos vienen en payload.data (no en payload.notification)
-  const data  = payload.data || {};
+  const data    = payload.data || {};
+  const msgId   = data.chatId + '_' + Date.now(); // ID único por mensaje
+
+  // Si ya mostramos este mensaje en los últimos 3 segundos, ignorar
+  if (shown.has(data.chatId)) {
+    console.log('[SW] Duplicado ignorado');
+    return;
+  }
+  shown.add(data.chatId);
+  setTimeout(() => shown.delete(data.chatId), 3000); // limpiar después de 3s
+
   const title = data.title || '💕 Nuevo mensaje';
   const body  = data.body  || '';
   const icon  = data.icon  || '/icono-app-192.png';
@@ -28,6 +38,8 @@ messaging.onBackgroundMessage((payload) => {
     body,
     icon,
     badge: '/icono-app-192.png',
+    tag: 'msg-' + data.chatId,  // ← tag igual = reemplaza en vez de duplicar
+    renotify: true,
     data: { url }
   });
 });

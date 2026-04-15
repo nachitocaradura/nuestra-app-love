@@ -1,20 +1,31 @@
 {
   "name": "Nuestra App Especial",
   "short_name": "NuestraApp",
-  "start_url": "index.html",
+  "description": "Chat privado y especial",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#ffd6e0",
   "theme_color": "#ff4d79",
   "icons": [
     {
       "src": "icono-app-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icono-app-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "icono-app-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     }
   ]
 }

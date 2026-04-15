@@ -423,8 +423,14 @@
         });
 
         if (token) {
-          await setDoc(doc(db, 'usuarios', uid), { fcmToken: token }, { merge: true });
-          console.log('Token FCM registrado OK');
+          // Detectar plataforma para que la Cloud Function sepa qué payload enviar
+          const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+          const plataforma = isIOS ? 'ios' : 'android';
+          await setDoc(doc(db, 'usuarios', uid), { 
+            fcmToken: token,
+            plataforma 
+          }, { merge: true });
+          console.log('Token FCM registrado OK - plataforma:', plataforma);
         }
       } catch (err) {
         console.warn('FCM no disponible:', err.message);

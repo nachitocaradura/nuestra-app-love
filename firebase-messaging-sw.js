@@ -12,24 +12,22 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
+// Android recibe payload solo-data → FCM no muestra nada automático
+// Este handler se dispara UNA sola vez y muestra la notificación
 messaging.onBackgroundMessage((payload) => {
-  console.log('[SW] Mensaje recibido:', payload);
+  console.log('[SW] Payload:', JSON.stringify(payload));
 
-  const notif = payload.notification || {};
-  const title = notif.title || '💕 Nuevo mensaje';
-  const body  = notif.body  || '';
-  const icon  = payload.webpush?.notification?.icon || '/icono-app-192.png';
-  const url   = 'https://nuestra-app-love.vercel.app/chat.html';
+  const data  = payload.data  || {};
+  const title = data.title    || '💕 Nuevo mensaje';
+  const body  = data.body     || '';
+  const icon  = data.icon     || '/icono-app-192.png';
+  const url   = data.url      || 'https://nuestra-app-love.vercel.app/chat.html';
 
-  // tag único por conversación — si llegan dos iguales, la segunda reemplaza a la primera
-  // en vez de mostrarse dos veces
   self.registration.showNotification(title, {
     body,
     icon,
-    badge:    '/icono-app-192.png',
-    tag:      'chat-msg',   // ← misma tag = colapsa duplicados
-    renotify: true,         // ← aun así vibra/suena aunque reemplace
-    data:     { url }
+    badge: '/icono-app-192.png',
+    data:  { url }
   });
 });
 

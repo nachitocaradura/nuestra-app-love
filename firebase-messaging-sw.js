@@ -1,4 +1,3 @@
-// Usamos la versión compat más reciente (compatible con importScripts)
 importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js');
 
@@ -13,20 +12,23 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
-// Notificaciones en BACKGROUND (app cerrada o en segundo plano)
+// Con payload solo-data, FCM no muestra nada automáticamente
+// y este handler se dispara UNA SOLA VEZ
 messaging.onBackgroundMessage((payload) => {
-  console.log('[SW] Mensaje en background:', payload);
+  console.log('[SW] Mensaje recibido:', payload);
 
-  const title = payload.notification?.title || '💕 Nuevo mensaje';
-  const body  = payload.notification?.body  || '';
-  const icon  = payload.notification?.icon  || '/icono-app-192.png';
+  // Los datos vienen en payload.data (no en payload.notification)
+  const data  = payload.data || {};
+  const title = data.title || '💕 Nuevo mensaje';
+  const body  = data.body  || '';
+  const icon  = data.icon  || '/icono-app-192.png';
+  const url   = data.url   || 'https://nuestra-app-love.vercel.app/chat.html';
 
   self.registration.showNotification(title, {
     body,
     icon,
     badge: '/icono-app-192.png',
-    sound: '/notification.mp3',   // ← tu archivo de sonido
-    data: { url: 'https://nuestra-app-love.vercel.app/chat.html' }
+    data: { url }
   });
 });
 
@@ -36,13 +38,11 @@ self.addEventListener('notificationclick', (event) => {
   const url = event.notification.data?.url || 'https://nuestra-app-love.vercel.app/chat.html';
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-      // Si ya hay una pestaña abierta, enfocarla
       for (const client of clientList) {
         if (client.url.includes('nuestra-app-love.vercel.app') && 'focus' in client) {
           return client.focus();
         }
       }
-      // Si no, abrir nueva pestaña
       return clients.openWindow(url);
     })
   );

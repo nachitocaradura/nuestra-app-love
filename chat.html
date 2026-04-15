@@ -15,30 +15,59 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { height: 100%; overflow: hidden; background: var(--bg); }
     body { font-family: 'Nunito', sans-serif; display: flex; flex-direction: column; height: 100dvh; transition: background 0.4s ease; }
+
+    /* PANTALLA DE CARGA — nueva, evita que se vea el chat vacío */
+    #loadingScreen {
+      position: fixed; inset: 0; background: var(--bg);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      z-index: 9999; gap: 15px; transition: opacity 0.3s ease;
+    }
+    #loadingScreen.hidden { opacity: 0; pointer-events: none; }
+    #loadingScreen .spinner {
+      width: 40px; height: 40px; border: 4px solid rgba(255,77,121,0.2);
+      border-top-color: var(--accent); border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    #loadingScreen p { color: var(--accent); font-weight: 900; font-size: 16px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* PANTALLA DE ERROR — si no hay pareja vinculada */
+    #noPartnerScreen {
+      position: fixed; inset: 0; background: var(--bg);
+      display: none; flex-direction: column; align-items: center; justify-content: center;
+      z-index: 9998; gap: 15px; padding: 30px; text-align: center;
+    }
+    #noPartnerScreen.show { display: flex; }
+    #noPartnerScreen p { color: var(--accent); font-weight: 900; font-size: 16px; }
+    #noPartnerScreen a {
+      background: var(--accent); color: white; padding: 12px 25px;
+      border-radius: 20px; text-decoration: none; font-weight: 900;
+    }
+
     .chat-header {
-      padding: 50px 20px 15px; background: white; display: flex; flex-direction: column; 
+      padding: 50px 20px 15px; background: white; display: flex; flex-direction: column;
       align-items: center; justify-content: center; box-shadow: 0 2px 10px var(--shadow);
       flex-shrink: 0; position: relative;
     }
     .back-btn {
-      position: absolute; left: 18px; bottom: 12px; text-decoration: none; font-size: 20px; 
-      background: rgba(255,255,255,0.6); border-radius: 12px; padding: 6px 10px; 
-      color: var(--accent); font-weight: 900; box-shadow: 0 2px 8px var(--shadow); 
+      position: absolute; left: 18px; bottom: 12px; text-decoration: none; font-size: 20px;
+      background: rgba(255,255,255,0.6); border-radius: 12px; padding: 6px 10px;
+      color: var(--accent); font-weight: 900; box-shadow: 0 2px 8px var(--shadow);
       cursor: pointer; border: none; display: flex; align-items: center; justify-content: center;
     }
     .menu-btn {
-      position: absolute; right: 18px; bottom: 12px; background: white; border-radius: 50%; 
+      position: absolute; right: 18px; bottom: 12px; background: white; border-radius: 50%;
       width: 35px; height: 35px; display: flex; align-items: center; justify-content: center;
       color: var(--accent); font-size: 20px; box-shadow: 0 2px 8px var(--shadow);
       cursor: pointer; border: none; z-index: 10;
     }
     .dropdown-menu {
-      position: absolute; right: 20px; top: 95px; background: white; border-radius: 15px; 
-      box-shadow: 0 5px 20px rgba(0,0,0,0.15); display: none; flex-direction: column; 
+      position: absolute; right: 20px; top: 95px; background: white; border-radius: 15px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.15); display: none; flex-direction: column;
       overflow: hidden; z-index: 100; min-width: 150px;
     }
     .dropdown-menu.show { display: flex; }
-    .menu-item { padding: 12px 20px; font-size: 14px; font-weight: 700; color: #ff4d4d; cursor: pointer; text-align: left; }
+    .menu-item { padding: 12px 20px; font-size: 14px; font-weight: 700; color: #ff4d4d; cursor: pointer; text-align: left; border: none; background: none; width: 100%; }
     .chat-header h2 { font-size: 18px; color: var(--accent); font-weight: 900; }
     #chat-container { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 12px; }
     #typing-area { display: none; align-items: center; gap: 8px; margin-bottom: 10px; padding-left: 5px; }
@@ -47,27 +76,38 @@
     .message-row { display: flex; align-items: flex-end; gap: 8px; max-width: 85%; }
     .message-row.me { align-self: flex-end; flex-direction: row-reverse; }
     .mini-avatar { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; border: 2px solid white; flex-shrink: 0; }
-    .bubble { padding: 10px 14px; border-radius: 18px; font-size: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+    .bubble { padding: 10px 14px; border-radius: 18px; font-size: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); word-break: break-word; }
     .me .bubble { background: var(--accent); color: white; border-bottom-right-radius: 4px; }
     .them .bubble { background: white; color: #444; border-bottom-left-radius: 4px; }
     .input-area { background: white; display: flex; gap: 10px; align-items: center; border-top: 1px solid #eee; padding: 12px 15px 60px; }
-    input { flex: 1; padding: 12px 18px; border-radius: 25px; border: 2px solid var(--bg); outline: none; font-size: 16px; }
-    .send-btn { width: 45px; height: 45px; border-radius: 50%; background: var(--accent); border: none; color: white; font-size: 20px; display: flex; align-items: center; justify-content: center; }
+    #msgInput { flex: 1; padding: 12px 18px; border-radius: 25px; border: 2px solid var(--bg); outline: none; font-size: 16px; font-family: inherit; }
+    .send-btn { width: 45px; height: 45px; border-radius: 50%; background: var(--accent); border: none; color: white; font-size: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
     #statusDot { position: absolute; top: 58px; right: 28%; width:8px; height:8px; border-radius:50%; background:#ccc; }
-
-    /* NUEVOS ESTILOS PARA HORA Y FECHA */
     .message-content { display: flex; flex-direction: column; gap: 2px; }
     .msg-time { font-size: 10px; opacity: 0.7; margin-top: 2px; align-self: flex-end; font-weight: 700; }
     .me .msg-time { color: rgba(255, 255, 255, 0.9); }
     .them .msg-time { color: var(--dark); }
     .date-separator {
-      text-align: center; margin: 20px 0; font-size: 11px; font-weight: 900; 
-      color: var(--dark); text-transform: uppercase; letter-spacing: 1px; position: relative;
+      text-align: center; margin: 20px 0; font-size: 11px; font-weight: 900;
+      color: var(--dark); text-transform: uppercase; letter-spacing: 1px;
     }
   </style>
 </head>
 <body>
   <script>if(localStorage.getItem('theme') === 'blue') document.documentElement.setAttribute('data-theme', 'blue');</script>
+
+  <!-- PANTALLA DE CARGA: visible mientras Firebase resuelve auth + parejaId -->
+  <div id="loadingScreen">
+    <div class="spinner"></div>
+    <p>Cargando chat... 💕</p>
+  </div>
+
+  <!-- PANTALLA SI NO HAY PAREJA VINCULADA -->
+  <div id="noPartnerScreen">
+    <p style="font-size: 40px;">💔</p>
+    <p>Aún no tienes una pareja vinculada</p>
+    <a href="perfil.html">Ir a Mi Perfil</a>
+  </div>
 
   <div class="chat-header">
     <a href="index.html" class="back-btn">‹</a>
@@ -77,7 +117,7 @@
   </div>
 
   <div class="dropdown-menu" id="chatMenu">
-    <div class="menu-item" onclick="vaciarChat()">🗑️ Vaciar chat</div>
+    <button class="menu-item" onclick="vaciarChat()">🗑️ Vaciar chat</button>
   </div>
 
   <div id="chat-container"></div>
@@ -93,192 +133,243 @@
   </div>
 
   <script type="module">
-    console.log("Script principal de chat.html cargado."); // Debug: Script cargado
-
     import { db, auth } from './firebase.js';
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
-    import { collection, addDoc, query, where, orderBy, onSnapshot, doc, getDoc, setDoc, updateDoc, serverTimestamp, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+    import {
+      collection, addDoc, query, where, orderBy, onSnapshot,
+      doc, getDoc, setDoc, updateDoc, serverTimestamp, getDocs, deleteDoc
+    } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
     import { getMessaging, getToken } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-messaging.js";
 
-    let user = null, parejaId = null, typingTimeout = null;
+    // ─── Variables de estado globales ───────────────────────────────────────
+    let user = null;
+    let parejaId = null;
+    let typingTimeout = null;
+    let mensajesUnsubscribe = null;   // guarda el listener para poder limpiarlo
+    let typingUnsubscribe = null;
+
     const container = document.getElementById('chat-container');
-    const msgInput = document.getElementById('msgInput');
+    const msgInput  = document.getElementById('msgInput');
     const messaging = getMessaging();
 
-    // Bloque de registro del Service Worker original comentado, Firebase Messaging lo registrará automáticamente
-
-    async function activarNotificacionesFCM(userId) {
-      try {
-        console.log("Intentando activar notificaciones FCM para usuario:", userId); // Debug: Intentando activar FCM
-        const token = await getToken(messaging, { 
-          vapidKey: 'BCAD1wd4akkmElcAqzk2sOVuMPGV5ntxBeo7rF4q3K7Ey_4hIMhLVVvriRcRGUo46L51Tk73F49-IpISwRs0nOk' 
-        });
-        if (token) {
-          console.log("FCM Token generado:", token); // Debug: Token generado
-          await setDoc(doc(db, "usuarios", userId), { fcmToken: token }, { merge: true });
-          console.log("FCM Token guardado en Firestore para el usuario:", userId); // Debug: Token guardado
-        } else {
-          console.log("No se pudo obtener el FCM Token (quizás permisos no concedidos o token inválido)"); // Debug: Token no obtenido
-        }
-      } catch (err) {
-        console.error("Error en activarNotificacionesFCM:", err); // Debug: Error al activar FCM
-      }
+    // ─── Service Worker ──────────────────────────────────────────────────────
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(err => console.warn("SW error:", err));
     }
 
+    // ─── PUNTO DE ENTRADA ÚNICO: onAuthStateChanged ──────────────────────────
+    // Todo el arranque pasa por aquí. No hay código que dependa de user/parejaId
+    // fuera de este bloque.
     onAuthStateChanged(auth, async (u) => {
-      console.log("onAuthStateChanged activado. Usuario:", u ? u.uid : "No autenticado"); // Debug: Estado de autenticación
+
+      // Limpiar listeners anteriores si el usuario cambia (p.ej. logout/login)
+      if (mensajesUnsubscribe) { mensajesUnsubscribe(); mensajesUnsubscribe = null; }
+      if (typingUnsubscribe)   { typingUnsubscribe();   typingUnsubscribe = null;   }
+
       if (!u) {
-        console.log("Usuario no autenticado, redirigiendo a auth.html"); // Debug: Redirección
         window.location.href = 'auth.html';
         return;
       }
-      user = u;
-      console.log("Usuario autenticado:", user.uid); // Debug: Usuario autenticado
-      activarNotificacionesFCM(u.uid);
-      
-      const userDoc = await getDoc(doc(db, "usuarios", u.uid));
-      console.log("Documento de usuario obtenido. Existe:", userDoc.exists()); // Debug: Documento de usuario
 
-      if (userDoc.exists() && userDoc.data().parejaId) {
+      user = u;
+
+      // Activar FCM sin bloquear el flujo principal
+      activarNotificacionesFCM(u.uid);
+
+      // Leer el documento del usuario para obtener parejaId
+      try {
+        const userDoc = await getDoc(doc(db, "usuarios", u.uid));
+
+        if (!userDoc.exists() || !userDoc.data().parejaId) {
+          // No hay pareja vinculada → mostrar pantalla de aviso
+          ocultarCarga();
+          document.getElementById('noPartnerScreen').classList.add('show');
+          return;
+        }
+
         parejaId = userDoc.data().parejaId;
-        console.log("parejaId establecido a:", parejaId); // Debug: Pareja ID
         document.getElementById('statusDot').style.background = '#4CAF50';
+
+        // TODO está listo: arrancar el chat
+        ocultarCarga();
         cargarMensajes();
-        console.log("cargarMensajes() llamado."); // Debug: Cargar mensajes
         escucharEscribiendo();
-        console.log("escucharEscribiendo() llamado."); // Debug: Escuchar escribiendo
-      } else {
-        console.log("Documento de usuario no existe o parejaId no definido/vacío."); // Debug: Sin pareja ID
-        // Opcional: Podrías redirigir o mostrar un mensaje si no hay pareja configurada
-        // window.location.href = 'perfil.html'; 
+
+      } catch (err) {
+        console.error("Error cargando usuario:", err);
+        ocultarCarga();
       }
     });
 
+    // ─── Ocultar pantalla de carga ────────────────────────────────────────────
+    function ocultarCarga() {
+      const screen = document.getElementById('loadingScreen');
+      screen.classList.add('hidden');
+      // Quitar del DOM después de la transición para no bloquear toques
+      setTimeout(() => screen.style.display = 'none', 350);
+    }
+
+    // ─── Cargar y escuchar mensajes ───────────────────────────────────────────
     function cargarMensajes() {
-      if (!user || !parejaId) {
-        console.log("No se pueden cargar mensajes: usuario o parejaId no definidos."); // Debug
-        return;
-      }
-      const q = query(collection(db, "mensajes"), 
-                where("chatId", "in", [user.uid + parejaId, parejaId + user.uid]), 
-                orderBy("timestamp", "asc"));
-      
-      onSnapshot(q, (snap) => {
-        console.log("Nuevos mensajes recibidos en onSnapshot. Cantidad:", snap.docs.length); // Debug
+      // Guardamos la referencia para poder cancelar el listener si hace falta
+      const q = query(
+        collection(db, "mensajes"),
+        where("chatId", "in", [user.uid + parejaId, parejaId + user.uid]),
+        orderBy("timestamp", "asc")
+      );
+
+      mensajesUnsubscribe = onSnapshot(q, (snap) => {
         container.innerHTML = '';
         let lastDate = null;
 
         snap.forEach(d => {
           const m = d.data();
-          
           let timeString = "";
+
           if (m.timestamp) {
-            const dateObj = m.timestamp.toDate();
-            const dateString = dateObj.toLocaleDateString([], { day: 'numeric', month: 'long' });
-            timeString = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const dateObj    = m.timestamp.toDate();
+            const dateString = dateObj.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' });
+            timeString       = dateObj.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
 
             if (dateString !== lastDate) {
-              const dateDiv = document.createElement('div');
-              dateDiv.className = 'date-separator';
-              dateDiv.textContent = dateString;
-              container.appendChild(dateDiv);
+              const sep = document.createElement('div');
+              sep.className   = 'date-separator';
+              sep.textContent = dateString;
+              container.appendChild(sep);
               lastDate = dateString;
             }
           }
 
+          // Marcar como leído si corresponde
           if (m.receiverId === user.uid && m.leido === false) {
-             updateDoc(doc(db, "mensajes", d.id), { leido: true });
-             console.log("Mensaje marcado como leído:", d.id); // Debug
+            updateDoc(doc(db, "mensajes", d.id), { leido: true }).catch(() => {});
           }
 
           const isMe = m.senderId === user.uid;
-          const div = document.createElement('div');
+          const div  = document.createElement('div');
           div.className = `message-row ${isMe ? 'me' : 'them'}`;
           div.innerHTML = `
-            <img src="${m.senderPhoto || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'}" class="mini-avatar">
+            <img src="${m.senderPhoto || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png'}" class="mini-avatar" onerror="this.src='https://cdn-icons-png.flaticon.com/512/3135/3135715.png'">
             <div class="message-content">
-              <div class="bubble">${m.text}</div>
+              <div class="bubble">${escapeHtml(m.text)}</div>
               <span class="msg-time">${timeString}</span>
             </div>
           `;
           container.appendChild(div);
         });
-        container.scrollTo(0, container.scrollHeight);
+
+        container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+      }, (err) => {
+        // El onSnapshot puede fallar si el índice de Firestore no está listo
+        console.error("Error escuchando mensajes:", err);
       });
     }
 
+    // ─── Enviar mensaje ───────────────────────────────────────────────────────
     async function enviarMensaje() {
       const text = msgInput.value.trim();
-      if (!text || !parejaId) {
-        console.log("No se puede enviar mensaje: texto vacío o parejaId no definido."); // Debug
-        return;
-      }
+      // Guard: no hacer nada si falta user, parejaId o texto
+      if (!text || !user || !parejaId) return;
+
       msgInput.value = '';
-      await addDoc(collection(db, "mensajes"), {
-        chatId: user.uid + parejaId,
-        text: text,
-        senderId: user.uid,
-        receiverId: parejaId, 
-        leido: false,         
-        senderPhoto: user.photoURL,
-        senderName: user.displayName || "Tu amor",
-        timestamp: serverTimestamp()
-      });
-      console.log("Mensaje enviado a Firestore."); // Debug
+
+      try {
+        await addDoc(collection(db, "mensajes"), {
+          chatId:      user.uid + parejaId,
+          text:        text,
+          senderId:    user.uid,
+          receiverId:  parejaId,
+          leido:       false,
+          senderPhoto: user.photoURL || '',
+          senderName:  user.displayName || "Tu amor",
+          timestamp:   serverTimestamp()
+        });
+      } catch (err) {
+        console.error("Error enviando mensaje:", err);
+        msgInput.value = text; // Devolver el texto si falló
+      }
     }
 
+    // ─── Indicador "está escribiendo" ─────────────────────────────────────────
     msgInput.addEventListener('input', () => {
-      if (!user || !parejaId) {
-        console.log("No se puede gestionar typing: usuario o parejaId no definidos."); // Debug
-        return;
-      }
-      setDoc(doc(db, "typing", user.uid), { isTyping: true, to: parejaId, name: user.displayName, photo: user.photoURL }, { merge: true });
+      if (!user || !parejaId) return;
+      setDoc(doc(db, "typing", user.uid), {
+        isTyping: true, to: parejaId,
+        name: user.displayName || 'Tu amor',
+        photo: user.photoURL || ''
+      }, { merge: true }).catch(() => {});
+
       clearTimeout(typingTimeout);
-      typingTimeout = setTimeout(() => { 
-        setDoc(doc(db, "typing", user.uid), { isTyping: false }, { merge: true }); 
-        console.log("Usuario dejó de escribir."); // Debug
+      typingTimeout = setTimeout(() => {
+        setDoc(doc(db, "typing", user.uid), { isTyping: false }, { merge: true }).catch(() => {});
       }, 2000);
-      console.log("Usuario escribiendo."); // Debug
     });
 
     function escucharEscribiendo() {
-      if (!parejaId) {
-        console.log("No se puede escuchar escribiendo: parejaId no definido."); // Debug
-        return;
-      }
-      onSnapshot(doc(db, "typing", parejaId), (snap) => {
+      // CORRECCIÓN: solo llamar si parejaId es válido (no null/undefined)
+      if (!parejaId) return;
+
+      typingUnsubscribe = onSnapshot(doc(db, "typing", parejaId), (snap) => {
         const data = snap.data();
         const area = document.getElementById('typing-area');
         if (data && data.isTyping && data.to === user.uid) {
-          document.getElementById('typing-img').src = data.photo;
-          document.getElementById('typing-name').textContent = data.name;
+          document.getElementById('typing-img').src  = data.photo || '';
+          document.getElementById('typing-name').textContent = data.name || '';
           area.classList.add('active');
-          container.scrollTo(0, container.scrollHeight);
-          console.log("Pareja está escribiendo."); // Debug
+          container.scrollTo({ top: container.scrollHeight });
         } else {
           area.classList.remove('active');
-          console.log("Pareja no está escribiendo."); // Debug
         }
-      });
+      }, () => {}); // silenciar errores de typing (no es crítico)
     }
 
-    window.toggleMenu = () => {
-      document.getElementById('chatMenu').classList.toggle('show');
-      console.log("Menú de chat toggled."); // Debug
-    };
+    // ─── Vaciar chat ──────────────────────────────────────────────────────────
     window.vaciarChat = async () => {
-      if(!confirm("¿Borrar chat?")) return;
-      console.log("Vaciando chat..."); // Debug
-      const q = query(collection(db, "mensajes"), where("chatId", "in", [user.uid + parejaId, parejaId + user.uid]));
+      if (!confirm("¿Borrar todos los mensajes?")) return;
+      if (!user || !parejaId) return;
+
+      const q    = query(collection(db, "mensajes"), where("chatId", "in", [user.uid + parejaId, parejaId + user.uid]));
       const snap = await getDocs(q);
       await Promise.all(snap.docs.map(d => deleteDoc(doc(db, "mensajes", d.id))));
       toggleMenu();
-      console.log("Chat vaciado."); // Debug
     };
 
+    // ─── FCM ──────────────────────────────────────────────────────────────────
+    async function activarNotificacionesFCM(userId) {
+      try {
+        const token = await getToken(messaging, {
+          vapidKey: 'BCAD1wd4akkmElcAqzk2sOVuMPGV5ntxBeo7rF4q3K7Ey_4hIMhLVVvriRcRGUo46L51Tk73F49-IpISwRs0nOk'
+        });
+        if (token) {
+          await setDoc(doc(db, "usuarios", userId), { fcmToken: token }, { merge: true });
+        }
+      } catch (err) {
+        console.warn("FCM no disponible:", err.message);
+      }
+    }
+
+    // ─── Sanitizar HTML para evitar XSS en los mensajes ──────────────────────
+    function escapeHtml(text) {
+      return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    // ─── Eventos UI ──────────────────────────────────────────────────────────
     document.getElementById('sendBtn').onclick = enviarMensaje;
-    msgInput.onkeypress = (e) => { if(e.key === 'Enter') enviarMensaje(); };
-    console.log("Event listeners para enviar mensaje adjuntos."); // Debug
+    msgInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') enviarMensaje(); });
+
+    window.toggleMenu = () => document.getElementById('chatMenu').classList.toggle('show');
+
+    // Cerrar menú si se toca fuera
+    document.addEventListener('click', (e) => {
+      const menu = document.getElementById('chatMenu');
+      if (!e.target.closest('#chatMenu') && !e.target.closest('.menu-btn')) {
+        menu.classList.remove('show');
+      }
+    });
   </script>
 </body>
 </html>

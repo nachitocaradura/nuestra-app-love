@@ -107,13 +107,13 @@
 
     // Bloque de registro del Service Worker original comentado, Firebase Messaging lo registrará automáticamente
     
-    if ('serviceWorker' in navigator) {
+   /* if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('firebase-messaging-sw.js').then(reg => {
           console.log("Motor registrado con éxito");
         });
       });
-    }
+    }*/
     
 
     async function activarNotificacionesFCM(userId) {

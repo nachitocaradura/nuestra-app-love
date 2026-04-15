@@ -406,7 +406,12 @@
         const permiso = await Notification.requestPermission();
         if (permiso !== 'granted') { console.log('Notis no permitidas'); return; }
 
-        const swReg = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+        // Usar getRegistration en vez de register para no crear un SW duplicado
+        // Si ya existe lo reutiliza, si no existe lo registra
+        let swReg = await navigator.serviceWorker.getRegistration('/firebase-messaging-sw.js');
+        if (!swReg) {
+          swReg = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+        }
 
         const { getMessaging, getToken } = await import(
           'https://www.gstatic.com/firebasejs/11.6.0/firebase-messaging.js'
